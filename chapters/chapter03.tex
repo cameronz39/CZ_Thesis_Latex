@@ -1,69 +1,25 @@
-\chapter{More Generic Content}
-    \lipsum[1]
-    \begin{table}
-        \centering
-        \begin{tabular}{r r r r r r r r}
-             Col1 & Col2 & Col3 & Col4 & Col1 & Col2 & Col3 & Col4 \\
-             \hline
-             1    & 676  & 8837 & 787  & 544  & 22   & 908  & 229  \\
-             2    & 732  & 78   & 5415 & 887  & 343  & 1112 & 870  \\
-             3    & 545  & 778  & 7507 & 5554 & 5432 & 9867 & 9    \\
-             4    & 545  & 1874 & 7560 & 102  & 562  & 223  & 792  \\
-             5    & 88   & 788  & 6344 & 45   & 998  & 776  & 2    \\
-             \hline
-        \end{tabular}
-        \caption{This is the caption for a table that has a long description that does not add much to the understanding and should be shortened.}
-    \end{table}
-    \lipsum[2]
+\chapter{Methodology}
 
-\section{A Section}
-    \lipsum[3]
-    \begin{table}
-        \centering
-        \begin{tabular}{r r r r r r r r}
-             Col1 & Col2 & Col3 & Col4 & Col1 & Col2 & Col3 & Col4 \\
-             \hline
-             1    & 676  & 8837 & 787  & 544  & 22   & 908  & 229  \\
-             2    & 732  & 78   & 5415 & 887  & 343  & 1112 & 870  \\
-             3    & 545  & 778  & 7507 & 5554 & 5432 & 9867 & 9    \\
-             4    & 545  & 1874 & 7560 & 102  & 562  & 223  & 792  \\
-             5    & 88   & 788  & 6344 & 45   & 998  & 776  & 2    \\
-             \hline
-        \end{tabular}
-        \caption{This is the caption for a table.}
-    \end{table}
-    \lipsum[4-5]
-    \begin{figure}
-        \centering
-        \includegraphics[width=4in]{example-image}
-        \caption{This is the caption for an image.}
-    \end{figure}
+To apply the previously mentioned balancing methods to Cal Poly's SADS, significant progress was made on it's design both at the software and hardware level. Namely, a closed-loop feedback system was designed including a measurement system for attitude determination, a flight computer to process measurements and generate commands in real time, and linear actuators to shift the platform's center of mass.
 
-\subsection{A Subsection}
-    \lipsum[6-8]
-    \begin{table}
-        \centering
-        \begin{tabular}{r r r r r r r r}
-             Col1 & Col2 & Col3 & Col4 & Col1 & Col2 & Col3 & Col4 \\
-             \hline
-             1    & 676  & 8837 & 787  & 544  & 22   & 908  & 229  \\
-             2    & 732  & 78   & 5415 & 887  & 343  & 1112 & 870  \\
-             3    & 545  & 778  & 7507 & 5554 & 5432 & 9867 & 9    \\
-             4    & 545  & 1874 & 7560 & 102  & 562  & 223  & 792  \\
-             5    & 88   & 788  & 6344 & 45   & 998  & 776  & 2    \\
-             \hline
-        \end{tabular}
-        \caption{This is the caption for one more table.}
-    \end{table}
+\section{System Architecture}
 
-\section{Another Section}
-    \lipsum[1-2]
+\section{Mechanical}
 
-\subsection{Another Subsection}
-    \lipsum[3]
-    \begin{figure}
-        \centering
-        \includegraphics[width=3in]{example-image}
-        \caption{This is the caption for yet another image.}
-    \end{figure}
-    \lipsum[4-5]
+The goal of the mechanical design was to build off work completed in \cite{gilman_automatic_2024} and develop set of low-cost linear actuators that finely control the position of mass blocks. Taking lessons learned from previous iterations, the second main goal was to ensure that the size of the mass blocks was highly customizable, thus making the resulting center of mass envelope customizable. 
+
+\subsection{Mass Sizing}
+
+While the final design and mass properties of the SADS is unknown, it is still important to place an approximate upper bound on the size of the mass blocks driven by the linear actuators and the desired center of mass envelope. This ensures that the motors and mounting hardware are not oversized and do not excessively increase the simulator's moment of inertia.
+
+Since the platform's pyrimadal reaction wheel design is inherently symmetric, the main source of inbalance will be introduced by lighter components like batteries, sensors, and the flight computer. 
+
+% Isometric + Top Down CAD view of Gilman's design
+
+
+
+\section{Electrical}
+
+\section{Software}
+
+\section{Algorithm Implementation}
