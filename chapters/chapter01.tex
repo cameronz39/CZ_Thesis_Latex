@@ -4,12 +4,21 @@
 Spacecraft dynamics simulators are used extensively in the development and testing of all modern space systems [1]. The ability of space organizations to test both their flight hardware and software before launch is a crucial part in reducing on-orbit
 failures. The primary goal of all spacecraft dynamics simulators is to recreate the frictionless, torque-free environment of space. The approaches to this goal vary slightly as will be discussed in Chapter 2, but the primary method mounts the spacecraft hardware to a spherical air-bearing, allowing the platform to freely rotate about its yaw axis, and within some limited range about it's pitch and roll axes. The high pressure air between the spherical mount and platform ensures rotation with near-zero friction [2].
 
+While an air-bearing helps guarantee frictionless rotation, any distance between the platform's center of mass and it's center of rotation will introduce a torque due to gravity that is not seen in space. Simulator's are able to shift their center of mass by changing the position of sliding masses onboard \cite{kim_automatic_2009}. The end goal is to adjust the mass blocks' positions such that the mass distribution of the platform changes, and the distance between the platform's center of mass and center of rotation is minized. These masses may be adjusted by hand with visual inspection (referred to as manual mass balancing), or they may be precisely controlled using a preset balancing algorithm and linear actuators (referred to as automatic mass balancing). The detailed requirements of a mass balancing system will be discussed in \Cref{chap:background}, but in general, all simulators must perform some form of balancing this balancing process should both minimize the torque due to gravity and run as fast as possible.
+
+
+
 \section{Previous Work}
+
+Research laboratories and universities take part in building their own simulators for educational purposes and as a way to test novel control algorithms and hardware. The Cal Poly Spacecraft Attitude Dynamics Simulator (SADS) is part of this category and has been developed by students and faculty over the years \cite{mittelsteadt_cal_2007}. The mass balancing system on the SADS has gone under numerous iterations which are summarized in Table
+
+
 
 \section{Thesis Objectives}
 
-\iffalse 
+
 - Create a balancing system that can be run quickly and achieves similar or better balancing results than previous iterations
+
 - Advance work on the SADS overall design that will be necessary for other subsystems, namely a measurement system and early iteration of a flight computer, track lessons learn
+
 - Compare the results of various balancing methods found in literature on the same platform, provide a clear comparison to theortical and real results, provide practical insights on MBS design and implementation (there is an apprent gap for this in literature, with an abundance of papers providing theoretical approaches, but few providing experimental results, and fewer discussing the details of said experiments)
-\fi 
