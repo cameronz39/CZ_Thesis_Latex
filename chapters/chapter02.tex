@@ -1,5 +1,7 @@
 \chapter{Background}\label{chap:background}
-\section{Mass Balancing Systems}
+\section{Mass Balancing Hardware}
+
+
 
 \section{Batch Estimation Algorithms}
 
@@ -7,4 +9,59 @@
 
 \section{Active Control for Balancing}
 
-\section{Cal Poly SADS MBS History}
+\section{Cal Poly SADS MBS Design }
+\begin{table}[h!]
+\caption{Existing spacecraft dynamics simulators and their balancing methods}\label{table:existing_testbeds}
+\centering
+\renewcommand{\arraystretch}{1.3}
+
+\begin{tabularx}{\textwidth}{
+    >{\raggedright\arraybackslash}p{3cm}   % Institution
+    >{\raggedright\arraybackslash}p{3.5cm} % Actuators
+    >{\raggedright\arraybackslash}p{2.2cm} % Noise Density
+    >{\raggedright\arraybackslash}X}       % Balancing Method and Results
+\toprule
+\textbf{Institution} & \textbf{Actuators} & \textbf{Noise Density} & \textbf{Balancing Method and Results} \\
+\midrule
+Cal Poly San Luis Obispo~\cite{dam_applied_2014} & 
+Reaction Wheels & 
+\SI{0.0025}{\degree\per\second} & 
+Batch Estimation \newline $<\SI{1.5}{\milli\metre}$ \\
+\addlinespace[0.75em]
+
+Georgia Tech~\cite{choi_automatic_2016} & 
+Reaction Wheels & 
+\SI{0.05}{\degree\per\second} & 
+Underactuated Feedback Control \\
+\addlinespace[0.75em]
+Naval Postgraduate School~\cite{kim_system_2006} & 
+Control Moment Gyros & 
+\SI{0.007}{\degree\per\second} & 
+Fully Actuated Feedback Control \newline $<\SI{0.327}{\newton\metre}$ \\
+\addlinespace[0.75em]
+University of Brasília~\cite{silva_filtering_2018} & 
+Reaction Wheels, Magnetorquers & 
+\SI{0.05}{\degree\per\second} & 
+Batch Estimation and Filtering \newline $<\num{3.5e-5}\,\si{\newton\metre}$ \\
+\addlinespace[0.75em]
+University of Bologna~\cite{modenini2020dynamic} & 
+Reaction Wheels & 
+\SI{0.004}{\degree\per\second} & 
+Underactuated Feedback Control \newline $<\num{5e-5}\,\si{\newton\metre}$ \\
+\addlinespace[0.75em]
+University of Florida~\cite{saulnier2014six} & 
+Thrusters & 
+N/A & 
+Manual Balancing \\
+\addlinespace[0.75em]
+Harbin Institute of Technology~\cite{xu_parameter_2015} & 
+Reaction Wheels & 
+\SI{0.04}{\degree\per\second} & 
+Batch Estimation and Filtering \newline $<\SI{5}{\micro\metre}$ \\
+\bottomrule
+\end{tabularx}
+
+\vspace{0.5em}
+\raggedright\footnotesize
+\textit{Note: Balancing results are included as reported. Results are either listed as the maximum torque due to gravity measured during testing or the estimated center of mass offset.}
+\end{table}
