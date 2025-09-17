@@ -1,7 +1,30 @@
 \chapter{Background}\label{chap:background}
+\section{The Mass Balancing Problem}
+
+\begin{figure}
+    \centering
+    \input{figures/mbs_problem.tikz}
+    \caption{The mass balancing problem for air bearing based spacecraft dynamics simulators}
+    \label{fig:tikz_venn}
+\end{figure}
+
+
+There are a variety of ways to measure and quantify this behavior. Assuming the center of mass is below the center of rotation, a very rough estimate for the torque due to gravity may be obtained by tilting the simulator about one of it's principal axes, releasing it, and observing the period of resulting pendulum motion $T$ \cite{kim_automatic_2009}. Let $\bm{r}$ denote the location of the center of mass with respect to the center of rotation. The torque is given by solving the below equation for $mg||\bm{r}||$
+\begin{equation}
+    T = 2\pi\sqrt{\frac{J_i}{mg||\bm{r}||}}
+\end{equation}
+where $J_i$ is the moment of inertia about said principle axis, $g$ is the acceleration due to gravity and $m$ is the overall mass of the simulator.
+
+Another rough estimation method may be obtained by observing the total mechanical energy of the simulator while it undergoes pendulum said motion 
+\begin{equation}
+    E_{mech} = \frac{1}{2}\bm{\omega}^T\bm{J}\bm{\omega} + mgh
+\end{equation}
+where $\bm{\omega}$ is the angular velocity of the simulator, $\bm{J}$ is the inertia, and $h$ is the vertical height of $\bm{r}$ \cite{silva_filtering_2018}. If the simulator is balanced, $h$ will remain relatively constant throughout the pendulum motion, and the kinetic energy term $\frac{1}{2}\bm{\omega}^T\bm{J}\bm{\omega}$ will also remain relatively constant due to the conservation of energy. As the balance of the simulator improves, the kinetic energy will oscillate with smaller amplitudes.
+
+Ideally this value is zero, but in practice mass balancing systems seek to make this value as small as possible while satsifying other project constraints like cost, time, and volume. 
+
+
 \section{Mass Balancing Hardware}
-
-
 
 \section{Batch Estimation Algorithms}
 
