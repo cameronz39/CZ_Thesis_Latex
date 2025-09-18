@@ -5,7 +5,7 @@
 \draw[->, thick] (0,0) -- (2,0) node[below right] {$\hat{x}_N$};
 \draw[->, thick] (0,0) -- (0,2) node[above left] {$\hat{y}_N$};
 \draw[->, thick] (0,0) -- (-1.2,-1.2) node[below right] {$\hat{z}_N$};
-\node[below right] at (0,0) {$\mathcal{O}$};
+\node[below right] at (0,0) {$O$};
 
 % Cylinder representing platform ------------------------------
 \pgfmathsetmacro{\radius}{1.1}
