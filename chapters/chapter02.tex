@@ -9,7 +9,7 @@
 \end{figure}
 
 
-\Cref{fig:mbs_problem} defines the geometery of the problem in a general case. $O$ represents the common origin of the inertial frame $\mathcal{N}$ and the body-fixed principle frame of the simulator $\mathcal{B}$. $O$ is chosen to by the center of rotation . If frictionless rotation is assumed, then the simulator follows Euler's rotational equations of motion with gravity acting as a torque. 
+\Cref{fig:mbs_problem} defines the geometery of the problem in a general case. $O$ represents the common origin of the inertial frame $\mathcal{N}$ and the body-fixed principle frame of the simulator $\mathcal{B}$. $O$ is chosen to be the center of rotation . If frictionless rotation is assumed, then the simulator follows Euler's rotational equations of motion with gravity acting as a torque. 
 
 \begin{equation}
     \bm{J}\,\dot{\bm{\omega}} + \bm{\omega}^{\times}\,\bm{J}\bm{\omega} = \bm{T}_g
@@ -27,7 +27,7 @@ where $m_s$ is the total mass of the simulator, $\bm{r}$ is the center of mass r
 \begin{equation}\label{equation:sliding masses}
     \bm{R}_i = \bm{\rho}_i + d_i\bm{u_i}
 \end{equation}
-where $d_i$ is the distance a mass $m_i$ has travelled along $u_i$ relative to it's zeroed position. In a more most general case, $\Delta\,d_i$ is defined as the change in position a mass from any arbitrary starting position.
+where $d_i$ is the distance a mass $m_i$ has travelled along $u_i$ relative to it's zeroed position. More generally, $\Delta\,d_i$ is defined as the change in position a mass from any arbitrary starting position.
 
 The goal of these definitions is to obtain an equation relating how changing the positions of each mass effects the center of mass of the total system. These parameters are first assembled into matricies as follows
 
@@ -88,7 +88,7 @@ Ideally this value is zero, but in practice mass balancing systems seek to make 
 
 \section{Batch Estimation Algorithms}
 
-Batch estimation algorithms are a subset of passive balancing methods that use momentum exchange devices to excite the simulator and record the resulting body rate and attitude data. The equations of motion are manipulated to help obtain multiple estimates of $\bm{r}$, and a single, final estimate of $\bm{r}$ is calculated using least-squares error methods. Many variations of batch estimation algorithms exist, but they all start with same principle up seperating the constant mass properties from the dynamic states in the equations of motion. To accomplish this, it helps to define the following to variables
+Batch estimation algorithms are a subset of passive balancing methods that use momentum exchange devices to excite the simulator and record the resulting body rate and attitude data. The equations of motion are manipulated to help obtain multiple estimates of $\bm{r}$, and a single, final estimate of $\bm{r}$ is calculated using least-squares error methods. Many variations of batch estimation algorithms exist, but they all start with same principle up seperating the constant mass properties from the dynamic states in the equations of motion. To accomplish this, it helps to define the following variables
 
 \begin{equation}
     \bm{\Omega} =
@@ -100,21 +100,116 @@ Batch estimation algorithms are a subset of passive balancing methods that use m
 \end{equation}
 \begin{equation}
     \bm{x} = \begin{bmatrix}
-        J_{xx} & J_{yy} & J_{zz} & J_{xy} & J_{xz} & J_{yz} & mgr_x & mgr_y & mgr_z
+        J_{xx} & J_{yy} & J_{zz} & J_{xy} & J_{xz} & J_{yz} & m_s\,r_x & m_s\,r_y & m_s\,gr_z
     \end{bmatrix}^T
 \end{equation}
 
 Using these values, the original equations of motion in \Cref{equation:starting_eom} can be rewritten as 
-\begin{equation}
+\begin{equation}\label{equation:no_MEDs}
     \begin{bmatrix}
-        \dot{\bm{\Omega}}+\bm{\omega}^{\times}\bm{\Omega} & g^{\times}
+        \dot{\bm{\Omega}}+\bm{\omega}^{\times}\bm{\Omega} & \bm{g}^{\times}
     \end{bmatrix}\bm{x}
     =\bm{0}
 \end{equation}
+with the goal being to eventually solve for $\bm{x}$. To avoid nullspace solutions (which give physically invalid mass properties), additional terms must be introduced to the right hand side. This is done through the use of momentum exchange devices which changes \Cref{equation:no_MEDs} into 
+\begin{equation}\label{equation:with_MEDs}
+    \begin{bmatrix}
+    \dot{\bm{\Omega}}+\bm{\omega}^{\times}\bm{\Omega} & \bm{g}^{\times}
+    \end{bmatrix}\bm{x}
+    =-\dot{\bm{h_c}} - \bm{\omega}^{\times}\bm{h_c}
+\end{equation}
+
+where $\bm{h}_c$ represents the total angular momentum of the MEDs. Additionally, to avoid taking the numerical derivative of the noisy signal $\bm{\omega}$ (which will come from gyroscopes), both sides of \Cref{equation:with_MEDs} are integrated with resepct to time which results in 
+\begin{equation}\label{equation:LSM_no_k}
+    \begin{bmatrix}
+    \int_{t_0}^{t}\dot{\bm{\Omega}}+\bm{\omega}^{\times}\bm{\Omega}\,dt & \int_{t_0}^{t}\bm{g}^{\times}\,dt
+    \end{bmatrix}\bm{x}
+    =-{\bm{h_c}} - \int_{t_0}^{t}\bm{\omega}^{\times}\bm{h_c}\,dt
+\end{equation}
+
+For each timestep $k$ where a measurement is taken, a new $\bm{A}$ and $\bm{T}$ matrix are created using
+\begin{equation}
+    \bm{A}_k=\begin{bmatrix}
+    \int_{t_0}^{t_k}\dot{\bm{\Omega}}+\bm{\omega}^{\times}\bm{\Omega}\,dt & \int_{t_0}^{t_k}\bm{g}^{\times}\,dt
+    \end{bmatrix}
+\end{equation}
+\begin{equation}
+    \bm{T}_k=-{\bm{h_c}} - \int_{t_0}^{t}\bm{\omega}^{\times}\bm{h_c}\,dt
+\end{equation}
+which allows \Cref{equation:LSM_no_k} to be rewritten as 
+\begin{equation}\label{equation:LSM_with_k}
+    \bm{A}_k\bm{x}=\bm{T}_k
+\end{equation}
+
+Since all measurements are corrupted by noise, there will not be any single value of $\bm{x}$ that will satisfy \Cref{equation:LSM_with_k} for all $k$. Instead, the key idea with least squares estimation methods is to find a value of $\bm{x}$ that minimizes the error in \Cref{equation:LSM_with_k} across all $k$. The most common way to achieve is this to create augmented versions of $\bm{A}$ and $\bm{T}$ as
+\begin{equation}
+    \bar{\bm{A}}=\begin{bmatrix}
+        \bm{A}_0 & \bm{A}_1 & \cdots & \bm{A}_n
+    \end{bmatrix}\in \mathbb{R}^{3n \times 9}
+\end{equation}
+\begin{equation}
+    \bar{\bm{T}}=\begin{bmatrix}
+        \bm{T}_0 & \bm{A}_1 & \cdots & \bm{T}_n
+    \end{bmatrix}\in \mathbb{R}^{3n \times 1}
+\end{equation}
+where $n$ is the total number of measurements. $\bm{x}$ is finally computed using 
+\begin{equation}
+    \bm{x}=\bar{\bm{A}}^{\dagger}\bar{\bm{T}}
+\end{equation}
+The offline batch estimation method requires that multiple tests are run, adjusting the sliding masses after each run using \Cref{equation:delta_d_sol} or \Cref{equation:delta_d_pseudo_sol}. Assuming actuators like reaction wheels are available, this method's main advantage is it's ease of implementation. By doing all of the estimation and data processing offline, no custom software needs to be written for the simulator's onboard computer. In fact, exciting the system using this method does not require the simulator to have a working feedback controller, allowing this method to be adopted early in the design of a simulator. Researches have demonstrated success using simple open loop control to ensure that the body rates of the simulator follow a sinusoidal pattern \cite{kim_automatic_2009} \cite{dam_applied_2014} \cite{noauthor_designing_2003}.
+
 
 
 \section{Kalman Filtering for Inbalance Estimation}
 
+Kalman filters have extensive precedent for estimating unknown parameters in dynamic systems for aerospace applications. In traditional spacecraft attitude determination and control, the Extended Kalman Filter is the primary method for determining spacecraft body rates, attitude, and gyroscope biases.  Multiple researchers have extended this to estimate the inbalance vector $\bm{r}$. To do this, the state vector of the dynamic system is written as 
+\begin{equation}
+    \bm{x} = \begin{bmatrix} \omega_x & \omega_y & \omega_z & r_x & r_y & r_z \end{bmatrix}^T
+\end{equation}
+and the associated dynamics of the system becomes
+\begin{equation}
+    \dot{\bm{x}} = \bm{f}(\bm{x}) + \bm{d}(t)
+\end{equation}
+where 
+\begin{equation}
+    \bm{f}(\bm{x}) = \begin{bmatrix}
+        \bm{J}^{-1}(-\bm{\omega}^\times \bm{J\omega} + m_s\bm{r}^{\times}\bm{g})
+        \\
+        \bm{0}
+    \end{bmatrix}\bm{x}
+\end{equation}
+and $\bm{d}(t)$ is the process noise.  Assuming an IMU can directly measure the body rates, the measurement equation becomes
+\begin{equation}
+    \bm{y} = \bm{h}(\bm{x}) + \bm{v}(t)
+\end{equation}
+where
+\begin{equation}
+    \bm{h}(\bm{x})=
+    \begin{bmatrix}
+        \mathbb{1} & \bm{0}
+    \end{bmatrix}
+\end{equation}
+and $\bm{v}(t)$ is the measurement noise. This process and measurement model serve as a basline to implement either an Extended Kalman Filter or Unscented Kalman Filter - with measurements purely being provided by an IMU in the form of $\bm{\omega}$, and the dynamics states $r_x$, $r_y$, and $r_z$ all being filtered for. \cite{silva_filtering_2018} provides an in-depth analysis of these filters' performance and their variations. In practice, filters can struggle to converge on values for $r_x$, $r_y$, and $r_z$ simultaneously. Instead, filtering is used often used to soley filter for $r_z$ (referred to as the vertical inbalnace) when $r_x$ and $r_y$ (referred to as the horizontal inbalance) are relatively small. In this case, $r_x$ and $r_y$ are set to zero and are no longer considered dynamic states. The new state vector becomes
+\begin{equation}
+    \bm{x} = \begin{bmatrix} \omega_x & \omega_y & \omega_z & r_z \end{bmatrix}^T
+\end{equation}
+
+and $\bm{f}(\bm{x})$ and $\bm{h}(\bm{x})$ become
+
+\begin{equation}
+    \bm{f}(\bm{x}) = \begin{bmatrix}
+        \bm{J}^{-1}(-\bm{\omega}^\times \bm{J\omega} + \begin{bmatrix} \omega_x & \omega_y & \omega_z r_z \end{bmatrix}^T)
+        \\
+        0
+    \end{bmatrix}    
+\end{equation}
+\begin{equation}
+    \bm{h}(\bm{x})= \begin{bmatrix}
+        \mathbb{1} & 0
+    \end{bmatrix}
+\end{equation}
+
+While a general derivation of the Kalman filter and its variations is beyond the scope of this thesis 
 \section{Active Control for Balancing}
 
 \section{Cal Poly SADS MBS Design }
