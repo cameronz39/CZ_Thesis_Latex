@@ -11,7 +11,7 @@
 \pgfmathsetmacro{\radius}{1.1}
 \pgfmathsetmacro{\height}{0.9}
 
-\begin{scope}[rotate around={20:(0,0)}] 
+\begin{scope}[rotate around={0:(0,0)}] 
     \draw[gray,dashed] (0,-\height/2) ellipse ({\radius} and 0.2);
     \draw[gray,dashed] (0,\height/2) ellipse ({\radius} and 0.2);
     \draw[gray,dashed] (-\radius,-\height/2) -- (-\radius,\height/2);
@@ -19,7 +19,7 @@
 \end{scope} 
 
 % Body frame (B), shifted and rotated
-\begin{scope}[rotate=20]
+\begin{scope}[rotate=0]
     \draw[->, thick, red] (0,0) -- (1.2,0) node[below right] {$\hat{x}_B$};
     \draw[->, thick, red] (0,0) -- (0,1.2) node[above left] {$\hat{y}_B$};
     \draw[->, thick, red] (0,0) -- (-0.7,-0.7) node[below right] {$\hat{z}_B$};
@@ -57,22 +57,22 @@
 \end{scope}
 
 % START COM r ----------------------------------
-\draw[->, thick] (0,0) -- (0.2, -0.65) coordinate (r_end)
+\draw[->, thick] (0,0) -- (0, -0.65) coordinate (r_end)
     node[above right] {$\vv{\mathbf{r}}$};
 
 
-\draw ($(r_end)+0.06*(r_end)$) circle (0.06);
+\draw ($(r_end)+0.07*(r_end)$) circle (0.06);
 
 % fill upper right quadrant
 \begin{scope}
-  \clip ($(r_end)+0.06*(r_end)$) circle (0.06);
-  \fill ($(r_end)+0.06*(r_end)$) -- ++(0.06,0) -- ++(0,0.06) -- ++(-0.06,0) -- cycle;
+  \clip ($(r_end)+0.07*(r_end)$) circle (0.06);
+  \fill ($(r_end)+0.07*(r_end)$) -- ++(0.06,0) -- ++(0,0.06) -- ++(-0.06,0) -- cycle;
 \end{scope}
 
 % fill lower left quadrant
 \begin{scope}
-  \clip ($(r_end)+0.06*(r_end)$) circle (0.06);
-  \fill ($(r_end)+0.06*(r_end)$) -- ++(-0.06,0) -- ++(0,-0.06) -- ++(0.06,0) -- cycle;
+  \clip ($(r_end)+0.07*(r_end)$) circle (0.06);
+  \fill ($(r_end)+0.07*(r_end)$) -- ++(-0.06,0) -- ++(0,-0.06) -- ++(0.06,0) -- cycle;
 \end{scope}
 
 

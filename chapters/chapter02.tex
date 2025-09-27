@@ -162,7 +162,55 @@ The offline batch estimation method requires that multiple tests are run, adjust
 
 \section{Kalman Filtering for Inbalance Estimation}
 
-Kalman filters have extensive precedent for estimating unknown parameters in dynamic systems for aerospace applications. In traditional spacecraft attitude determination and control, the Extended Kalman Filter is the primary method for determining spacecraft body rates, attitude, and gyroscope biases.  Multiple researchers have extended this to estimate the inbalance vector $\bm{r}$. To do this, the state vector of the dynamic system is written as 
+Kalman filters have extensive precedent for estimating unknown parameters in dynamic systems for aerospace applications. In traditional spacecraft attitude determination and control, the Extended Kalman Filter is the primary method for determining spacecraft body rates and attitude. While a general derivation of the Kalman filter and its' variations is beyond the scope of this thesis, a brief background of it's application in spacecraft ADCS is important. Here, the state vector of the system is formulated as
+\begin{equation}\label{equation:EKF_state_vec}
+    \bm{x} = \begin{bmatrix}\bm{\omega} \\ \bm{q} \end{bmatrix}
+    =\begin{bmatrix}
+        \bm{\omega} \\ \eta \\ \bm{\epsilon}
+    \end{bmatrix}
+\end{equation}
+where $\bm{q}$ represents the spacecraft's attitude in the form of a quaternion. In this work, $\bm{q}$ is defined as a frame rotation from the body frame to the inertial frame, with the real part $\eta$ of the quaternion first. The spacecraft quaternion at any point may be directly converted into a direction cosine matrix using the following
+\begin{equation}
+    \bm{C}_{\mathcal{N}\leftarrow\mathcal{B}}(\bm{q})=
+    \begin{bmatrix}
+    2q_0^{2}+2q_1^{2}-1 & 2(q_1 q_2 + q_0 q_3) & 2(q_1 q_3 - q_0 q_2) \\
+    2(q_1 q_2 - q_0 q_3) & 2q_0^{2}+2q_2^{2}-1 & 2(q_2 q_3 + q_0 q_1) \\
+    2(q_1 q_3 + q_0 q_2) & 2(q_2 q_3 - q_0 q_1) & 2q_0^{2}+2q_3^{2}-1
+    \end{bmatrix}
+\end{equation}
+where $\bm{C}_{\mathcal{N}\leftarrow\mathcal{B}}$ again represents the frame rotation from $\mathcal{B}$ to $\mathcal{N}$. This means $\bm{C}_{\mathcal{N}\leftarrow\mathcal{B}}$ satisfies the following properties
+\begin{equation}
+    \bm{v}^{\mathcal{N}} = 
+    \bm{C}_{\mathcal{N}\leftarrow\mathcal{B}}\bm{v}^{\mathcal{B}}
+\end{equation}
+\begin{equation}
+    \bm{v}^{\mathcal{B}} = 
+    \bm{C}_{\mathcal{N}\leftarrow\mathcal{B}}^T\bm{v}^{\mathcal{N}}
+    =\bm{C}_{\mathcal{B}\leftarrow\mathcal{N}}\bm{v}^{\mathcal{N}}
+\end{equation}
+where $\bm{v}^{\mathcal{B}}$ represents some physical vector expressed in $\mathcal{B}$ and $\bm{v}^{\mathcal{N}}$ represents the same vector expressed in $\mathcal{N}$. In the standard EKF for spacecraft ADCS, the system state must be discretely propagated forward at each iteration. This is always done through some form of numerical integration, such as
+\begin{equation}\label{equation:forward_euler}
+    \bm{x}_{k} = \bm{x}_{k-1}+T\bm{f}(\bm{x}_{k-1},\bm{u}_{k-1})
+\end{equation}
+where $T$ is the discrete sample period, $k$ is the iteration number, and $\bm{u}$ is the control input. \Cref{equation:forward_euler} uses forward Euler integration, but higher-order schemes may also be used. Using quaternion kinematics, an exact expression for $\bm{f}$ can be derived which results in
+\begin{equation}
+    \bm{f}(\bm{x}_{k-1})=
+    \begin{bmatrix}
+    
+    \bm{J}^{-1}(-\bm{\omega}_{k-1}^{\times}\bm{J}\bm{\omega}_{k-1})+\bm{u}_{k-1} \\
+
+    -\frac{1}{2}\bm{\epsilon}_{k-1}^T\bm{\omega}_{k-1} \\
+
+    \frac{1}{2}(\eta_{k-1}\mathbb{1} +
+    \bm{\epsilon}_{k-1}^{\times})\bm{\omega}_{k-1}
+
+    \end{bmatrix}
+\end{equation}
+where $\bm{\omega}_{k-1}$, $\bm{\epsilon}_{k-1}$, and $\eta_{k-1}$ are all taken directly from $\bm{x}_{k-1}$ according to \Cref{equation:EKF_state_vec}. Next, the propagated state is corrected using a set of measurements $\bm{y}$. These traditionally come from a variety of sensors, namely star trackers, magnetometers, and sun sensors. All of these work as valid measurements provided there is some function that can transform the system state into a measurement using $\bm{y} = \bm{h}(\bm{x})$. The process function and measurement function $\bm{f}$ and $\bm{h}$ may then be used to implement a variety of variations of the Kalman filter to obtain estimates of the state in the presence of process noise and measurement noise.
+
+
+
+Multiple researchers have extended this to estimate the inbalance vector $\bm{r}$. To do this, the state vector of the dynamic system is written as 
 \begin{equation}
     \bm{x} = \begin{bmatrix} \omega_x & \omega_y & \omega_z & r_x & r_y & r_z \end{bmatrix}^T
 \end{equation}
@@ -209,8 +257,109 @@ and $\bm{f}(\bm{x})$ and $\bm{h}(\bm{x})$ become
     \end{bmatrix}
 \end{equation}
 
-While a general derivation of the Kalman filter and its variations is beyond the scope of this thesis 
+
 \section{Active Control for Balancing}
+
+Because of this shortcoming, the methods described in \Cref{sec:under_adaptive} and \Cref{sec:under_PID} only guarantee to place the resulting center of mass in line with the gravity vector, or equivalently, it may only be used to balance $r_x$ and $r_y$. \Cref{sec:3_axis_adaptive} describes a method to simultaneously balance all three componenets of $\bm{r}$ with the aid of momentum exchange devices. 
+
+\subsection{Underactuated PID Control}\label{sec:under_PID}
+
+\subsection{Underactuated Adaptive Control}\label{sec:under_adaptive}
+The approach shown here is developed by Chesi in \cite{chesi_automatic_2014}.
+
+The equations of motion remain the same with a control torque $\bm{\tau}$ introduced
+\begin{equation} \label{equation:EomWithTau}
+    \bm{J}\dot{\bm{\omega}} + \bm{\omega}^\times \bm{J\omega} 
+    = m_s\bm{r}^{\times}\bm{g} + \bm{\tau}
+\end{equation}
+
+Let $\bm{\omega}_p$ be the component of $\bm{\omega}$ orthogonal to $\bm{g}$ and $\bm{\omega}_g$ be the component of $\bm{\omega}$ parallel to $\bm{g}$. Both may be computed using the following
+\begin{equation}
+    \bm{\omega}_p = \bm{P\omega}
+\end{equation}
+\begin{equation}
+    \bm{\omega}=\bm{\omega}_p+\bm{\omega}_g
+\end{equation}
+where $\bm{P}$ is a projection matrix defined as
+\begin{equation}
+    \bm{P}=\mathbb{1}-\frac{\bm{g}(\bm{g}^T)}{||\bm{g}||^2}
+\end{equation}
+
+The proposed control torque is defined as
+\begin{equation}\label{equation:proposed_adaptive}
+    \bm{\tau} = m_s\bm{g}^\times\bm{\hat{r}} - k_p\bm{\omega}_p
+\end{equation}
+with $k_p$ being a tunable gain,  and $\hat{\bm{r}}$ being calculated from the proposed adaptive law given by
+\begin{equation} \label{equation:adaptive_law}
+    \dot{\hat{\bm{r}}} = -(m_s\bm{g}^{\times})^T\bm{\omega}
+\end{equation}
+where $\hat{\bm{r}}$ represents an estimate for the true center of mass ${\bm{r}}$. For convienience, let $\bm{\kappa}=-m_s\bm{g}^{\times}$. To determine the stability of the closed-loop system and the accuracy of the estimator for $\bm{r}$, a Lyapunov function and its derivative are chosen to be 
+\begin{equation}
+    {V} = \frac{1}{2}\bm{\omega}^T\bm{J\omega} + \frac{1}{2}\tilde{\bm{r}}^T\tilde{\bm{r}} + \frac{1}{2}\bm{q}^T\bm{q}
+\end{equation}
+\begin{align}
+    \dot{V} &= \bm{\omega}^T(-\bm{\omega}^\times \bm{J\omega} 
+    +{\bm{\kappa\,r}} + \bm{\tau}) 
+    + \tilde{\bm{r}}^T\dot{\tilde{\bm{r}}} \\
+    &= \bm{\omega}^T\bm{\kappa\,r}+\bm{\omega}^T\bm{\tau}
+    + \tilde{\bm{r}}^T\dot{\tilde{\bm{r}}}
+\end{align}
+where $\tilde{\bm{r}}$ represents the error of the estimator. $\bm{r}$, $\tilde{\bm{r}}$, and $\hat{\bm{r}}$ are all then related through
+\begin{equation}\label{equation:r_relations}
+    \bm{r}= \tilde{\bm{r}}+\hat{\bm{r}}
+\end{equation} 
+Next the proposed control torque in \Cref{equation:proposed_adaptive} is substituted for $\bm{\tau}$, \Cref{equation:r_relations} is substituted for $\bm{r}$, and \Cref{equation:adaptive_law} is substituted for $\dot{\hat{\bm{r}}}$. Expanding and then simplifying the leads to
+\begin{equation}
+    \dot{V} = -k_p\bm{\omega}^T\bm{\omega}_p
+\end{equation}
+\begin{equation}
+    \dot{V} = -k_p(\bm{\omega}_p+\bm{\omega}_g)^T\bm{\omega}_p
+\end{equation}
+Using the property that $\bm{\omega}_g^T\bm{\omega}_p=\bm{0}$ (due to orthogonality), the final expression for $\dot{V}$ is
+\begin{equation}\label{equation:final_V_dot}
+    \dot{V} = -k_p||\bm{\omega}_p||^2
+\end{equation}
+
+Since $\dot{V}$ is negative semidefinite, the closed-loop system is Lyapunov stable. Additionally, under LaSalle's Invariance Principle, the system's state will converge to the largest invariant set in $\{\bm{x}=\dot{V}(\bm{x})\}$. From \Cref{equation:final_V_dot}, this is equivalent to $\lim_{t\to\infty}\bm{\omega}_p = \bm{0}$. Referring again to \Cref{fig:mbs_null_sol}, this corresponds to a state where the simulator is upright ($\hat{\bm{z}}_b$ points opposite of $\bm{g}$) and has no angular velocity about its horizontal axes ($\omega_x=\omega_y=0$). 
+
+To determine the accuracy of the estimator, the dynamics of the system in the set $\{\bm{x}=\dot{V}(\bm{x})\}$ are analyzed. The staring equations of motion in \Cref{equation:EomWithTau} are premultiplied by $\bm{P}$ and $\bm{\omega}_p=\bm{0}$ is enforced which leads to
+\begin{equation}
+    \bm{0}=\bm{PJ}^{-1}(m_s\bm{r}^{\times}\bm{g}+m_s\bm{g}^\times\bm{\hat{r}}) 
+\end{equation}
+Since the simulator is upright, $\bm{P}$ becomes constant, and $g_x=g_y=0$. Additionally the above equation can be expressed in terms of $\tilde{\bm{r}}$ using \Cref{equation:r_relations} leading to the uncoupled system of equations
+\begin{equation}
+    \bm{0}=m_s\begin{bmatrix}
+    1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 0
+    \end{bmatrix}
+    \begin{bmatrix}
+    J_{xx}^{-1} & 0 & 0 \\ 0 & J_{yy}^{-1} & 0 \\ 0 & 0 & J_{zz}^{-1}
+    \end{bmatrix}
+    \begin{bmatrix}
+    0 & g_z & 0 \\ -g_z & 0 & 0 \\ 0 & 0 & 0
+    \end{bmatrix}
+    \begin{bmatrix}
+    \tilde{r}_x  \\ \tilde{r}_y \\ \tilde{r}_z
+    \end{bmatrix}
+\end{equation}
+which explicitly written out become
+\begin{subequations}
+    \begin{align*}
+      &0 = J_{xx}^{-1}g_z\tilde{r}_y \\
+      &0 = -J_{yy}^{-1}g_z\tilde{r}_x \\
+      &0 = 0\times\tilde{r}_z 
+    \end{align*}
+\end{subequations}
+
+
+\begin{figure}
+    \centering
+    \input{figures/mbs_null_sol.tikz}
+    \caption{A center of mass placement that reduces the torque due to gravity to zero, but does not vertically balance the simulator}
+    \label{fig:mbs_null_sol}
+\end{figure}
+
+\subsection{3-Axis Adaptive Control}\label{sec:3_axis_adaptive}
+
 
 \section{Cal Poly SADS MBS Design }
 \begin{table}[!ht]
