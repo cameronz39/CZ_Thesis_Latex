@@ -23,11 +23,28 @@ Here, $\bm{J}$ is the inertia of the simulator about $O$, $\bm{\omega}$ is the a
 
 where $m_s$ is the total mass of the simulator, $\bm{r}$ is the center of mass relative to $O$, and the $\bm{g}$ is the accleration due to gravity.
 
-\Cref{fig:mbs_problem} also shows the introduction of three sliding masses, although in general there may be as many as $n$ sliding masses. Each mass $m_i$ has one translational degree of freedom along $\bm{u}_i$, and $\bm{\rho}_i$ represents the position of the $i$-th mass in it's zeroed position. Since in practice each mass can only travel some limited distance along $\bm{u}_i$, the zeroed position of a mass is defined as the center of this range of positions. The position relative to $O$ of any mass $\bm{R}_i$ can be obtained with 
+\textit{NEED A NOTE ABOUT Jdot and R i dot being approximated to zero}
+\Cref{fig:mbs_problem} also shows the introduction of three sliding masses, although in general there may be as many as $n$ sliding masses. Each mass $m_i$ has one translational degree of freedom along $\bm{u}_i$, and $\bm{\rho}_i$ represents the position of the $i$-th mass in it's homed position. Since in practice each mass can only travel some limited distance along $\bm{u}_i$, the homed position of a mass is defined as the center of this range of positions. The position relative to $O$ of any mass $\bm{R}_i$ can be obtained with 
 \begin{equation}\label{equation:sliding masses}
     \bm{R}_i = \bm{\rho}_i + d_i\bm{u_i}
 \end{equation}
 where $d_i$ is the distance a mass $m_i$ has travelled along $u_i$ relative to it's zeroed position. More generally, $\Delta\,d_i$ is defined as the change in position a mass from any arbitrary starting position.
+
+Additionally, $\bm{R}_i$ may change with time, say through linear actuators. It will be assumed the linear actuators have some form of absolute positioning, or that they can command the masses to their homed positions in a repeatable way. Let $\bm{J}_0$ be the total inertia of the simulator with the masses in their homed positions. The inertia as a function of time is then 
+\begin{equation}
+    \bm{J}(t)=\bm{J}_0-\sum_{i=0}^{n}(m_i\bm{R}_i^{\times}(t)\bm{R}_i^{\times}(t)-\bm{\rho}_i^{\times}\bm  {\rho}_i^{\times})
+\end{equation}
+The sliding mass will also introduce angular momentum into the system, which can be calculated using 
+\begin{equation}
+    \bm{h}_m =\sum_{n}^{i=1}\bm{R}_i^{\times}m_i\dot{\bm{R}}_i^{\times}
+\end{equation}
+In practical mass balancing applications however, the mass of each block is very small relative to the overall mass of the simulator. If a reasonable attempt is made to balance the simulator manually beforehand, then the masses will also move slowly and over short distances. This allows the following simplications to be made
+\begin{equation}
+\bm{J}(t) \approx \bm{J}_0 \Longrightarrow \dot{\bm{J}}=\bm{0}
+\end{equation}
+\begin{equation}\label{equation:h_m_eq_0}
+\dot{\bm{R}}_i \approx \bm{0} \Longrightarrow \bm{h}_m=\bm{0}
+\end{equation}
 
 The goal of these definitions is to obtain an equation relating how changing the positions of each mass effects the center of mass of the total system. These parameters are first assembled into matricies as follows
 
@@ -55,7 +72,7 @@ Using these defintions, writing $\Delta\bm{r}$ as a function of $\Delta\bm{d}$ b
     \Delta\bm{r} = \bm{U}\bm{M}\Delta\bm{d}
 \end{equation}
  
-The more important relation however is writing $\Delta\bm{d}$ as a function of $\Delta\bm{r}$. For the case $n = 3$ with linearly independent values of $\bm{u}_i$, the unique solution is given by
+This means the value of $\bm{r}$ at any point can be written as $\bm{r}=\bm{r}_0+\Delta\bm{r}$, where $\bm{r}_0$ is the center of mass with the masses in their homed positions. An equally important relation is writing $\Delta\bm{d}$ as a function of $\Delta\bm{r}$. For the case $n = 3$ with linearly independent values of $\bm{u}_i$, the unique solution is given by
 \begin{equation}\label{equation:delta_d_sol}
     \Delta\bm{d} = (\bm{U}\bm{M})^{-1}\Delta\bm{r}
 \end{equation}
@@ -68,7 +85,7 @@ where $(\bm{U}\bm{M})^{\dagger}$ represents the Moore-Penrose pseudoinverse of $
 
 There are two main approaches to solving the mass balancing problem. The first is to hold the mass positions constant and obtain an estimate of the value of $\bm{r}$, denoted as $\hat{\bm{r}}$. The required change in positions of the sliding masses are then applied all at once. The exact values are calculated from \Cref{equation:delta_d_sol} or \Cref{equation:delta_d_pseudo_sol}, substituting $-\hat{\bm{r}}$ for $\Delta\bm{r}$. This class of approaches is referred to passive balancing, offline balancing, or the batch estimation method.
 
-The second main approach is to use $\Delta\bm{d}$ as a control input. Referring to \Cref{equation:starting_eom}, the dynamics of the system are influenced by the value of $\bm{r}^{\times}$, whose value can be controlled by $\Delta\bm{d}$ using \Cref{equation:delta_d_sol} or \Cref{equation:delta_d_pseudo_sol}. The goal then becomes to find a feedback control law the drives the effect of the $m_s\bm{r}^{\times}\bm{g}$ term in \Cref{equation:starting_eom} to zero. This class of approaches is referred to as active balancing or feedback control balancing.
+The second main approach is to find a feedback control law that drives the effect of the $m_s\bm{r}^{\times}\bm{g}$ term in \Cref{equation:starting_eom} to zero. In traditional spacecraft ADCS, the torques required for a feedback controller are generated using momenutum exchange devices, but here, there is the additional option to use $\Delta\bm{d}$ as a control input. Referring to \Cref{equation:starting_eom}, the dynamics of the system are influenced by the value of $\bm{r}^{\times}$, whose value can be controlled by $\Delta\bm{d}$ using \Cref{equation:delta_d_sol} or \Cref{equation:delta_d_pseudo_sol}. This class of approaches is referred to as active balancing or feedback control balancing.
 
 Once any balancing procedure has been performed, it is important to verify the results through an external verification method. Assuming the center of mass is below the center of rotation, a very rough estimate for the torque due to gravity may be obtained by tilting the simulator about one of it's principal axes, releasing it, and observing the period of resulting pendulum motion $T$ \cite{kim_automatic_2009}. The relationship between $\bm{r}$ and $T$ is given by
 \begin{equation}
@@ -322,7 +339,7 @@ Using the property that $\bm{\omega}_g^T\bm{\omega}_p=\bm{0}$ (due to orthogonal
 
 Since $\dot{V}$ is negative semidefinite, the closed-loop system is Lyapunov stable. Additionally, under LaSalle's Invariance Principle, the system's state will converge to the largest invariant set in $\{\bm{x}=\dot{V}(\bm{x})\}$. From \Cref{equation:final_V_dot}, this is equivalent to $\lim_{t\to\infty}\bm{\omega}_p = \bm{0}$. Referring again to \Cref{fig:mbs_null_sol}, this corresponds to a state where the simulator is upright ($\hat{\bm{z}}_b$ points opposite of $\bm{g}$) and has no angular velocity about its horizontal axes ($\omega_x=\omega_y=0$). 
 
-To determine the accuracy of the estimator, the dynamics of the system in the set $\{\bm{x}=\dot{V}(\bm{x})\}$ are analyzed. The staring equations of motion in \Cref{equation:EomWithTau} are premultiplied by $\bm{P}$ and $\bm{\omega}_p=\bm{0}$ is enforced which leads to
+To determine the accuracy of the estimator, the dynamics of the system in the set $\{\bm{x}=\dot{V}(\bm{x})\}$ are analyzed. The starting equations of motion in \Cref{equation:EomWithTau} are premultiplied by $\bm{P}$ and $\bm{\omega}_p=\bm{0}$ is enforced which leads to
 \begin{equation}
     \bm{0}=\bm{PJ}^{-1}(m_s\bm{r}^{\times}\bm{g}+m_s\bm{g}^\times\bm{\hat{r}}) 
 \end{equation}
@@ -341,7 +358,7 @@ Since the simulator is upright, $\bm{P}$ becomes constant, and $g_x=g_y=0$. Addi
     \tilde{r}_x  \\ \tilde{r}_y \\ \tilde{r}_z
     \end{bmatrix}
 \end{equation}
-which explicitly written out become
+which when explicitly written out become
 \begin{subequations}
     \begin{align*}
       &0 = J_{xx}^{-1}g_z\tilde{r}_y \\
@@ -359,7 +376,36 @@ which explicitly written out become
 \end{figure}
 
 \subsection{3-Axis Adaptive Control}\label{sec:3_axis_adaptive}
+3-axis adaptive control uses MEDs as method to externally excite the platform. The excitation is chosen such that simulator is never able to settle in the state shown in \Cref{fig:mbs_null_sol}. By ensuring that $\bm{r}$ is never parallel to $\bm{g}$, the only way to reduce the contribution of the term $m_s\bm{r}^{\times}\bm{g}$ in \Cref{equation:EomWithTau} to zero is to force the norm of $\bm{r}$ to be zero, thus simultaneously balancing $r_x$, $r_y$, and $r_z$. 
 
+Let $\bm{h}_s$ denote the total angular momentum of the simulator excluding MEDs, which under the assumption from \Cref{equation:h_m_eq_0} is simply computed by $\bm{h}_s=\bm{J\omega}$. Next, let $\bm{h}_d$ be a predetermined desired momentum of the simulator. The proposed control law from \cite{kim_automatic_2009} is
+\begin{equation}
+    \bm{\tau}=\bm{K}(\bm{h}_s-\bm{h}_d)+\bm{\omega}^{\times}\bm{h}_s+\dot{\bm{h}}_d
+\end{equation}
+where $\bm{K}$ is a tunable, SPD gain matrix. It is important to make the distinction here that $\bm{\tau}$ is purely generated by external MEDs and not the sliding masses. The sliding masses positions' are rather governed by a new adaptive law
+\begin{equation}
+    \Delta\dot{\bm{r}}=m_s\Gamma(\bm{g}^{\times})^T(\bm{h}_s-\bm{h_d})
+\end{equation}
+The original equations of motion from \Cref{equation:EomWithTau} with the above $\bm{\tau}$ substituted are
+\begin{equation}
+    \dot{\bm{h}_s}+\bm{\omega}^{\times}\bm{h}_s=m_s\bm{r}^{\times}\bm{g}+
+    \bm{K}(\bm{h}_s-\bm{h}_d)+\bm{\omega}^{\times}\bm{h}_s+\dot{\bm{h}}_d
+\end{equation}
+which when simplified and rearranged leads to the result
+\begin{equation}
+    \dot{\bm{h}_s}-\dot{\bm{h}}_d=m_s\bm{r}^{\times}\bm{g}+
+    \bm{K}(\bm{h}_s-\bm{h}_d)
+\end{equation}
+
+To determine the behaviour of the proposed controller, a Lyapunov function and it's derivative are introduced
+\begin{equation}
+    V(\bm{h_s,\Delta\bm{r}})=\frac{1}{2}(\bm{h}_s-\bm{h}_d)^T(\bm{h}_s-\bm{h}_d)
+    +\frac{1}{2}(\bm{r}_0+\Delta\bm{r})^T\bm{\Gamma}^{-1}(\bm{r}_0+\Delta\bm{r})
+\end{equation}
+\begin{equation}
+    \dot{V}=(\bm{h}_s-\bm{h}_d)^T(\dot{\bm{h}}_s-\dot{\bm{h}}_d)
+    +(\bm{r}_0+\Delta\bm{r})^T\bm{\Gamma}^{-1}\Delta\dot{\bm{r}}
+\end{equation}
 
 \section{Cal Poly SADS MBS Design }
 \begin{table}[!ht]
