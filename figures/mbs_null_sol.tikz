@@ -3,8 +3,8 @@
 
 % Inertial frame (I)
 \draw[->, thick] (0,0) -- (2,0) node[below right] {$\hat{x}_N$};
-\draw[->, thick] (0,0) -- (0,2) node[above left] {$\hat{y}_N$};
-\draw[->, thick] (0,0) -- (-1.2,-1.2) node[below right] {$\hat{z}_N$};
+\draw[->, thick] (0,0) -- (0,2) node[above left] {$\hat{z}_N$};
+\draw[->, thick] (0,0) -- (-1.2,-1.2) node[below right] {$\hat{y}_N$};
 \node[below right] at (0,0) {$O$};
 
 % Cylinder representing platform ------------------------------
@@ -20,13 +20,13 @@
 
 % Body frame (B), shifted and rotated
 \begin{scope}[rotate=0]
-    \draw[->, thick, red] (0,0) -- (1.2,0) node[below right] {$\hat{x}_B$};
-    \draw[->, thick, red] (0,0) -- (0,1.2) node[above left] {$\hat{y}_B$};
-    \draw[->, thick, red] (0,0) -- (-0.7,-0.7) node[below right] {$\hat{z}_B$};
+    \draw[->, thick, red] (0,0) -- (1.05,0.05) node[below right] {$\hat{x}_B$};
+    \draw[->, thick, red] (0,0) -- (0,1.2) node[above left] {$\hat{z}_B$};
+    \draw[->, thick, red] (0,0) -- (-0.14,-0.85) node[below left] {$\hat{y}_B$};
     % \node[below left, red] at (0,0) {$\mathcal{B}$};
 
     % START M2 --------------------------------------
-    \draw[->] (0,0) -- (-0.2,0.5) coordinate (rho2_end) 
+    \draw[->] (0,0) -- (-0.3,0.4) coordinate (rho2_end) 
         node[pos=0.65, below] {$\vv{\bm{\rho}_2}$};
 
     \draw[->, dashed] (rho2_end) -- ++(0,0.5) coordinate (u2_end)  
@@ -36,20 +36,20 @@
         node[pos=0.7, circle, fill=black, inner sep=1.5pt, label=left:$m_2$] {};
 
     % START M1 --------------------------------------
-     \draw[->] (0,0) -- (0.8,0.2) coordinate (rho1_end) 
+     \draw[->] (0,0) -- (0.55,0.3) coordinate (rho1_end) 
         node[midway, above] {$\vv{\bm{\rho}_1}$};
 
-    \draw[->, dashed] (rho1_end) -- ++(0.5,0) coordinate (u1_end)  
+    \draw[->, dashed] (rho1_end) -- ++(0.5,0.06) coordinate (u1_end)  
         node[above left] {$\vv{\bm{u}_1}$};
 
     \path (rho1_end) -- (u1_end) 
         node[pos=0.3, circle, fill=black, inner sep=1.5pt, label=below right:$m_1$] {};
 
     % START M3 -----------------------------------
-    \draw[->] (0,0) -- (-0.6,0.1) coordinate (rho3_end) 
+    \draw[->] (0,0) -- (-0.5,-0.05) coordinate (rho3_end) 
         node[midway, below] {$\vv{\bm{\rho}_3}$};
 
-    \draw[->, dashed] (rho3_end) -- ++(-0.3,-0.3) coordinate (u3_end)  
+    \draw[->, dashed] (rho3_end) -- ++(-0.1,-0.3) coordinate (u3_end)  
         node[below left] {$\vv{\bm{u}_3}$};
 
     \path (rho3_end) -- (u3_end) 
