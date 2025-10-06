@@ -1,0 +1,92 @@
+\usetikzlibrary{arrows.meta,positioning,fit,calc,shapes.misc}
+\usetikzlibrary{shapes.geometric,quotes}
+
+\begin{tikzpicture}[
+  scale=0.64,
+  every node/.style={transform shape},
+  line/.style={draw, -Latex, thick, rounded corners=4pt},
+  box/.style={rectangle, draw, rounded corners, align=center, fill=white,
+              minimum width=16em, minimum height=4em},
+  smallbox/.style={rectangle, draw, rounded corners, align=center, fill=white,
+              minimum width=14em, minimum height=3.5em},
+  extbox/.style={rectangle, draw, dashed, rounded corners=8pt, inner sep=6pt}
+]
+
+% =======================================================
+%                     MAIN COMPONENTS
+% =======================================================
+\node[box] (stm32) at (0,0) {STM32 Microcontroller};
+\node[smallbox] (mti) [above=of stm32, yshift=2.5em] {MTi-03 IMU};
+
+\coordinate (telem_out) at ($(stm32.south)+(4em,0em)$);
+\coordinate (fc_in) at ($(stm32.south)+(-4em,0em)$);
+\node[smallbox,minimum width=9em] (apc) [below=of telem_out, yshift=-2em] {APC220 Radio\\Module};
+% \node[smallbox,minimum width=9em] (rwi) [left=of stm32, xshift=-7em] {Reaction %Wheel\\Interface};
+
+% Teensy subsystem (right side)
+
+\node[smallbox,minimum width=9em,right = of stm32,xshift=19ex] (teensy)  {Teensy 4.0};
+\node[smallbox,minimum width=9em,below = of teensy,yshift=-4ex] (drv) {DRV8825 Drivers};
+\node[smallbox,minimum width=9em,below = of drv,yshift=-4ex] (steppers) {Stepper Motors};
+
+% Host PC subsystem (left bottom)
+
+\node[smallbox,below left=of stm32,xshift=-5ex,yshift=-25ex] (matlab) {Plotting / Debug};
+\node[smallbox, above = of matlab,yshift=3ex] (fc)  {Embedded Simulink Model};
+% =======================================================
+%                     CONNECTIONS
+% =======================================================
+
+% IMU → STM32
+\draw[line] (mti.south) -- 
+node[fill=white, font=\footnotesize]  {Gyro + Accelerometer Readings -- I2C}
+(stm32.north);
+
+% Reaction Wheel Interface ↔ STM32
+% \coordinate (wheel_out) at ($(stm32.west)+(0em,0.6em)$);
+% \coordinate (torque_in) at ($(stm32.west)+(0em,-0.6em)$);
+% \draw[line] (wheel_out) --  
+%   node[above, font=\footnotesize,align=center, text width=20ex] {Commanded Wheel Speeds -- I2C} 
+% ($( rwi.east |- wheel_out)$) ;
+% \draw[line] ($( rwi.east |- torque_in)$) --
+%   node[below, font=\footnotesize,align=center, text width=20ex] {Measured Torque -- I2C} (torque_in);
+
+% STM32 → Teensy (Commanded Mass Positions)
+\draw[line] (stm32.east) -- 
+  node[above, font=\footnotesize, pos=0.4,align=center,text width = 17ex] {Commanded Mass Positions -- I2C} 
+(teensy.west);
+
+% Teensy downward chain
+\draw[line] (teensy.south) -- node[fill=white, font=\footnotesize]
+  {Step Generation} (drv.north);
+\draw[line] (drv.south) -- node[fill=white, font=\footnotesize]
+  {Positional Control} (steppers.north);
+
+% Host PC internal (Simulink → Flight Code)
+\draw[line] (matlab.north) -- 
+  node[fill=white, font=\footnotesize] {Estimated Center of Mass} 
+(fc.south);
+
+% Host PC → STM32 (USB upload)
+\draw[line] (fc.east) -|
+  node[align=center, text width=15ex,above, font=\footnotesize, pos=0.3] {Autocoded\\Model -- USB} 
+(fc_in);
+
+% STM32 → APC220 (UART telemetry)
+\draw[line] (telem_out) -- 
+    node[font=\footnotesize,fill=white] {Telemetry -- UART} 
+(apc.north);
+
+% Telemetry RF (Host PC → APC)
+% \coordinate (rfbus) at ($(stm32.south)+(0,-4)$);
+% \draw[line] (matlab.east) -- node[above, font=\footnotesize]
+%   {Telemetry -- RF} (rfbus -| matlab.east) -- (rfbus -| apc.south);
+% \draw[line] (rfbus -| apc.south) -- (apc.south);
+\draw[line] (apc.south) |- 
+    node[fill=white,pos=0.2,font=\footnotesize]{Telemetry -- RF}
+(matlab.east);
+
+\node[extbox, fit=(fc)(matlab), label={[align=center]above:Host PC}] (host) {};
+\node[extbox, fit={(teensy)(drv)(steppers)}, label={[align=center]above:Stepper Motor\\Control System}] (teensybox) {};
+
+\end{tikzpicture}

@@ -1,0 +1,88 @@
+\usetikzlibrary{arrows.meta,positioning,fit,calc,shapes.misc}
+\usetikzlibrary{shapes.geometric}
+
+\begin{tikzpicture}[
+    scale=0.63,                        % <-- change this to resize (e.g., 0.8 or 1.3)
+    every node/.style={transform shape},
+    node distance=2em and 4em,
+    line/.style={-Latex},
+    block/.style={
+        rectangle, draw, rounded corners,
+        fill=blue!15, align=center,
+        minimum width=11em, minimum height=5em
+    },
+    smallblock/.style={
+        rectangle, draw, rounded corners,
+        fill=blue!10, align=center,
+        minimum width=10em, minimum height=2.5em
+    },
+    tallblock/.style={
+        rectangle, draw, rounded corners,
+        fill=blue!10, align=center,
+        minimum width=10em, minimum height=8em
+    },
+    extbox/.style={rectangle, draw, dashed, rounded corners=8pt, inner sep=6pt},
+    callout/.style={font=\footnotesize, midway, fill=white, inner sep=1pt}
+]
+
+% -------------------- LEFT EXTERNAL (IMU) --------------------
+
+
+\node[smallblock,  yshift=-5ex,fill=white]  (p_status) {Pipe Status};
+\node[smallblock, yshift=5ex,fill=white]  (meas_pipe) {Measurement Pipe};
+\node[extbox, fit=(p_status)(meas_pipe),label={[align=center]above:\large{\textit{MTi-03 IMU}}}] (imu) {}; 
+% -------------------- MAIN SYSTEM --------------------
+\node[tallblock, right=of p_status,xshift=8ex,yshift=5ex] (driver) {MTi Driver\\ Matlab System Object};
+\node[smallblock, above=of driver, yshift=4ex] (xbus) {Xbus Library};
+\node[block, right=of driver,xshift=6.5ex,fill=orange!25] (ekf) {Extended Kalman\\Filter};
+\node[block, below=of ekf,xshift=8ex,yshift=-10ex,fill=orange!25] (ctrl) {Control Law};
+\node[block, left=of ctrl,fill=orange!25] (alloc) {Mass Slider\\Allocation};
+
+\node[block,fill=white] (stepper) at ($(p_status |- alloc)$){Stepper Motor\\ Control System};
+
+
+% -------------------- CONNECTIONS --------------------
+\draw[line] (meas_pipe.east) -- 
+    node[above,font=\footnotesize, align=center, text width=15ex] {XBus Meas. Messages}
+($(driver.west |- meas_pipe.east)$);
+
+\draw[line] ($(driver.west |- p_status.east)$) -- 
+    node[below,font=\footnotesize, align=center, text width=15ex] {Request Pipe Status}
+(p_status.east);
+
+\draw[line,Latex-Latex] (xbus) -- 
+    node[fill=white,font=\footnotesize] {Function calls}
+(driver);
+
+\draw[line] (driver) -- 
+    node[above,font=\footnotesize, align=center, text width=15ex] {Gyro +\\Accelerometer}
+(ekf);
+
+\coordinate (ekfOut1) at ($(ekf.east)+(0em,1em)$);
+\coordinate (ekfWrap1) at ($(ekfOut1)+(9em,0)$);   % distance right; tweak 4em as you like
+
+\coordinate (ekfOut2) at ($(ekf.east)+(0em,-1em)$);
+\coordinate (ekfBranch) at ($(ekfOut2)+(7em,-6em)$);   % distance right; tweak 4em as you like
+
+\draw[line] (ekfOut1) -- 
+    node[above, align=center,xshift=-7ex,font=\large] {$\bm{q}$, $\bm{\omega}$}
+(ekfWrap1) |- ($(ctrl.east)+(0,-1.1em)$);
+\draw[line] (ekfOut2) -| 
+    node[below,xshift=-13ex,font=\large] {$\bm{g}$}
+(ekfBranch) |- ($(ctrl.east)+(0,+1.1em)$);
+\draw[line] (ekfBranch) -| (alloc);
+\draw[line] (ctrl) --
+    node[above, align=center,font=\large] {$\bm{\tau}_c$}
+(alloc);
+\draw[line] (alloc) -- 
+    node[above, align=center,xshift=5ex,font=\large] {$\Delta\bm{d}$} 
+(stepper);
+
+% Boundary box for Simulink model
+\node[extbox, fit=(xbus)(driver)(ekf)(ctrl)(alloc)(ekfWrap1),
+    label={[align=center]above:\Large{\textit{Simulink Embedded Model}}}] (simbox) {};
+
+\node[draw, fill=orange!25, rounded corners,above=of meas_pipe,yshift=15ex] (sim) {MATLAB/Simulink Components};
+\node[draw, fill=blue!15, below=of sim, rounded corners,yshift=3ex] (c) {C/C++ Components};
+
+\end{tikzpicture}

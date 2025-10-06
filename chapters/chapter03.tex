@@ -4,6 +4,21 @@ To apply the previously mentioned balancing methods to Cal Poly's SADS, signific
 
 \section{System Architecture}
 
+\begin{figure}
+    \centering
+    \input{figures/sys_arch_passive.tikz}
+    \caption{Operation flowchart during passive balancing}
+    \label{fig:sys_arch_passive}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \input{figures/sys_arch_active.tikz}
+    \caption{Operation flowchart during active balancing}
+    \label{fig:sys_arch_active}
+\end{figure}
+
+
 \section{Mechanical}
 
 The goal of the mechanical design was to build off work completed in \cite{gilman_automatic_2024} and develop set of low-cost linear actuators that finely control the position of mass blocks. Taking lessons learned from previous iterations, the second main goal was to ensure that the size of the mass blocks was highly customizable, thus making the resulting center of mass envelope customizable. 
@@ -35,6 +50,13 @@ An MTi-03 was chosen as the IMU REFERRING TO LITERATURE REVIEW for it's noise ch
 % electrical diagram 
 
 \section{Software}
+
+\begin{figure}
+    \centering
+    \input{figures/software_flowchart.tikz}
+    \caption{Functional software architecture during balancing}
+    \label{fig:software_flowchart}
+\end{figure}
 
 % xbus flow chart - measurement system design
 
