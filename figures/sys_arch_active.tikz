@@ -62,11 +62,6 @@ node[fill=white, font=\footnotesize]  {Gyro + Accelerometer Readings -- I2C}
 \draw[line] (drv.south) -- node[fill=white, font=\footnotesize]
   {Positional Control} (steppers.north);
 
-% Host PC internal (Simulink → Flight Code)
-\draw[line] (matlab.north) -- 
-  node[fill=white, font=\footnotesize] {Estimated Center of Mass} 
-(fc.south);
-
 % Host PC → STM32 (USB upload)
 \draw[line] (fc.east) -|
   node[align=center, text width=15ex,above, font=\footnotesize, pos=0.3] {Autocoded\\Model -- USB} 

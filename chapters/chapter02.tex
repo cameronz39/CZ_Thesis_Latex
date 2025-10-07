@@ -458,19 +458,6 @@ IMU performance is characterized by a few key factors. The most influential is n
 
 \Cref{table:existing_testbeds} summarizes the sensor and actuator combinations reported in a variety of simulators found in literature. The physical scale of each platform and balancing performance can also be seen. 
 
-\begin{align}
-    \bm{\tau} &=& m_s\bm{r}^{\times}\bm{g} \\
-    &=&  m_s((\bm{r}_0+\Delta\bm{r})^{\times}\bm{g}) \\
-    &=&  m_s\bm{r}_0^{\times}\bm{g} + m_s\Delta\bm{r}^{\times}\bm{g} \\
-    &=&  \bm{\tau}_g+\bm{\tau}_g
-\end{align}
-\begin{equation}
-    \bm{\tau}_g = m_s\bm{r}_0^{\times}\bm{g}
-\end{equation}
-\begin{equation}
-    \bm{\tau}_c = m_s\Delta\bm{r}^{\times}\bm{g}
-\end{equation}
-
 \begin{table}[!ht]
 \caption{Existing spacecraft dynamics simulators and their balancing methods}\label{table:existing_testbeds}
 \centering
