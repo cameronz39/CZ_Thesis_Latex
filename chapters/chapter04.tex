@@ -1,10 +1,68 @@
 \chapter{Results and Discussion}
 
-\section{Hybrid Two-Step Balancing}
+\section{PID}
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=\linewidth]{plots/PID_sim_results.png}
+    \caption{Simulated balancing results using PID control}
+\end{figure}
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=\linewidth]{plots/PID_sim_integral_error.png}
+    \caption{Simulated balancing results using PID control}
+\end{figure}
+
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=\linewidth]{plots/PID_hardware_results.png}
+    \caption{Experimental balancing results using PID control}
+\end{figure}
 
 \section{Passive Balancing Using Least-Squares Estimation}
 % experimental results only use 1 RW
 % simulation results should include 1 RW and 4 RWs to compare (unless the one RW setup turns out good)
+A full of text text text text text text text text text text text 
+\begin{figure}[!ht]
+  \centering
+  \begin{subfigure}[t]{0.47\textwidth}
+    \includegraphics[width=\linewidth]{plots/LSR_sim_all_runs.png}
+    \caption{All 10 iterations}\label{fig:a}
+  \end{subfigure}\hfill
+  \begin{subfigure}[t]{0.47\textwidth}
+    \includegraphics[width=\linewidth]{plots/LSR_sim_last_5_runs.png}
+    \caption{Final 5 iterations}\label{fig:b}
+  \end{subfigure}
+  \caption{Simulated results of least-squares estimation method}
+  \label{fig:twopanels}
+\end{figure}
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=\linewidth]{plots/LSR_sim_excitation}
+    \caption{Simulated platform excitation during batch estimation}
+\end{figure}
+
+\begin{figure}[!ht]
+  \centering
+  \begin{subfigure}[t]{0.47\textwidth}
+    \includegraphics[width=\linewidth]{plots/LSR_hardware_all_runs.png}
+    \caption{All 10 iterations}\label{fig:a}
+  \end{subfigure}\hfill
+  \begin{subfigure}[t]{0.47\textwidth}
+    \includegraphics[width=\linewidth]{plots/LSR_hardware_last_5_runs.png}
+    \caption{Final 5 iterations}\label{fig:b}
+  \end{subfigure}
+  \caption{Experimental results of least-squares estimation method}
+  \label{fig:LSR_hardware_iterations}
+\end{figure}
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=\linewidth]{plots/LSR_hardware_excitation}
+    \caption{Experimental platform excitation during batch estimation}
+\end{figure}
 
 \section{Active Balancing Using Adaptive Control}
 
@@ -12,3 +70,28 @@
 % the experimental results for this are in a seperate repo - SADS Adaptive
 
 \subsection{Full Reaction Wheel Setup - Simulink Only}
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=\linewidth]{plots/three_axis_sim_excitation.png}
+    \caption{Simulated platform excitation for 3-axis adaptive control}
+\end{figure}
+
+\begin{figure}[!ht]
+  \centering
+  \begin{subfigure}[t]{0.47\textwidth}
+    \includegraphics[width=\linewidth]{plots/three_axis_sim_positions_1.png}
+    \caption{1st iteration}\label{fig:a}
+  \end{subfigure}\hfill
+  \begin{subfigure}[t]{0.47\textwidth}
+    \includegraphics[width=\linewidth]{plots/three_axis_sim_positions_2.png}
+    \caption{2nd iteration}\label{fig:b}
+  \end{subfigure}
+  \caption{Simulated sliding mass positions during 3-axis adaptive control}
+  \label{fig:LSR_hardware_iterations}
+\end{figure}
+
+\iffalse
+Results PID:
+sim: r = 
+\fi
