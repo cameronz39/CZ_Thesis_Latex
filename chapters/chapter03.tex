@@ -4,21 +4,6 @@ To apply the previously mentioned balancing methods to Cal Poly's SADS, signific
 
 \section{System Architecture}
 
-\begin{figure}
-    \centering
-    \input{figures/sys_arch_passive.tikz}
-    \caption{Operation flowchart during passive balancing}
-    \label{fig:sys_arch_passive}
-\end{figure}
-
-\begin{figure}
-    \centering
-    \input{figures/sys_arch_active.tikz}
-    \caption{Operation flowchart during active balancing}
-    \label{fig:sys_arch_active}
-\end{figure}
-
-
 \section{Mechanical}
 
 The goal of the mechanical design was to build off work completed in \cite{gilman_automatic_2024} and develop set of low-cost linear actuators that finely control the position of mass blocks. Taking lessons learned from previous iterations, the second main goal was to ensure that the size of the mass blocks was highly customizable, thus making the resulting center of mass envelope customizable. 
@@ -27,7 +12,15 @@ The goal of the mechanical design was to build off work completed in \cite{gilma
 
 While the exact final design and mass properties of the SADS is unknown, it is still important to place an approximate upper bound on the size of the mass blocks driven by the linear actuators. This ensures that the motors and mounting hardware are not oversized and do not excessively increase the simulator's moment of inertia. A common metric used to help quantify this is a simulator's center of mass envelope. This is the set of all values $\Delta\mathbf{r}$ that the system can command when all linear actuators are in their centered positions.
 
-One important aspect of the SADS when selecting it's desired center of mass envelope is it's symmetrical design. The two heaviest systems onboard are the reaction wheels and the mass balancing system itself. The pyrimdal reaction wheel configuration means the wheels contribute little horizontal inbalance. and the wheels are roughly on the same horizontal plane as the platform's center of rotation, so they also contribute little verical inbalance. The linear actuator design will follow the same general layout in \cite{gilman_automatic_2024}, which can be seen in FIGURE. 
+\begin{figure}[h]\label{fig:full_CAD}
+    \centering
+    \includegraphics[width=0.95\linewidth]{figures/full_CAD.png}
+    \caption{Final CAD design with all major mass contributions included, built off model completed in~\cite{gilman_automatic_2024}}
+
+\end{figure}
+
+
+One important aspect of the SADS when selecting it's desired center of mass envelope is it's symmetrical design. The two heaviest systems onboard are the reaction wheels and the mass balancing system itself. The pyrimdal reaction wheel configuration means the wheels contribute little horizontal inbalance. and the wheels are roughly on the same horizontal plane as the platform's center of rotation, so they also contribute little verical inbalance. The linear actuator design will follow the same general layout in \cite{gilman_automatic_2024}, which can be seen in \Cref{fig:full_CAD}. 
 
 The main source of inbalance will thus be introduced by relatively lighter components like batteries, sensors, the flight computer, and other miscellaneous electronics. To approximate a worse case inbalance, the heaviest of these components - the main 24V battery was placed in CAD in multiple unfavorable positions with the resulting inbalance vector recorded. 
 
@@ -35,7 +28,9 @@ The main source of inbalance will thus be introduced by relatively lighter compo
 
 \subsection{Linear Actuator Design}
 
-The linear actuators use the same mounting configuration as the previous design. A ball screw is fixed 
+The linear actuators use the same mounting configuration as the previous design. A ball screw is fixed\dots
+
+
 
 % images of the ball screw and plate solution + CAD?
 
@@ -45,11 +40,18 @@ The primary goal of the electrical design is to interface the newly developed li
 
 An MTi-03 was chosen as the IMU REFERRING TO LITERATURE REVIEW for it's noise characteristics and easy of integration with the STM32. The primary electrical interface between the IMU and flight computer are the  
 
-\begin{figure}[h]
+\begin{figure}[h]\label{fig:OBC}
+    \centering
+    \includegraphics[width=0.80\linewidth]{figures/OBC.jpg}
+    \caption{The STM32F446RE, MTi-03, and APC220 (bottom left) integrated onto the simulator}
+
+\end{figure}
+
+
+\begin{figure}[h]\label{fig:wiring}
     \centering
     \includegraphics[width=0.95\linewidth,angle=-90]{figures/wiring.png}
     \caption{Wiring schematic}
-    \label{fig:wiring}
 \end{figure}
 
 
@@ -72,6 +74,21 @@ An MTi-03 was chosen as the IMU REFERRING TO LITERATURE REVIEW for it's noise ch
 
 
 \section{Algorithm Implementation}
+
+\begin{figure}
+    \centering
+    \input{figures/sys_arch_passive.tikz}
+    \caption{Operation flowchart during passive balancing}
+    \label{fig:sys_arch_passive}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \input{figures/sys_arch_active.tikz}
+    \caption{Operation flowchart during active balancing}
+    \label{fig:sys_arch_active}
+\end{figure}
+
 
 % real time Kalman filter with gravity vector?
 % discussion of Simulink code generation - PID + adaptive control

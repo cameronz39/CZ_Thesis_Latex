@@ -275,13 +275,38 @@ and $\bm{f}(\bm{x})$ and $\bm{h}(\bm{x})$ become
 
 \section{Active Control for Balancing}
 
-In active balancing methods, the positions of each mass are controlled in real time by linear actuators. The control law is designed to reduce the effect of the $m_s\bm{r}^{\times}\bm{g}$ in the original equations of motion to zero. The torques commanded may be generated with momentum exchange devices or by actuating the masses. If the latter is chosen, then the commanded torque $\bm{\tau}$ may be converted into a value for $\Delta\bm{r}$ using
+In active balancing methods, the positions of each mass are controlled in real time by linear actuators. The control law is designed to reduce the effect of the $m_s\bm{r}^{\times}\bm{g}$ in the original equations of motion to zero. The torques commanded may be generated with momentum exchange devices or by actuating the masses. If the latter is chosen, the original equations of motion are formulated as
+\begin{equation} \label{equation:EomWithTau}
+    \bm{J}\dot{\bm{\omega}} + \bm{\omega}^\times \bm{J\omega} 
+    = m_s(\bm{r}_0+\Delta\bm{r})^{\times}\bm{g}
+\end{equation}
+and because the cross product is distributive over vector addition, the above equation becomes
+\begin{equation} \label{equation:EomWithTau}
+    \bm{J}\dot{\bm{\omega}} + \bm{\omega}^\times \bm{J\omega} 
+    = m_s\bm{r}_0^{\times}\bm{g} + m_s\Delta\bm{r}^{\times}\bm{g}
+\end{equation}
+The relationship between mass actuation and torque is found to be
+\begin{equation} 
+    m_s\Delta\bm{r}^{\times}\bm{g} = \bm{\tau}
+\end{equation}
+Thus a commanded torque $\bm{\tau}$ may be converted into a value for $\Delta\bm{r}$ using
 \begin{equation}\label{equation:torque_to_del_r}
     \Delta\bm{r}=\frac{\bm{g}^{\times}\bm{\tau}}{m_s||\bm{g}||^2}
 \end{equation}
-and the corresponding commanded positions for each mass are found using \Cref{equation:delta_d_sol} or \Cref{equation:delta_d_pseudo_sol}. If torques are generated in this manner, then the system becomes underactuated as the masses can only generate torques orthogonal to the gravity vector. Because of this shortcoming, the methods described in \Cref{sec:under_adaptive} and \Cref{sec:under_PID} only guarantee to place the resulting center of mass in line with the gravity vector, or equivalently, it may only be used to balance $r_x$ and $r_y$. \Cref{sec:3_axis_adaptive} describes a method to simultaneously balance all three componenets of $\bm{r}$ with the aid of momentum exchange devices. 
+and the corresponding commanded positions for each mass are found using \Cref{equation:delta_d_sol} or \Cref{equation:delta_d_pseudo_sol}. If torques are generated in this manner, then the system becomes underactuated as the masses can only generate torques orthogonal to the gravity vector. For the analysis of these methods, it is useful define the projection operation $\bm{P}$ as
+\begin{equation}
+    \bm{P}=\mathbb{1}-\frac{\bm{g}(\bm{g}^T)}{||\bm{g}||^2}
+\end{equation}
+Multiplication of any vector by $\bm{P}$ will project the vector into the plane orthogonal to  $\bm{g}$. Let $\bm{v}_p$ be the component of $\bm{v}$ orthogonal to $\bm{g}$ and $\bm{v}_g$ be the component of $\bm{v}$ parallel to $\bm{v}$. Both may be computed using the following
+\begin{equation}
+    \bm{v}_p = \bm{Pv}
+\end{equation}
+\begin{equation}
+    \bm{v}_g=\bm{v}-\bm{v}_p
+\end{equation}
+Because of the underactuation constraint, the methods described in \Cref{sec:under_adaptive} and \Cref{sec:under_PID} only guarantee to place the resulting center of mass in line with the gravity vector, or equivalently, it may only be used to balance $r_x$ and $r_y$. \Cref{sec:3_axis_adaptive} describes a method to simultaneously balance all three componenets of $\bm{r}$ with the aid of momentum exchange devices. 
 
-\subsection{Underactuated PID Control, needs r0 fix}\label{sec:under_PID}
+\subsection{Underactuated PID Control}\label{sec:under_PID}
 
 A straighforward approach to reduce the gravity torque to zero is to command the simulator into an equilibrium where $\hat{\bm{z}}_B=-\hat{\bm{g}}$ using soley the sliding masses. Such a position is shown in \Cref{fig:mbs_null_sol}. If the system converges to a state where $\hat{\bm{z}}_B=-\hat{\bm{g}}$ and no control torques are being applied, then it must be the case that $r_x=r_y=0$, though nothing can be concluded for $r_z$.
 
@@ -301,7 +326,7 @@ which functions as a PD controller with $\bm{K}_p$ and $\bm{K}_d$ representing p
 \end{equation}
 where $\bm{K}_i$ is a new integral gain. Generating this torque using sliding masses means that $\tau_z$ will be ignored in the mapping from \Cref{equation:torque_to_del_r}. In practice, this causes the simulator to have no control about it's yaw axis which is permissible here since the desired state of ${\bm{z}}_B=-\hat{\bm{g}}$ is independent of yaw. 
 
-\subsection{Underactuated Adaptive Control, needs r0 fix}\label{sec:under_adaptive}
+\subsection{Underactuated Adaptive Control}\label{sec:under_adaptive}
 The approach shown here is developed by Chesi in~\cite{chesi_automatic_2014}.
 
 The equations of motion remain the same with a control torque $\bm{\tau}$ introduced
@@ -310,43 +335,32 @@ The equations of motion remain the same with a control torque $\bm{\tau}$ introd
     = m_s\bm{r}_0^{\times}\bm{g} + \bm{\tau}
 \end{equation}
 
-Let $\bm{\omega}_p$ be the component of $\bm{\omega}$ orthogonal to $\bm{g}$ and $\bm{\omega}_g$ be the component of $\bm{\omega}$ parallel to $\bm{g}$. Both may be computed using the following
-\begin{equation}
-    \bm{\omega}_p = \bm{P\omega}
-\end{equation}
-\begin{equation}
-    \bm{\omega}=\bm{\omega}_p+\bm{\omega}_g
-\end{equation}
-where $\bm{P}$ is a projection matrix defined as
-\begin{equation}
-    \bm{P}=\mathbb{1}-\frac{\bm{g}(\bm{g}^T)}{||\bm{g}||^2}
-\end{equation}
-
 The proposed control torque is defined as
 \begin{equation}\label{equation:proposed_adaptive}
     \bm{\tau} = m_s\bm{g}^\times\bm{\hat{r}}_0 - k_p\bm{\omega}_p
 \end{equation}
-where $k_p$ is a tunable gain,  and $\hat{\bm{r}}$ is an estimate for the true center of mass ${\bm{r}}$.  $\hat{\bm{r}}$ is determined by the proposed adaptive law given by
+where $k_p$ is a tunable gain,  and $\hat{\bm{r}}_0$ is an estimate for the true inital center of mass ${\bm{r}}_0$.  $\hat{\bm{r}}_0$ is determined by the proposed adaptive law given by
 \begin{equation} \label{equation:adaptive_law}
     \dot{\hat{\bm{r}}}_0 = -(m_s\bm{g}^{\times})^T\bm{\omega}
 \end{equation}
 \Cref{equation:proposed_adaptive} and \Cref{equation:adaptive_law} combined provide a way to generate a commanded torque using meausrements of $\bm{\omega}$ and $\bm{g}$. 
 
-To determine the stability of the closed-loop system, a Lyapunov analysis is performed. For convienience, let $\bm{\kappa}=-m_s\bm{g}^{\times}$. The Lyapunov function and its derivative are chosen to be 
+To determine the stability of the closed-loop system, a Lyapunov analysis is performed. The chosen states for analysis are $\bm{\omega}$, $\bm{g}$ and $\tilde{\bm{r}}_0$, where $\tilde{\bm{r}}_0$ is the error in the $\bm{r}_0$ estimator computed from
+\begin{equation}\label{equation:r_relations}
+    \bm{r}_0= \tilde{\bm{r}}_0+\hat{\bm{r}}_0
+\end{equation} 
+Lyapunov function and its derivative are chosen to be 
 \begin{equation}
     {V} = \frac{1}{2}\bm{\omega}^T\bm{J\omega} + \frac{1}{2}\tilde{\bm{r}}_0^T\tilde{\bm{r}}_0 + \frac{1}{2}\bm{q}^T\bm{q}
 \end{equation}
 \begin{align}
     \dot{V} &= \bm{\omega}^T(-\bm{\omega}^\times \bm{J\omega} 
-    +{\bm{\kappa\,r}} + \bm{\tau}) 
-    + \tilde{\bm{r}}^T\dot{\tilde{\bm{r}}} \\
-    &= \bm{\omega}^T\bm{\kappa\,r}_0+\bm{\omega}^T\bm{\tau}
+    -m_s\bm{g}^{\times}\bm{r}_0 + \bm{\tau}) 
+    + \tilde{\bm{r}}_0^T\dot{\tilde{\bm{r}}}_0 \\
+    &= -\bm{\omega}^Tm_s\bm{g}^{\times}\bm{r}_0+\bm{\omega}^T\bm{\tau}
     + \tilde{\bm{r}}_0^T\dot{\tilde{\bm{r}}}_0
 \end{align}
-where $\tilde{\bm{r}}_0$ represents the error of the estimator. $\bm{r}_0$, $\tilde{\bm{r}}_0$, and $\hat{\bm{r}}_0$ are all then related through
-\begin{equation}\label{equation:r_relations}
-    \bm{r}_0= \tilde{\bm{r}}_0+\hat{\bm{r}}_0
-\end{equation} 
+
 Next the proposed control torque in \Cref{equation:proposed_adaptive} is substituted for $\bm{\tau}$, \Cref{equation:r_relations} is substituted for $\bm{r}_0$, and \Cref{equation:adaptive_law} is substituted for $\dot{\hat{\bm{r}}}_0$. Expanding and then simplifying the leads to
 \begin{equation}
     \dot{V} = -k_p\bm{\omega}^T\bm{\omega}_p
@@ -361,33 +375,33 @@ Using the property that $\bm{\omega}_g^T\bm{\omega}_p=\bm{0}$ (due to orthogonal
 
 Since $\dot{V}$ is negative semidefinite, the closed-loop system is Lyapunov stable. Additionally, under LaSalle's Invariance Principle, the system's state will converge to the largest invariant set in $\{\bm{x}:\dot V(\bm{x})=0 \}$, or $\{\bm{\omega}_p=\bm{0}\}$. Referring again to \Cref{fig:mbs_null_sol}, this corresponds to a state where the simulator is upright ($\hat{\bm{z}}_b$ points opposite of $\bm{g}$) and has no angular velocity about its horizontal axes ($\omega_x=\omega_y=0$). 
 
-To determine the accuracy of the estimator, the dynamics of the system in the set $\{\bm{x}:\dot V(\bm{x})=0 \}$ are analyzed. The starting equations of motion in \Cref{equation:EomWithTau} are premultiplied by $\bm{P}$ and $\bm{\omega}_p=\bm{0}$ is enforced which leads to
-\begin{equation}
-    \bm{0}=\bm{PJ}^{-1}(m_s\bm{r}^{\times}\bm{g}+m_s\bm{g}^\times\bm{\hat{r}}) 
-\end{equation}
-Since the simulator is upright, $\bm{P}$ becomes constant, and $g_x=g_y=0$. Additionally the above equation can be expressed in terms of $\tilde{\bm{r}}$ using \Cref{equation:r_relations} leading to the uncoupled system of equations
-\begin{equation}
-    \bm{0}=m_s\begin{bmatrix}
-    1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 0
-    \end{bmatrix}
-    \begin{bmatrix}
-    J_{xx}^{-1} & 0 & 0 \\ 0 & J_{yy}^{-1} & 0 \\ 0 & 0 & J_{zz}^{-1}
-    \end{bmatrix}
-    \begin{bmatrix}
-    0 & g_z & 0 \\ -g_z & 0 & 0 \\ 0 & 0 & 0
-    \end{bmatrix}
-    \begin{bmatrix}
-    \tilde{r}_x  \\ \tilde{r}_y \\ \tilde{r}_z
-    \end{bmatrix}
-\end{equation}
-which when explicitly written out become
-\begin{subequations}
-    \begin{align*}
-      &0 = J_{xx}^{-1}g_z\tilde{r}_y \\
-      &0 = -J_{yy}^{-1}g_z\tilde{r}_x \\
-      &0 = 0\times\tilde{r}_z 
-    \end{align*}
-\end{subequations}
+% To determine the accuracy of the estimator, the dynamics of the system in the set $\{\bm{x}:\dot V(\bm{x})=0 \}$ are analyzed. The starting equations of motion in \Cref{equation:EomWithTau} are premultiplied by $\bm{P}$ and $\bm{\omega}_p=\bm{0}$ is enforced which leads to
+% \begin{equation}
+%     \bm{0}=\bm{PJ}^{-1}(m_s\bm{r}^{\times}\bm{g}+m_s\bm{g}^\times\bm{\hat{r}}) 
+% \end{equation}
+% Since the simulator is upright, $\bm{P}$ becomes constant, and $g_x=g_y=0$. Additionally the above equation can be expressed in terms of $\tilde{\bm{r}}$ using \Cref{equation:r_relations} leading to the uncoupled system of equations
+% \begin{equation}
+%     \bm{0}=m_s\begin{bmatrix}
+%     1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 0
+%     \end{bmatrix}
+%     \begin{bmatrix}
+%     J_{xx}^{-1} & 0 & 0 \\ 0 & J_{yy}^{-1} & 0 \\ 0 & 0 & J_{zz}^{-1}
+%     \end{bmatrix}
+%     \begin{bmatrix}
+%     0 & g_z & 0 \\ -g_z & 0 & 0 \\ 0 & 0 & 0
+%     \end{bmatrix}
+%     \begin{bmatrix}
+%     \tilde{r}_x  \\ \tilde{r}_y \\ \tilde{r}_z
+%     \end{bmatrix}
+% \end{equation}
+% which when explicitly written out become
+% \begin{subequations}
+%     \begin{align*}
+%       &0 = J_{xx}^{-1}g_z\tilde{r}_y \\
+%       &0 = -J_{yy}^{-1}g_z\tilde{r}_x \\
+%       &0 = 0\times\tilde{r}_z 
+%     \end{align*}
+% \end{subequations}
 
 
 \begin{figure}
@@ -400,7 +414,7 @@ which when explicitly written out become
 \subsection{3-Axis Adaptive Control}\label{sec:3_axis_adaptive}
 3-axis adaptive control uses MEDs as method to externally excite the platform. The excitation is chosen such that simulator is never able to settle in the state shown in \Cref{fig:mbs_null_sol}. By ensuring that $\bm{r}$ is never parallel to $\bm{g}$, the only way to reduce the contribution of the term $m_s\bm{r}^{\times}\bm{g}$ in \Cref{equation:EomWithTau} to zero is to force the norm of $\bm{r}$ to be zero, thus simultaneously balancing $r_x$, $r_y$, and $r_z$. 
 
-Let $\bm{h}_s$ denote the total angular momentum of the simulator excluding MEDs, which under the assumption from \Cref{equation:h_m_eq_0} is simply computed by $\bm{h}_s=\bm{J\omega}$. Next, let $\bm{h}_d$ be a predetermined desired momentum of the simulator. The proposed control law from \cite{kim_automatic_2009} is
+Let $\bm{h}_s$ denote the total angular momentum of the simulator excluding MEDs, which under the assumption from \Cref{equation:h_m_eq_0} is simply computed by $\bm{h}_s=\bm{J\omega}$. Next, let $\bm{h}_d$ be a predetermined desired momentum of the simulator. The proposed 3-axis control law from \cite{kim_automatic_2009} is
 \begin{equation}
     \bm{\tau}=\bm{K}(\bm{h}_s-\bm{h}_d)+\bm{\omega}^{\times}\bm{h}_s+\dot{\bm{h}}_d
 \end{equation}
@@ -521,7 +535,13 @@ The Cal Poly SADS has been developed by students and faculty since it was first 
     \centering
     \includegraphics[width=0.80\linewidth]{figures/SADS_V1.PNG}
     \caption{The first iteration of the Cal Poly SADS \cite{mittelsteadt_cal_2007}}
-    \label{fig:SADS_V1}
 \end{figure}
 
-The has system undergone numerous changes since 2007, some of which are detailed in \Cref{sec:previous_work}. The most relevant change is the installation of an LN-200 IMU, which has excellent noise characteristics as shown in \Cref{table:existing_testbeds}. Beginning in 2023 an effort began to completely overhaul the hardware onboard the SADS. This includes the development of a new set of reaction wheels, as well as replacing the manual sliding masses with a new set controlled by linear actuators. Current reaction wheel development is documented in~\cite{nalley2025development}, which resulted in the design and integration of one complete wheel to the simulator. Development of the new mass balancing system is documented in~\cite{gilman_automatic_2024}, which resulted in the design of a new set of prototype linear actuators. As of the onset of this work, all other hardware - namely the onboard computer nad IMU, have been removed.
+The has system undergone numerous changes since 2007, some of which are detailed in \Cref{sec:previous_work}. The most relevant change is the installation of an LN-200 IMU, which has excellent noise characteristics as shown in \Cref{table:existing_testbeds}. Beginning in 2023 an effort began to completely overhaul the hardware onboard the SADS. This includes the development of a new set of reaction wheels, a new flight computer, as well as replacing the manual sliding masses with a new set controlled by linear actuators. Current reaction wheel development is documented in~\cite{nalley2025development}, which resulted in the design and integration of one complete wheel to the simulator. Work on a new flight computer remains unstarted, and development of the new mass balancing system is documented in~\cite{gilman_automatic_2024}, which resulted in the design of a new set of prototype linear actuators. 
+\begin{figure}[h]\label{fig:gillman_final_work}
+    \centering
+    \includegraphics[width=0.70\linewidth]{figures/gillman_final_work.png}
+    \caption{Linear actuator set developed in~\cite{gilman_automatic_2024}}
+\end{figure}
+The actuators follow the same layout as the previous iteration with six-sliding masses - two for each axis. The masses slide along a ballscrew driven by DC motors with positional feedback from rotary encoders. However when mounted on the simulator as shown in \Cref{fig:gillman_final_work}, the motors struggle to move the masses. This may be acceptable for passive balancing but is not suitable for active balancing where positions must be precisely controlled in real-time. Additionally without the flight computer, the actuators remain unproven in any real tests with a live air-bearing. 
+
