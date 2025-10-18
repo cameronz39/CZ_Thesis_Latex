@@ -106,6 +106,12 @@
 \end{figure}
 
 \begin{figure}[!ht]
+    \centering
+    \includegraphics[width=\linewidth]{plots/LSR_sim_confidence.pdf}
+    \caption{Comparison between estimated and true values}
+\end{figure}
+
+\begin{figure}[!ht]
   \centering
   \begin{subfigure}[t]{0.47\textwidth}
     \includegraphics[width=\linewidth]{plots/LSR_hardware_all_runs.png}
@@ -155,15 +161,18 @@
 \begin{figure}[!ht]
     \centering
     \includegraphics[width=\linewidth]{plots/hardware_verification_KE.pdf}
-    \caption{Simulated platform excitation for 3-axis adaptive control}
+    \caption{Kinetic energy of the simulator before and after using two-step PID balancing}
 \end{figure}
 
 
 
 \iffalse
+SIM RESULTS ------------------------------
 Results PID:
 horizontal: 2.5e-5
 verit 6.7e-7
+KE = 0.0134
+torque = 0.010146
 
 Results Batch:
 horizontal: 1e-7
@@ -175,4 +184,6 @@ r_z = 6.784e-07
 Results 3-axis
 horizontal: 4.8261e-06
 vertical: 9.7241e-05
+KE = 0.042205
+torque = 0.01883
 \fi
