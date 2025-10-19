@@ -1,0 +1,47 @@
+Similar to the derivation of the PD spacecraft controller in \Cref{equation:spacecraft_PD}, a small angle assumption will be used in the analysis. First, the projected error of the controller is defined as 
+\begin{equation}
+    \bm{\epsilon}_e^\perp = \bm{P}\bm{\epsilon}_e
+\end{equation}
+For small angles, $\bm{\epsilon}$ is proportional to the axis of rotation $\hat{\bm{u}}$. For the mass balancing problem, multiplying $\bm{\epsilon}$ by $\bm{P}$ has the same effect as flattening the axis of rotation onto the inertial $xy$ plane. Since $\bm{q}$ is defined as a rotation between the inertial and body frames, $\bm{\epsilon}_e^\perp$ disregards any error about the inertial $z$ axis.
+
+Next, the error in the projected integral action is defined as 
+\begin{equation}\label{equation:proj_int_action}
+    \bm{z} = \bm{\tau}_{g,0}-\bm{K}_i\int\bm{\epsilon}_e^\perp\,dt
+\end{equation}
+where $\bm{\tau}_{g,0} = m_s\bm{r}_0^{\times}\bm{g}$. The goal then is to prove $\bm{z}$ converges to zero over time. A Lyapunov function and it's derivative are considered using the states $\bm{\epsilon}_e^\perp$, $\bm{\omega}_p$, and $\bm{z}$:
+\begin{equation}
+    \bm{V}=\frac{1}{2}\bm{\omega}_p^T\bm{J}\bm{\omega}_p
+    +\frac{1}{2}(\bm{\epsilon}_e^\perp)^T\bm{K}_p\bm{\epsilon}_e^\perp
+    +\frac{1}{2}\bm{z}^T\bm{K}_i^{-1}\bm{z}
+\end{equation}
+\begin{equation}
+    \dot{\bm{V}}=\bm{\omega}_p^T\bm{J}\dot{\bm{\omega}}_p
+    +(\bm{\epsilon}_e^\perp)^T\bm{K}_p\dot{\bm{\epsilon}}_e^\perp
+    +\bm{z}^T\bm{K}_i^{-1}\dot{\bm{z}}
+\end{equation}
+
+To compute $\dot{\bm{\omega}}_p$, \Cref{equation:EomWithTau} is premultiplied by $\bm{P}$ which results in
+\begin{equation}
+    \dot{\bm{\omega}}_p = \bm{J}^{-1}(\bm{\tau}_{g,0}
+        -\bm{K}_p\bm{\epsilon}_e^\perp - \bm{K}_d\bm{\omega}_p
+         -\bm{K}_i\int\bm{\epsilon}_e^\perp\,dt)
+\end{equation}
+Substituting \Cref{equation:proj_int_action} causes the above to simplify To
+\begin{equation}\label{equation:simplified_omega_p}
+    \dot{\bm{\omega}}_p = \bm{J}^{-1}(
+        -\bm{K}_p\bm{\epsilon}_e^\perp - \bm{K}_d\bm{\omega}_p
+        +\bm{z})
+\end{equation}
+
+The derivatives are substituted back into the original expression for $\dot{\bm{V}}$ leading To
+\begin{equation}
+    \dot{\bm{V}}=\bm{\omega}_p^T(
+    -\bm{K}_p\bm{\epsilon}_e^\perp - \bm{K}_d\bm{\omega}_p +\bm{z})
+    + (\bm{\epsilon}_e^\perp)^T\bm{K}_p\bm{\omega}_p
+    - \bm{z}^T\bm{\epsilon}_e^\perp
+\end{equation}
+\begin{equation}
+    \dot{\bm{V}}=-\bm{\omega}_p^T\bm{K}_d\bm{\omega}_p + \bm{\omega}_p^T\bm{z}
+    - \bm{z}^T\bm{\epsilon}_e^\perp
+\end{equation}
+The simulator will be assumed to start upright at $\bm{q} = [1, 0, 0, 0]^T$ and only deviate from this attitude by small amounts in roll and pitch. 

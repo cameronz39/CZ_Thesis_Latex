@@ -189,7 +189,7 @@ Kalman filters have extensive precedent for estimating unknown parameters in dyn
     \end{bmatrix}^T
 \end{equation}
 where $\bm{q}$ represents the spacecraft's attitude in the form of a quaternion. In this work, $\bm{q}$ is defined as a frame rotation from the body frame to the inertial frame, with the real part $\eta$ of the quaternion first ($\eta$ = $q_0$). The spacecraft quaternion at any point may be directly converted into a direction cosine matrix using the following
-\begin{equation}
+\begin{equation}\label{equation:C_from_q}
     \bm{C}_{\mathcal{N}\leftarrow\mathcal{B}}(\bm{q})=
     \begin{bmatrix}
     2q_0^{2}+2q_1^{2}-1 & 2(q_1 q_2 + q_0 q_3) & 2(q_1 q_3 - q_0 q_2) \\
@@ -229,48 +229,100 @@ where $\bm{\omega}_{k-1}$, $\bm{\epsilon}_{k-1}$, and $\eta_{k-1}$ are all taken
 
 
 
-To extend these methods to estimate the inbalance vector $\bm{r}$, the state vector of the dynamic system is written as 
+To extend these methods to estimate the vertical inbalance $r_z$, the state vector of the dynamic system is written as 
 \begin{equation}
-    \bm{x} = \begin{bmatrix} \bm{\omega} & \bm{q} & \bm{r} \end{bmatrix}^T
+    \bm{x} = \begin{bmatrix} \bm{\omega} & \bm{q} & r_z \end{bmatrix}^T
 \end{equation}
 and the associated dynamic function $\bm{f}(\bm{x}_{k-1})$ is
 \begin{equation}
     \bm{f}(\bm{x}_{k-1}) = \begin{bmatrix}
-        \bm{J}^{-1}(-\bm{\omega}_{k-1}^\times \bm{J\omega}_{k-1} + m_s\bm{r}^{\times}\bm{g}_{k-1})
+        \bm{J}^{-1}(-\bm{\omega}_{k-1}^\times \bm{J\omega}_{k-1} + m_s
+        (\begin{bmatrix}
+            0 & 0 & r_z
+        \end{bmatrix}^T)^{\times}\bm{g}_{k-1})
         \\
         -\frac{1}{2}\bm{\epsilon}_{k-1}^T\bm{\omega}_{k-1} 
         \\
         \frac{1}{2}(\eta_{k-1}\mathbb{1} + \bm{\epsilon}_{k-1}^{\times})\bm{\omega}_{k-1}
         \\
-        \bm{0}
+        0
     \end{bmatrix}
 \end{equation}
- While sensors like star trackers and magnetometers are crucial for precise attitude determination, filtering for the inbalance vector $\bm{r}$ can be done using soley body rate measurements. The measurement vector with this approach then is simply $\bm{y}=\bm{\omega}$ and the measurement equation becomes
-\begin{equation}
-    \bm{h}(\bm{x})=
-    \begin{bmatrix}
-        \mathbb{1}_{3\times\,3} & \bm{0}_{3\times\,7}
-    \end{bmatrix}\bm{x}
-\end{equation}
-This process and measurement model serve as a basline to implement either an Extended Kalman Filter or Unscented Kalman Filter - with measurements purely being provided by an IMU in the form of $\bm{\omega}$, and the dynamics states $r_x$, $r_y$, and $r_z$ all being filtered for. \cite{silva_filtering_2018} provides an in-depth analysis of these filters' performance and their variations. In practice, filters can struggle to converge on values for $r_x$, $r_y$, and $r_z$ simultaneously. Instead, filtering is used often used to soley filter for $r_z$ (referred to as the vertical inbalnace) when $r_x$ and $r_y$ (referred to as the horizontal inbalance) are assumed to be zero. In this case, $r_x$ and $r_y$ are no longer part of the state and the new state vector becomes
-\begin{equation}
-    \bm{x} = \begin{bmatrix} \bm{\omega} & \bm{q} & r_z \end{bmatrix}^T
-\end{equation}
-
-and $\bm{f}(\bm{x})$ and $\bm{h}(\bm{x})$ become
-
-\begin{equation}
-    \bm{f}(\bm{x}) = \begin{bmatrix}
-        \bm{J}^{-1}(-\bm{\omega}^\times \bm{J\omega} + \begin{bmatrix} \omega_x & \omega_y & \omega_z r_z \end{bmatrix}^T)
-        \\
-        0
-    \end{bmatrix}    
-\end{equation}
+ While sensors like star trackers and magnetometers are crucial for precise attitude determination, filtering for the inbalance vector $\bm{r}$ with a free tumbling simulator can be done using soley body rate measurements. The measurement vector with this approach then is simply $\bm{y}=\bm{\omega}$ and the measurement equation becomes
 \begin{equation}
     \bm{h}(\bm{x})= \begin{bmatrix}
         \mathbb{1}_{3\times\,3} & \bm{0}_{3\times\,5}
     \end{bmatrix}\bm{x}
 \end{equation}
+
+This process and measurement model serve as a basline to implement either an Unscented Kalman Filter - with measurements purely being provided by an IMU in the form of $\bm{\omega}$, and the state $r_z$ being filtered for. \cite{silva_filtering_2018} provides an in-depth analysis of these filters' performance and their variations
+
+\subsection*{Sigma Point Generation}
+
+To handle the nonlinear process model without explicit linearization, the UKF constructs a set of $2n+1$ sigma points about the mean state $\bm{x}_{k-1}$ and covariance $\bm{P}_{k-1}$. These points capture the first and second moments of the state distribution and are given by
+\begin{equation}
+    \bm{X}_{k-1}^{(i)} =
+    \begin{cases}
+        \bm{x}_{k-1}, & i = 0 \\[3pt]
+        \bm{x}_{k-1} + \bm{r}_i, & i = 1,\dots,n\\[3pt]
+        \bm{x}_{k-1} - \bm{r}_{i-n}, & i = n+1,\dots,2n
+    \end{cases}
+\end{equation}
+where $\bm{r}_i$ are the columns of $\sqrt{(n+\lambda)\bm{P}_{k-1}}$ obtained via Cholesky decomposition. The scaling parameter $\lambda = \alpha^2(n+\kappa) - n$ is computed from the tuning parameters $\alpha$, $\kappa$, and $\beta$, which control the spread and weighting of the sigma points.
+
+Each sigma point is then propagated through the dynamic model $\bm{f}(\cdot)$ over a timestep $T$:
+\begin{equation}
+    \bm{X}_k^{(i)} = \bm{f}(\bm{X}_{k-1}^{(i)})\,T + \bm{X}_{k-1}^{(i)}.
+\end{equation}
+The quaternion portion of each propagated point is normalized to maintain valid orientation representation.
+
+\subsection*{Prediction Step}
+
+The predicted mean and covariance are computed using the weighted sigma points:
+\begin{equation}
+    \bm{x}_k^- = \sum_{i=0}^{2n} W_m^{(i)} \bm{X}_k^{(i)}, \qquad
+    \bm{P}_k^- = \sum_{i=0}^{2n} W_c^{(i)}(\bm{X}_k^{(i)} - \bm{x}_k^-)(\bm{X}_k^{(i)} - \bm{x}_k^-)^T + \bm{Q},
+\end{equation}
+where $\bm{Q}$ is the process noise covariance matrix. The weights $W_m^{(i)}$ and $W_c^{(i)}$ correspond to the mean and covariance weights, defined as
+\begin{align}
+    W_m^{(0)} &= \frac{\lambda}{n+\lambda}, &
+    W_c^{(0)} &= \frac{\lambda}{n+\lambda} + (1-\alpha^2+\beta),\\
+    W_m^{(i)} &= W_c^{(i)} = \frac{1}{2(n+\lambda)}, \quad i=1,\dots,2n.
+\end{align}
+
+\subsection*{Measurement Prediction and Update}
+
+Each propagated sigma point is passed through the measurement model:
+\begin{equation}
+    \bm{Y}_k^{(i)} = \bm{h}(\bm{X}_k^{(i)}),
+\end{equation}
+and the predicted measurement mean and covariance are then
+\begin{align}
+    \hat{\bm{y}}_k^- &= \sum_{i=0}^{2n} W_m^{(i)} \bm{Y}_k^{(i)},\\
+    \bm{P}_y &= \sum_{i=0}^{2n} W_c^{(i)}(\bm{Y}_k^{(i)} - \hat{\bm{y}}_k^-)(\bm{Y}_k^{(i)} - \hat{\bm{y}}_k^-)^T + \bm{R},
+\end{align}
+where $\bm{R}$ is the measurement noise covariance matrix. The cross-covariance between the state and measurement is
+\begin{equation}
+    \bm{P}_{xy} = \sum_{i=0}^{2n} W_c^{(i)}(\bm{X}_k^{(i)} - \bm{x}_k^-)(\bm{Y}_k^{(i)} - \hat{\bm{y}}_k^-)^T.
+\end{equation}
+
+The Kalman gain is then computed as
+\begin{equation}
+    \bm{K}_k = \bm{P}_{xy}\bm{P}_y^{-1},
+\end{equation}
+and the state and covariance are corrected using the actual measurement $\bm{y}_k$:
+\begin{align}
+    \bm{x}_k &= \bm{x}_k^- + \bm{K}_k(\bm{y}_k - \hat{\bm{y}}_k^-),\\
+    \bm{P}_k &= \bm{P}_k^- - \bm{K}_k\bm{P}_y\bm{K}_k^T.
+\end{align}
+Finally, the quaternion portion of $\bm{x}_k$ is renormalized, and the estimated imbalance uncertainty is reported as
+\begin{equation}
+    \sigma_{r_z} = \sqrt{P_{k,(r_z,r_z)}}.
+\end{equation}
+
+\subsection*{Discussion}
+
+The Unscented Kalman Filter provides a higher-fidelity representation of the nonlinear coupling between angular velocity, attitude, and imbalance, without requiring explicit Jacobian derivations as in the EKF. This makes it particularly suitable for identifying $r_z$ when the simulator undergoes free or semi-constrained motion, where $\bm{\omega}$ provides sufficient excitation for observability. The filter has been implemented in Simulink using autogenerated MATLAB Function blocks, corresponding to the sigma point generation, propagation, and correction routines described above. Future work could expand this filter to estimate the full imbalance vector $\bm{r}$ and incorporate sensor fusion with accelerometers or magnetometers for improved long-term accuracy.
 
 
 \section{Active Control for Balancing}
@@ -315,7 +367,7 @@ A quaternion feedback controller can be used to command the system into this sta
     \bm{q}_e = \bm{q}\otimes\bm{q}_d
 \end{equation}
 where $\otimes$ represents noncommunative quaternion multiplication. The commanded torque is then computed from this error. Many spacecraft feedback controllers use a law of the form
-\begin{equation}
+\begin{equation}\label{equation:spacecraft_PD}
     \bm{\tau} = -\bm{K}_p\,sign(\eta_e)\bm{\epsilon}_e-\bm{K}_d\bm{\omega}
 \end{equation}
 which functions as a PD controller with $\bm{K}_p$ and $\bm{K}_d$ representing proportional and derivative gains. In the presence of a constant distrubance such as gravitional torques, a PD controller alone will accumulate steady-state error. To extend this to a simulator under the influence of gravity, integral action must be added. The modified control law is
@@ -324,8 +376,10 @@ which functions as a PD controller with $\bm{K}_p$ and $\bm{K}_d$ representing p
     -\bm{K}_i\int\,sign(\eta_e)\bm{\epsilon}_e\,dt
     -\bm{K}_d\bm{\omega}
 \end{equation}
-where $\bm{K}_i$ is a new integral gain. Generating this torque using sliding masses means that $\tau_z$ will be ignored in the mapping from \Cref{equation:torque_to_del_r}. In practice, this causes the simulator to have no control about it's yaw axis which is permissible here since the desired state of ${\bm{z}}_B=-\hat{\bm{g}}$ is independent of yaw. 
+where $\bm{K}_i$ is a new integral gain. Generating this torque using sliding masses means that $\tau_z$ will be ignored in the mapping from \Cref{equation:torque_to_del_r}. In practice, this causes the simulator to have no control about it's yaw axis which is permissible here since the desired state of ${\bm{z}}_B=-\hat{\bm{g}}$ is independent of yaw.
 
+This approach to balancing was first tested on hardware in \cite{choi_automatic_2016}. The results seemed promising, but since no vertical balancing was performed, the resulting reduction in torque could not be verified. Before implementing this in hardware for the SADS, an attempt was made to more rigorously prove if the integral action in the controller indeed cancels out the torque due to gravity with the under-actuated constraint.  
+ 
 \subsection{Underactuated Adaptive Control}\label{sec:under_adaptive}
 The approach shown here is developed by Chesi in~\cite{chesi_automatic_2014}.
 

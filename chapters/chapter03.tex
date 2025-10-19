@@ -75,12 +75,89 @@ An MTi-03 was chosen as the IMU REFERRING TO LITERATURE REVIEW for it's noise ch
 
 \section{Algorithm Implementation}
 
+\subsection{Onboard Filtering for Attitude Determination}
+
+For most balancing methods, the onboard computer must calculate a value $\bm{q}$ in real-time. To accomplish this, an Extended Kalman Filter is implemented in the Matlab/SIMULINK environment which is then autocoded and deployed on the STM32. The goal of this filter is to propagate the state forward using the gyroscope output, and correct it with the accelerometer. The onboard EKF state then is simply $\bm{x} = \bm{q}$. If a balancing algorithm requires a value for $\bm{\omega}$, the gyroscope output is used. The state is propagated using
+\begin{equation}\label{equation:EKF_process}
+    \bm{x}_k^-=\bm{x}_{k-1} + T\begin{bmatrix}
+    
+    -\frac{1}{2}\bm{\epsilon}_{k-1}^T\bm{\omega}_{k-1} \\
+    \frac{1}{2}(\eta_{k-1}\mathbb{1} +
+    \bm{\epsilon}_{k-1}^{\times})\bm{\omega}_{k-1}
+\end{bmatrix}
+\end{equation}
+where $\bm{x}_k^-$ is the predicted state, and $\bm{\omega}$ is taken directly from the gyroscope readings. Next, the state is corrected using the accelerometer reading, where the accelerometer output is treated as a measurement for $\bm{g}_b$. Measurements are predicted using 
+\begin{equation}\label{equation:EKF_meas}
+    \hat{\bm{y}}_k^-=
+    \begin{bmatrix}    
+    \eta_k^-\mathbb{1}-(\bm{\epsilon}_k^-)^{\times} & -\bm{\epsilon}_k^-
+    \end{bmatrix}
+    \begin{bmatrix}    
+    \bm{g}^\mathcal{N} & (\bm{g}^\mathcal{N})^{\times} \\
+    \bm{0} & - (\bm{g}^\mathcal{N})^T
+    \end{bmatrix}
+    \begin{bmatrix}    
+    \eta_k^- \\
+    \bm{\epsilon}_k^-
+    \end{bmatrix}
+\end{equation}
+where $\eta_k^-$ and $\bm{\epsilon}_k^-$ are taken from $\bm{x}_k^-$, and $\bm{g}^\mathcal{N}=[0, 0,-9.81]^T$
+
+In reality, unless the accelerometer is perfectly aligned with the simulator's center of rotation, the sensor output will include the effects of centripital acceleration. However, since the MTi-03 IMU is mounted close to the center of rotation on the SADS and the body rates of the simulator during balancing are low, the effects of centripital acceleration are not included in the measurement model.
+
+Following the standard EKF formulation, the process and measurement Jacobians are computed. \Cref{equation:EKF_process} is linearized about $\bm{x}_{k-1}$, while \Cref{equation:EKF_meas} is linearized about $\bm{x}_k^-$. The process Jacobian $\bm{F}$ and measurement Jacobian $\bm{H}$ are 
+\begin{equation}
+    \bm{F}_k = \mathbb{1}+
+\begin{bmatrix}
+0 & -\tfrac{1}{2}\bm{\omega}_{k-1}^{T}\\[3pt]
+\tfrac{1}{2}\bm{\omega}_{k-1} & -\tfrac{1}{2}\bm{\omega}_{k-1}^{\times}
+\end{bmatrix}.
+\end{equation}
+
+\begin{equation}
+\bm{H}_k =
+\begin{bmatrix}
+2\!\left(\eta_k^- \mathbb{1} - (\bm{\epsilon}_k^-)^{\times}\right)\bm{g}^{\mathcal N}
+\\
+-2\,\bm{g}^{\mathcal N}(\bm{\epsilon}_k^-)^{\!T}
++2\!\left((\bm{\epsilon}_k^-)^{\!T}\bm{g}^{\mathcal N}\right)\mathbb{1}
++2\,\bm{\epsilon}_k^- (\bm{g}^{\mathcal N})^{\!T}
++2\,\eta_k^- (\bm{g}^{\mathcal N})^{\times}
+\end{bmatrix}^T.
+\end{equation}
+With $\bm{F}$ computed, the filter propagates the covariance forward using
+\begin{equation}
+        \bm{P}_k^- = \bm{F}_{k-1}\bm{P}_{k-1}\bm{F}_{k-1}^T + \bm{L}\bm{Q}\bm{L}^T
+\end{equation}
+where $\bm{Q}$ is the tunable process noise matrix, and $\bm{L}$ relates the process noise to the state and is defined as
+\begin{equation}
+    \bm{L} = T\begin{bmatrix}
+        0      & \bm{0} \\
+        \bm{0} & \mathbb{1}_{3\times3}
+    \end{bmatrix}\in\mathbb{R}_{4\times4}
+\end{equation}
+Next the Kalman gain $\bm{K}$ is computed with
+\begin{equation}
+    \bm{K}_k = (\bm{P}_k^-\bm{H}_k^T)/(\bm{H}_k\bm{P}_k^-\bm{H}_k^T + \bm{R})
+\end{equation}
+where $\bm{R}$ is the tunable measurement noise matrix.
 \begin{figure}
     \centering
     \input{figures/sys_arch_passive.tikz}
     \caption{Operation flowchart during passive balancing}
     \label{fig:sys_arch_passive}
-\end{figure}
+\end{figure}.
+The filter iteration ends with the state and covariance being corrected using the Kalman gain as follows
+\begin{equation}
+    \bm{x}_k = \bm{x}_k^- + \bm{K}(\bm{y}_{\text{meas}}-\hat{\bm{y}}_k^-)
+\end{equation}
+\begin{equation}
+    \bm{P}_k = (\mathbb{1} - \bm{K}_k\bm{H}_k)\bm{P}_k^-(\mathbb{1} - \bm{K}_k\bm{H}_k)^T
+    + \bm{K}_k\bm{R}\bm{K}_k^T
+\end{equation}
+where $\bm{y}_{\text{meas}}$ is the accelerometer reading. At this point the quaternion is normalized using $\bm{x}_k = \bm{x}_k / ||\bm{x}_k||$ and is sent along with $\bm{g}_b$ to the control law, with $\bm{g}_b$ being computed from \Cref{equation:C_from_q}.
+
+The filter as described here still has room for improvement. Including an estimate of the gyroscope bias in the state vector would improve accuracy over longer runs, and there are more sophisticated methods to ensuring $\bm{q}$ has a unit norm. However the filter's simulated performance as described in \Cref{sec:sim_setup} proved to be adequate for mass balancing, so improvements to the filter are left as future work with more detail described in \Cref{conclusion}.
 
 \begin{figure}
     \centering
@@ -89,10 +166,7 @@ An MTi-03 was chosen as the IMU REFERRING TO LITERATURE REVIEW for it's noise ch
     \label{fig:sys_arch_active}
 \end{figure}
 
-
-% real time Kalman filter with gravity vector?
 % discussion of Simulink code generation - PID + adaptive control
 
-% feedback control diagrams
 
-% unscented Kalman filter detailed derivation
+\section{Simulation Setup}\label{sec:sim_setup}

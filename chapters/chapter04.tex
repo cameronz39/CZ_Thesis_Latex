@@ -1,19 +1,19 @@
 \chapter{Results and Discussion}
 
 \section{PID}
-\begin{figure}[!ht]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=\linewidth]{plots/PID_sim_results.pdf}
     \caption{Simulated balancing results using PID control}
 \end{figure}
 
-\begin{figure}[!ht]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=\linewidth]{plots/PID_sim_integral_error.png}
     \caption{Projected integral error during a simulated PID run}
 \end{figure}
 
-\begin{figure}[!ht]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=\linewidth]{plots/PID_sim_oscillations.pdf}
     \caption{Simulated PID scillatations about $\bm{r}=0$ at steady state}
@@ -21,7 +21,7 @@
 
 
 
-\begin{figure}[!ht]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=\linewidth]{plots/PID_hardware_results.pdf}
     \caption{Experimental balancing results using PID control}
@@ -29,19 +29,19 @@
 
 \section{Underactuated Adaptive Control}
 
-\begin{figure}[!ht]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=\linewidth]{plots/adaptive_sim_success.pdf}
     \caption{Simulated underactuated adaptive control results using a simplified model}
 \end{figure}
 
-\begin{figure}[!ht]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=\linewidth]{plots/adaptive_sim_failure.pdf}
     \caption{Simulated underactuated adaptive control results with sensor dyanmics and onboard filtering modeled}
 \end{figure}
 
-\begin{figure}[!ht]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=\linewidth]{plots/adaptive_hardware_failure.pdf}
     \caption{Experimental results using underactuated adaptive control}
@@ -50,7 +50,7 @@
 
 \section{Vertical Inbalance Estimation with Kalman Filtering}
 
-\begin{figure}[!ht]
+\begin{figure}[ht]
   \centering
   \begin{subfigure}[t]{0.47\textwidth}
     \includegraphics[width=\linewidth]{plots/UKF_hardware_success.pdf}
@@ -64,7 +64,7 @@
   \label{fig:twopanels}
 \end{figure}
 
-\begin{figure}[!ht]
+\begin{figure}[ht]
   \centering
   \begin{subfigure}[t]{0.47\textwidth}
     \includegraphics[width=\linewidth]{plots/UKF_comparison.pdf}
@@ -85,7 +85,7 @@
 % experimental results only use 1 RW
 % simulation results should include 1 RW and 4 RWs to compare (unless the one RW setup turns out good)
 
-\begin{figure}[!ht]
+\begin{figure}[ht]
   \centering
   \begin{subfigure}[t]{0.47\textwidth}
     \includegraphics[width=\linewidth]{plots/LSR_sim_all_runs.png}
@@ -99,19 +99,20 @@
   \label{fig:twopanels}
 \end{figure}
 
-\begin{figure}[!ht]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=\linewidth]{plots/LSR_sim_excitation}
     \caption{Simulated platform excitation during batch estimation}
 \end{figure}
 
-\begin{figure}[!ht]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=\linewidth]{plots/LSR_sim_confidence.pdf}
     \caption{Comparison between estimated and true values}
 \end{figure}
 
-\begin{figure}[!ht]
+
+\begin{figure}[ht]
   \centering
   \begin{subfigure}[t]{0.47\textwidth}
     \includegraphics[width=\linewidth]{plots/LSR_hardware_all_runs.png}
@@ -125,7 +126,7 @@
   \label{fig:LSR_hardware_iterations}
 \end{figure}
 
-\begin{figure}[!ht]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=\linewidth]{plots/LSR_hardware_excitation}
     \caption{Experimental platform excitation during batch estimation}
@@ -138,13 +139,13 @@
 
 \subsection{Full Reaction Wheel Setup - Simulink Only}
 
-\begin{figure}[!ht]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=\linewidth]{plots/three_axis_sim_excitation.png}
     \caption{Simulated platform excitation for 3-axis adaptive control}
 \end{figure}
 
-\begin{figure}[!ht]
+\begin{figure}[ht]
   \centering
   \begin{subfigure}[t]{0.47\textwidth}
     \includegraphics[width=\linewidth]{plots/three_axis_sim_positions_1.png}
@@ -158,25 +159,57 @@
   \label{fig:LSR_hardware_iterations}
 \end{figure}
 
-\begin{figure}[!ht]
+\subsection{Verification}
+
+\begin{figure}[ht]
     \centering
     \includegraphics[width=\linewidth]{plots/hardware_verification_KE.pdf}
     \caption{Kinetic energy of the simulator before and after using two-step PID balancing}
 \end{figure}
 
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\linewidth]{plots/hardware_verification_torque.pdf}
+    \caption{Norm of torque acting on the simulator before and after using two-step PID balancing}
+\end{figure}
 
+\begin{table}[ht]
+\caption{Comparison of Balancing Methods and Performance Metrics}\label{table:balancing_methods}
+\centering
+\renewcommand{\arraystretch}{1.3}
+
+\begin{tabularx}{\textwidth}{
+    >{\raggedright\arraybackslash}p{4cm}
+    >{\centering\arraybackslash}p{3cm}
+    >{\centering\arraybackslash}X
+}
+\toprule
+\textbf{Method} & \textbf{Avg. Torque [N·m]} & \textbf{max ($\Delta$KE) [J]} \\
+\midrule
+Manual Balancing & 0.0652 & 0.0116 \\ \addlinespace[0.2em]
+Results from Dam & 0.0244 & 0.00782 \\ \addlinespace[0.2em]
+PID + UKF Simulated & 0.00321 & 0.000965 \\ \addlinespace[0.2em]
+PID + UKF Experimental & 0.00166 & 0.000236 \\ \addlinespace[0.2em]
+Batch Estimation Simulated & $3.89\times10^{-5}$ & 0.000116 \\ \addlinespace[0.2em]
+Batch Estimation Experimental & 0.0146 & 0.00226 \\ \addlinespace[0.2em]
+3-Axis Adaptive Simulated & 0.00299 & 0.000741 \\ \addlinespace[0.2em]
+\bottomrule
+\end{tabularx}
+\end{table}
 
 \iffalse
 SIM RESULTS ------------------------------
 Results PID:
 horizontal: 2.5e-5
 verit 6.7e-7
-KE = 0.0134
-torque = 0.010146
+KE = 0.00096508
+torque = 0.0032123
 
 Results Batch:
 horizontal: 1e-7
 vert: 2.2e-7
+KE = 0.00011609;
+torque = 3.8857e-05;
 
 Results UKF
 r_z = 6.784e-07
@@ -184,6 +217,24 @@ r_z = 6.784e-07
 Results 3-axis
 horizontal: 4.8261e-06
 vertical: 9.7241e-05
-KE = 0.042205
-torque = 0.01883
+KE = 0.00074126
+torque = 0.0029949
+
+HARDWARE RESULTS ----------------------------------
+Results PID:
+KE = 0.00023616
+torque =  0.0016608;
+
+Results Passive:
+KE = 0.0022634
+torque = 0.014569
+
+Manual Balancing:
+KE = 0.011555
+torque = 0.065169
+
+Dam:
+KE = 0.0078203
+torque = 0.0244
+
 \fi
