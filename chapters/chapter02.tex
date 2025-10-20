@@ -377,8 +377,6 @@ which functions as a PD controller with $\bm{K}_p$ and $\bm{K}_d$ representing p
     -\bm{K}_d\bm{\omega}
 \end{equation}
 where $\bm{K}_i$ is a new integral gain. Generating this torque using sliding masses means that $\tau_z$ will be ignored in the mapping from \Cref{equation:torque_to_del_r}. In practice, this causes the simulator to have no control about it's yaw axis which is permissible here since the desired state of ${\bm{z}}_B=-\hat{\bm{g}}$ is independent of yaw.
-
-This approach to balancing was first tested on hardware in \cite{choi_automatic_2016}. The results seemed promising, but since no vertical balancing was performed, the resulting reduction in torque could not be verified. Before implementing this in hardware for the SADS, an attempt was made to more rigorously prove if the integral action in the controller indeed cancels out the torque due to gravity with the under-actuated constraint.  
  
 \subsection{Underactuated Adaptive Control}\label{sec:under_adaptive}
 The approach shown here is developed by Chesi in~\cite{chesi_automatic_2014}.

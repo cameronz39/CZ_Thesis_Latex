@@ -1,23 +1,29 @@
+This approach to balancing was first tested on hardware in \cite{choi_automatic_2016}. The results seemed promising, but since no vertical balancing was performed, the resulting reduction in torque could not be verified. Before implementing this in hardware for the SADS, an attempt was made to more rigorously prove if the integral action in the controller indeed cancels out the torque due to gravity with the under-actuated constraint.  
+
 Similar to the derivation of the PD spacecraft controller in \Cref{equation:spacecraft_PD}, a small angle assumption will be used in the analysis. First, the projected error of the controller is defined as 
 \begin{equation}
     \bm{\epsilon}_e^\perp = \bm{P}\bm{\epsilon}_e
 \end{equation}
 For small angles, $\bm{\epsilon}$ is proportional to the axis of rotation $\hat{\bm{u}}$. For the mass balancing problem, multiplying $\bm{\epsilon}$ by $\bm{P}$ has the same effect as flattening the axis of rotation onto the inertial $xy$ plane. Since $\bm{q}$ is defined as a rotation between the inertial and body frames, $\bm{\epsilon}_e^\perp$ disregards any error about the inertial $z$ axis.
 
-Next, the error in the projected integral action is defined as 
+Next, the projected integral action of the controller is defined as 
 \begin{equation}\label{equation:proj_int_action}
-    \bm{z} = \bm{\tau}_{g,0}-\bm{K}_i\int\bm{\epsilon}_e^\perp\,dt
+    \bm{z} = \int\bm{\epsilon}_e^\perp\,dt
 \end{equation}
-where $\bm{\tau}_{g,0} = m_s\bm{r}_0^{\times}\bm{g}$. The goal then is to prove $\bm{z}$ converges to zero over time. A Lyapunov function and it's derivative are considered using the states $\bm{\epsilon}_e^\perp$, $\bm{\omega}_p$, and $\bm{z}$:
+and the projected integral action error is defined as 
+\begin{equation}\label{equation:proj_int_action_err}
+    \tilde{\bm{z}} = \bm{z}-\bm{K}_i^{-1}\bm{\tau}_{g,0}
+\end{equation}
+where $\bm{\tau}_{g,0} = m_s\bm{r}_0^{\times}\bm{g}$. Note that if $\tilde{\bm{z}}=\bm{0}$, then $\bm{K}_i\bm{z} = \bm{\tau}_{g,0}$, or the controller's integral action has learned the gravity torque. The goal then is to prove $\tilde{\bm{z}}$ converges to zero over time. A Lyapunov function and it's derivative are considered using the states $\bm{\epsilon}_e^\perp$, $\bm{\omega}_p$, and $\tilde{\bm{z}}$:
 \begin{equation}
     \bm{V}=\frac{1}{2}\bm{\omega}_p^T\bm{J}\bm{\omega}_p
     +\frac{1}{2}(\bm{\epsilon}_e^\perp)^T\bm{K}_p\bm{\epsilon}_e^\perp
-    +\frac{1}{2}\bm{z}^T\bm{K}_i^{-1}\bm{z}
+    +\frac{1}{2}\tilde{\bm{z}}^T\bm{K}_i^{-1}\tilde{\bm{z}}
 \end{equation}
 \begin{equation}
     \dot{\bm{V}}=\bm{\omega}_p^T\bm{J}\dot{\bm{\omega}}_p
     +(\bm{\epsilon}_e^\perp)^T\bm{K}_p\dot{\bm{\epsilon}}_e^\perp
-    +\bm{z}^T\bm{K}_i^{-1}\dot{\bm{z}}
+    +\dot{\tilde{\bm{z}}}^T\bm{K}_i\dot{\tilde{\bm{z}}}
 \end{equation}
 
 To compute $\dot{\bm{\omega}}_p$, \Cref{equation:EomWithTau} is premultiplied by $\bm{P}$ which results in
@@ -26,17 +32,17 @@ To compute $\dot{\bm{\omega}}_p$, \Cref{equation:EomWithTau} is premultiplied by
         -\bm{K}_p\bm{\epsilon}_e^\perp - \bm{K}_d\bm{\omega}_p
          -\bm{K}_i\int\bm{\epsilon}_e^\perp\,dt)
 \end{equation}
-Substituting \Cref{equation:proj_int_action} causes the above to simplify To
+Substituting \Cref{equation:proj_int_action_err} causes the above to simplify To
 \begin{equation}\label{equation:simplified_omega_p}
     \dot{\bm{\omega}}_p = \bm{J}^{-1}(
         -\bm{K}_p\bm{\epsilon}_e^\perp - \bm{K}_d\bm{\omega}_p
-        +\bm{z})
+        -\bm{K}_i\tilde{\bm{z}})
 \end{equation}
 
 The derivatives are substituted back into the original expression for $\dot{\bm{V}}$ leading To
 \begin{equation}
     \dot{\bm{V}}=\bm{\omega}_p^T(
-    -\bm{K}_p\bm{\epsilon}_e^\perp - \bm{K}_d\bm{\omega}_p +\bm{z})
+    -\bm{K}_p\bm{\epsilon}_e^\perp - \bm{K}_d\bm{\omega}_p -\bm{K}_i\tilde{\bm{z}})
     + (\bm{\epsilon}_e^\perp)^T\bm{K}_p\bm{\omega}_p
     - \bm{z}^T\bm{\epsilon}_e^\perp
 \end{equation}
