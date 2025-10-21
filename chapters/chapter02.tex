@@ -1,507 +1,11 @@
 \chapter{Background}\label{chap:background}
-\section{The Mass Balancing Problem}\label{sec:mbs_problem}
 
-\begin{figure}
-    \centering
-    \input{figures/mbs_problem.tikz}
-    \caption{The mass balancing problem for air bearing based spacecraft dynamics simulators}
-    \label{fig:mbs_problem}
-\end{figure}
-
-
-\Cref{fig:mbs_problem} defines the geometery of the problem in a general case. $O$ represents the common origin of the inertial frame $\mathcal{N}$ and the body-fixed principle frame of the simulator $\mathcal{B}$. $O$ is chosen to be the center of rotation. If frictionless rotation is assumed, then the simulator follows Euler's rotational equations of motion with gravity acting as a torque. 
-
-\begin{equation}
-    \bm{J}\,\dot{\bm{\omega}} + \bm{\omega}^{\times}\,\bm{J}\bm{\omega} = \bm{T}_g
-\end{equation}
-
-Here, $\bm{J}$ is the inertia of the simulator about $O$, $\bm{\omega}$ is the angular velocity of the simulator, and $\bm{T}_g$ is the torque due to gravity. $\dot{\bm{v}}$ represents the time derivative of some vector $\bm{v}$, and $\bm{v}^{\times}$ represents the skew-symmetric cross-product matrix of $\bm{v}$. All vectors and inertias are expressed in $\mathcal{B}$. In general it is more convienent to expand $\bm{T}_g$ which leads to
-
-\begin{equation}\label{equation:starting_eom}
-    \bm{J}\,\dot{\bm{\omega}} + \bm{\omega}^{\times}\,\bm{J}\bm{\omega} = m_s\bm{r}^{\times}\bm{g}
-\end{equation}
-
-where $m_s$ is the total mass of the simulator, $\bm{r}$ is the center of mass relative to $O$, and the $\bm{g}$ is the accleration due to gravity.
-
-\Cref{fig:mbs_problem} also shows the introduction of three sliding masses, although in general there may be as many as $n$ sliding masses. Each mass $m_i$ has one translational degree of freedom along $\bm{u}_i$, and $\bm{\rho}_i$ represents the position of the $i$-th mass in it's homed position. Since in practice each mass can only travel some limited distance along $\bm{u}_i$, the homed position of a mass is typically chosen as the center of this range of positions. The position relative to $O$ of any mass $\bm{R}_i$ can be obtained with 
-\begin{equation}\label{equation:sliding masses}
-    \bm{R}_i = \bm{\rho}_i + d_i\bm{u_i}
-\end{equation}
-where $d_i$ is the distance a mass $m_i$ has travelled along $u_i$ relative to it's zeroed position. More generally, $\Delta\,d_i$ is defined as the change in position a mass from any arbitrary starting position.
-
-Additionally, $\bm{R}_i$ may change with time, say through linear actuators. It will be assumed the linear actuators have some form of absolute positioning, or that they can command the masses to their homed positions in a repeatable way. Let $\bm{J}_0$ be the total inertia of the simulator with the masses in their homed positions. The inertia as a function of time is then 
-\begin{equation}
-    \bm{J}(t)=\bm{J}_0-\sum_{i=0}^{n}(m_i\bm{R}_i^{\times}(t)\bm{R}_i^{\times}(t)-\bm{\rho}_i^{\times}\bm  {\rho}_i^{\times})
-\end{equation}
-The sliding mass will also introduce angular momentum into the system, which can be calculated using 
-\begin{equation}
-    \bm{h}_m =\sum_{n}^{i=1}\bm{R}_i^{\times}m_i\dot{\bm{R}}_i^{\times}
-\end{equation}
-In practical mass balancing applications however, the mass of each block is very small relative to the overall mass of the simulator. If a reasonable attempt is made to balance the simulator manually beforehand, then the masses will also move slowly and over short distances. This allows the following simplications to be made
-\begin{equation}
-\bm{J}(t) \approx \bm{J}_0 \Longrightarrow \dot{\bm{J}}=\bm{0}
-\end{equation}
-\begin{equation}\label{equation:h_m_eq_0}
-\dot{\bm{R}}_i \approx \bm{0} \Longrightarrow \bm{h}_m=\bm{0}
-\end{equation}
-
-The goal of these definitions is to obtain an equation relating how changing the positions of each mass effects the center of mass of the total system. These parameters are first assembled into matricies as follows
-
-\begin{equation}
-    \bm{M}=\mathrm{diag}(\frac{m_1}{m_s}, \cdots  ,\frac{m_n}{m_s}) \in \mathbb{R}^{n \times n}
-\end{equation}
-\begin{equation}
-    \bm{U}=
-    \begin{bmatrix}
-        \bm{u}_1, & \cdots & ,\bm{u}_n
-    \end{bmatrix}
-    \in \mathbb{R}^{3 \times n}
-\end{equation}
-\begin{equation}
-    \Delta\bm{d}=
-    \begin{bmatrix}
-        \Delta\,d_1, & \cdots & ,\Delta\,d_n 
-    \end{bmatrix}^T
-    \in \mathbb{R}^{n}
-\end{equation}
-
-Using these defintions, writing $\Delta\bm{r}$ as a function of $\Delta\bm{d}$ becomes a simple matrix multiplication
-
-\begin{equation}
-    \Delta\bm{r} = \bm{U}\bm{M}\Delta\bm{d}
-\end{equation}
  
-This means the value of $\bm{r}$ at any point can be written as $\bm{r}=\bm{r}_0+\Delta\bm{r}$, where $\bm{r}_0$ is the center of mass with the masses in their homed positions. An equally important relation is writing $\Delta\bm{d}$ as a function of $\Delta\bm{r}$. For the case $n = 3$ with linearly independent values of $\bm{u}_i$, the unique solution is given by
-\begin{equation}\label{equation:delta_d_sol}
-    \Delta\bm{d} = (\bm{U}\bm{M})^{-1}\Delta\bm{r}
-\end{equation}
-If $n>3$, a solution that minimizes the mass moved can be found using a pseudoinverse approach
-\begin{equation}\label{equation:delta_d_pseudo_sol}
-    \Delta\bm{d} = (\bm{U}\bm{M})^{\dagger }\Delta\bm{r}
-\end{equation}
-
-where $(\bm{U}\bm{M})^{\dagger}$ represents the Moore-Penrose pseudoinverse of $\bm{UM}$.
-
-There are two main approaches to solving the mass balancing problem. The first is to hold the mass positions constant and obtain an estimate of the value of $\bm{r}$, denoted as $\hat{\bm{r}}$. The required change in positions of the sliding masses are then applied all at once. The exact values are calculated from \Cref{equation:delta_d_sol} or \Cref{equation:delta_d_pseudo_sol}, substituting $-\hat{\bm{r}}$ for $\Delta\bm{r}$. This class of approaches is referred to passive balancing, offline balancing, or the batch estimation method.
-
-The second main approach is to find a feedback control law that drives the effect of the $m_s\bm{r}^{\times}\bm{g}$ term in \Cref{equation:starting_eom} to zero. In traditional spacecraft ADCS, the torques required for a feedback controller are generated using momenutum exchange devices, but here, there is the additional option to use $\Delta\bm{d}$ as a control input. Referring to \Cref{equation:starting_eom}, the dynamics of the system are influenced by the value of $\bm{r}^{\times}$, whose value can be controlled by $\Delta\bm{d}$ using \Cref{equation:delta_d_sol} or \Cref{equation:delta_d_pseudo_sol}. This class of approaches is referred to as active balancing or feedback control balancing.
-
-Once any balancing procedure has been performed, it is important to verify the results through an external verification method. Assuming the center of mass is below the center of rotation, a very rough estimate for the torque due to gravity may be obtained by tilting the simulator about one of it's principal axes, releasing it, and observing the period of resulting pendulum motion $T$ \cite{kim_automatic_2009}. The relationship between $\bm{r}$ and $T$ is given by
-\begin{equation}
-    T = 2\pi\sqrt{\frac{J_i}{m_s\,g||\bm{r}||}}
-\end{equation}
-where $J_i$ is the moment of inertia about said principle axis. After performing a balancing procedure, the value of $||\bm{r}||$ should decrease, leading to longer periods of oscillatation. 
-
-Another verification method is observing the total mechanical energy of the simulator while it undergoes this same pendulum motion. The mechanical energy is given by
-\begin{equation}
-    E_{mech} = \frac{1}{2}\bm{\omega}^T\bm{J}\bm{\omega} + mgh
-\end{equation}
-where $h$ is the vertical height of $\bm{r}$ \cite{silva_filtering_2018}. If the simulator is balanced, $h$ will remain relatively constant throughout the pendulum motion, and the kinetic energy term $\frac{1}{2}\bm{\omega}^T\bm{J}\bm{\omega}$ will also remain relatively constant due to the conservation of energy. As the balance of the simulator improves, the kinetic energy will oscillate with smaller amplitudes.
-
-Ideally this value is zero, but in practice mass balancing systems seek to make this value as small as possible while satsifying other project constraints like cost, time, and volume. 
-
-
-\section{Batch Estimation Algorithms - should be subsection of passive methods}
-
-Batch estimation algorithms are a subset of passive balancing methods that use momentum exchange devices to excite the simulator and record the resulting body rate and attitude data. The equations of motion are manipulated to help obtain multiple estimates of $\bm{r}$, and a single, final estimate of $\bm{r}$ is calculated using least-squares error methods. Many variations of batch estimation algorithms exist, but they all start with same principle up seperating the constant mass properties from the dynamic states in the equations of motion. To accomplish this, it helps to define the following variables
-
-\begin{equation}
-    \bm{\Omega} =
-        \begin{bmatrix}
-            \omega_1 & 0 & 0 & -\omega_2 & -\omega_3 & 0 \\
-            0 & \omega_2 & 0 & -\omega_1 & 0 & -\omega_3 \\
-            0 & 0 & \omega_3 & 0 & -\omega_1 & -\omega_2
-        \end{bmatrix}
-\end{equation}
-\begin{equation}
-    \bm{x} = \begin{bmatrix}
-        J_{xx} & J_{yy} & J_{zz} & J_{xy} & J_{xz} & J_{yz} & m_s\,r_x & m_s\,r_y & m_s\,gr_z
-    \end{bmatrix}^T
-\end{equation}
-Here, $\bm{\Omega}$ is formulated to simplfy the resulting algebra, while $\bm{x}$ is formulated to fully encode all of the simulator's mass properties.
-
-Using these values, the original equations of motion in \Cref{equation:starting_eom} can be exactly rewritten as 
-\begin{equation}\label{equation:no_MEDs}
-    \begin{bmatrix}
-        \dot{\bm{\Omega}}+\bm{\omega}^{\times}\bm{\Omega} & \bm{g}^{\times}
-    \end{bmatrix}\bm{x}
-    =\bm{0}
-\end{equation}
-with the goal being to eventually solve for $\bm{x}$. To avoid nullspace solutions (which give physically invalid mass properties), additional terms must be introduced to the right hand side. This is done through the use of momentum exchange devices which changes \Cref{equation:no_MEDs} into 
-\begin{equation}\label{equation:with_MEDs}
-    \begin{bmatrix}
-    \dot{\bm{\Omega}}+\bm{\omega}^{\times}\bm{\Omega} & \bm{g}^{\times}
-    \end{bmatrix}\bm{x}
-    =-\dot{\bm{h_c}} - \bm{\omega}^{\times}\bm{h_c}
-\end{equation}
-
-where $\bm{h}_c$ represents the total angular momentum of the MEDs. Additionally, to avoid taking the numerical derivative of the noisy signal $\bm{\omega}$ (which will come from gyroscopes), both sides of \Cref{equation:with_MEDs} are integrated with resepct to time which results in 
-\begin{equation}\label{equation:LSM_no_k}
-    \begin{bmatrix}
-    \int_{t_0}^{t}\dot{\bm{\Omega}}+\bm{\omega}^{\times}\bm{\Omega}\,dt & \int_{t_0}^{t}\bm{g}^{\times}\,dt
-    \end{bmatrix}\bm{x}
-    =-{\bm{h_c}} - \int_{t_0}^{t}\bm{\omega}^{\times}\bm{h_c}\,dt
-\end{equation}
-
-For each timestep $k$ where a measurement is taken, a new $\bm{A}$ and $\bm{T}$ matrix are created using
-\begin{equation}
-    \bm{A}_k=\begin{bmatrix}
-    \int_{t_0}^{t_k}\dot{\bm{\Omega}}+\bm{\omega}^{\times}\bm{\Omega}\,dt & \int_{t_0}^{t_k}\bm{g}^{\times}\,dt
-    \end{bmatrix}
-\end{equation}
-\begin{equation}
-    \bm{T}_k=-{\bm{h_c}} - \int_{t_0}^{t}\bm{\omega}^{\times}\bm{h_c}\,dt
-\end{equation}
-which allows \Cref{equation:LSM_no_k} to be rewritten as 
-\begin{equation}\label{equation:LSM_with_k}
-    \bm{A}_k\bm{x}=\bm{T}_k
-\end{equation}
-
-Since all measurements are corrupted by noise, there will not be any single value of $\bm{x}$ that will satisfy \Cref{equation:LSM_with_k} for all $k$. Instead, the key idea with least squares estimation methods is to find a value of $\bm{x}$ that minimizes the error in \Cref{equation:LSM_with_k} across all $k$. The most common way to achieve this is to create augmented versions of $\bm{A}$ and $\bm{T}$ as
-\begin{equation}
-    \bar{\bm{A}}=\begin{bmatrix}
-        \bm{A}_0 & \bm{A}_1 & \cdots & \bm{A}_n
-    \end{bmatrix}\in \mathbb{R}^{3n \times 9}
-\end{equation}
-\begin{equation}
-    \bar{\bm{T}}=\begin{bmatrix}
-        \bm{T}_0 & \bm{A}_1 & \cdots & \bm{T}_n
-    \end{bmatrix}\in \mathbb{R}^{3n \times 1}
-\end{equation}
-where $n$ is the total number of measurements. $\bm{x}$ is finally computed using 
-\begin{equation}
-    \bm{x}=\bar{\bm{A}}^{\dagger}\bar{\bm{T}}
-\end{equation}
-The offline batch estimation method requires that multiple tests are run, adjusting the sliding masses after each run using \Cref{equation:delta_d_sol} or \Cref{equation:delta_d_pseudo_sol}. Assuming actuators like reaction wheels are available, this method's main advantage is it's ease of implementation. By doing all of the estimation and data processing offline, no custom software needs to be written for the simulator's onboard computer. In fact, exciting the system using this method does not require the simulator to have a working feedback controller, allowing this method to be adopted early in the design of a simulator. Researches have demonstrated success using simple open loop control to ensure that the body rates of the simulator follow a sinusoidal pattern \cite{kim_automatic_2009} \cite{dam_applied_2014} \cite{noauthor_designing_2003}.
-
-
-
-\section{Kalman Filtering for Inbalance Estimation  - should be subsection of passive methods}
-
-Kalman filters have extensive precedent for estimating unknown parameters in dynamic systems for aerospace applications. In traditional spacecraft attitude determination and control, the Extended Kalman Filter is the primary method for determining spacecraft body rates and attitude. While a general derivation of the Kalman filter and its' variations is beyond the scope of this thesis, a brief background of it's application in spacecraft ADCS is important. Here, the state vector of the system is formulated as
-\begin{equation}\label{equation:EKF_state_vec}
-    \bm{x} = \begin{bmatrix}\bm{\omega} \\ \bm{q} \end{bmatrix}
-    =\begin{bmatrix}
-        \bm{\omega} \\ \eta \\ \bm{\epsilon}
-    \end{bmatrix}
-    =\begin{bmatrix}
-        \bm{\omega} & q_0 & q_1 & q_2 & q_3
-    \end{bmatrix}^T
-\end{equation}
-where $\bm{q}$ represents the spacecraft's attitude in the form of a quaternion. In this work, $\bm{q}$ is defined as a frame rotation from the body frame to the inertial frame, with the real part $\eta$ of the quaternion first ($\eta$ = $q_0$). The spacecraft quaternion at any point may be directly converted into a direction cosine matrix using the following
-\begin{equation}\label{equation:C_from_q}
-    \bm{C}_{\mathcal{N}\leftarrow\mathcal{B}}(\bm{q})=
-    \begin{bmatrix}
-    2q_0^{2}+2q_1^{2}-1 & 2(q_1 q_2 + q_0 q_3) & 2(q_1 q_3 - q_0 q_2) \\
-    2(q_1 q_2 - q_0 q_3) & 2q_0^{2}+2q_2^{2}-1 & 2(q_2 q_3 + q_0 q_1) \\
-    2(q_1 q_3 + q_0 q_2) & 2(q_2 q_3 - q_0 q_1) & 2q_0^{2}+2q_3^{2}-1
-    \end{bmatrix}
-\end{equation}
-where $\bm{C}_{\mathcal{N}\leftarrow\mathcal{B}}$ again represents the frame rotation from $\mathcal{B}$ to $\mathcal{N}$. This means $\bm{C}_{\mathcal{N}\leftarrow\mathcal{B}}$ satisfies the following properties
-\begin{equation}
-    \bm{v}^{\mathcal{N}} = 
-    \bm{C}_{\mathcal{N}\leftarrow\mathcal{B}}\bm{v}^{\mathcal{B}}
-\end{equation}
-\begin{equation}
-    \bm{v}^{\mathcal{B}} = 
-    \bm{C}_{\mathcal{N}\leftarrow\mathcal{B}}^T\bm{v}^{\mathcal{N}}
-    =\bm{C}_{\mathcal{B}\leftarrow\mathcal{N}}\bm{v}^{\mathcal{N}}
-\end{equation}
-where $\bm{v}^{\mathcal{B}}$ represents some physical vector expressed in $\mathcal{B}$ and $\bm{v}^{\mathcal{N}}$ represents the same vector expressed in $\mathcal{N}$. In the standard EKF for spacecraft ADCS, the system state must be discretely propagated forward at each iteration. This is always done through some form of numerical integration, such as
-\begin{equation}\label{equation:forward_euler}
-    \bm{x}_{k} = \bm{x}_{k-1}+T\bm{f}(\bm{x}_{k-1},\bm{u}_{k-1})
-\end{equation}
-where $T$ is the discrete sample period, $k$ is the iteration number, and $\bm{u}$ is the control input. \Cref{equation:forward_euler} uses forward Euler integration, but higher-order schemes may also be used. Using quaternion kinematics, an exact expression for $\bm{f}$ can be derived which results in
-\begin{equation}
-    \bm{f}(\bm{x}_{k-1})=
-    \begin{bmatrix}
-    
-    \bm{J}^{-1}(-\bm{\omega}_{k-1}^{\times}\bm{J}\bm{\omega}_{k-1})+\bm{u}_{k-1} \\
-
-    -\frac{1}{2}\bm{\epsilon}_{k-1}^T\bm{\omega}_{k-1} \\
-
-    \frac{1}{2}(\eta_{k-1}\mathbb{1} +
-    \bm{\epsilon}_{k-1}^{\times})\bm{\omega}_{k-1}
-
-    \end{bmatrix}
-\end{equation}
-where $\bm{\omega}_{k-1}$, $\bm{\epsilon}_{k-1}$, and $\eta_{k-1}$ are all taken directly from $\bm{x}_{k-1}$ according to \Cref{equation:EKF_state_vec}. Next, the propagated state is corrected using a set of measurements $\bm{y}$. These traditionally come from a variety of sensors, namely star trackers, magnetometers, and sun sensors. All of these work as valid measurements provided there is some function that can transform the system state into a measurement using $\bm{y} = \bm{h}(\bm{x})$. The process function and measurement function $\bm{f}$ and $\bm{h}$ may then be used to implement a variety of variations of the Kalman filter to obtain estimates of the state in the presence of process noise and measurement noise.
-
-
-
-To extend these methods to estimate the vertical inbalance $r_z$, the state vector of the dynamic system is written as 
-\begin{equation}
-    \bm{x} = \begin{bmatrix} \bm{\omega} & \bm{q} & r_z \end{bmatrix}^T
-\end{equation}
-and the associated dynamic function $\bm{f}(\bm{x}_{k-1})$ is
-\begin{equation}
-    \bm{f}(\bm{x}_{k-1}) = \begin{bmatrix}
-        \bm{J}^{-1}(-\bm{\omega}_{k-1}^\times \bm{J\omega}_{k-1} + m_s
-        (\begin{bmatrix}
-            0 & 0 & r_z
-        \end{bmatrix}^T)^{\times}\bm{g}_{k-1})
-        \\
-        -\frac{1}{2}\bm{\epsilon}_{k-1}^T\bm{\omega}_{k-1} 
-        \\
-        \frac{1}{2}(\eta_{k-1}\mathbb{1} + \bm{\epsilon}_{k-1}^{\times})\bm{\omega}_{k-1}
-        \\
-        0
-    \end{bmatrix}
-\end{equation}
- While sensors like star trackers and magnetometers are crucial for precise attitude determination, filtering for the inbalance vector $\bm{r}$ with a free tumbling simulator can be done using soley body rate measurements. The measurement vector with this approach then is simply $\bm{y}=\bm{\omega}$ and the measurement equation becomes
-\begin{equation}
-    \bm{h}(\bm{x})= \begin{bmatrix}
-        \mathbb{1}_{3\times\,3} & \bm{0}_{3\times\,5}
-    \end{bmatrix}\bm{x}
-\end{equation}
-
-This process and measurement model serve as a basline to implement either an Unscented Kalman Filter - with measurements purely being provided by an IMU in the form of $\bm{\omega}$, and the state $r_z$ being filtered for. \cite{silva_filtering_2018} provides an in-depth analysis of these filters' performance and their variations
-
-\subsection*{Sigma Point Generation}
-
-To handle the nonlinear process model without explicit linearization, the UKF constructs a set of $2n+1$ sigma points about the mean state $\bm{x}_{k-1}$ and covariance $\bm{P}_{k-1}$. These points capture the first and second moments of the state distribution and are given by
-\begin{equation}
-    \bm{X}_{k-1}^{(i)} =
-    \begin{cases}
-        \bm{x}_{k-1}, & i = 0 \\[3pt]
-        \bm{x}_{k-1} + \bm{r}_i, & i = 1,\dots,n\\[3pt]
-        \bm{x}_{k-1} - \bm{r}_{i-n}, & i = n+1,\dots,2n
-    \end{cases}
-\end{equation}
-where $\bm{r}_i$ are the columns of $\sqrt{(n+\lambda)\bm{P}_{k-1}}$ obtained via Cholesky decomposition. The scaling parameter $\lambda = \alpha^2(n+\kappa) - n$ is computed from the tuning parameters $\alpha$, $\kappa$, and $\beta$, which control the spread and weighting of the sigma points.
-
-Each sigma point is then propagated through the dynamic model $\bm{f}(\cdot)$ over a timestep $T$:
-\begin{equation}
-    \bm{X}_k^{(i)} = \bm{f}(\bm{X}_{k-1}^{(i)})\,T + \bm{X}_{k-1}^{(i)}.
-\end{equation}
-The quaternion portion of each propagated point is normalized to maintain valid orientation representation.
-
-\subsection*{Prediction Step}
-
-The predicted mean and covariance are computed using the weighted sigma points:
-\begin{equation}
-    \bm{x}_k^- = \sum_{i=0}^{2n} W_m^{(i)} \bm{X}_k^{(i)}, \qquad
-    \bm{P}_k^- = \sum_{i=0}^{2n} W_c^{(i)}(\bm{X}_k^{(i)} - \bm{x}_k^-)(\bm{X}_k^{(i)} - \bm{x}_k^-)^T + \bm{Q},
-\end{equation}
-where $\bm{Q}$ is the process noise covariance matrix. The weights $W_m^{(i)}$ and $W_c^{(i)}$ correspond to the mean and covariance weights, defined as
-\begin{align}
-    W_m^{(0)} &= \frac{\lambda}{n+\lambda}, &
-    W_c^{(0)} &= \frac{\lambda}{n+\lambda} + (1-\alpha^2+\beta),\\
-    W_m^{(i)} &= W_c^{(i)} = \frac{1}{2(n+\lambda)}, \quad i=1,\dots,2n.
-\end{align}
-
-\subsection*{Measurement Prediction and Update}
-
-Each propagated sigma point is passed through the measurement model:
-\begin{equation}
-    \bm{Y}_k^{(i)} = \bm{h}(\bm{X}_k^{(i)}),
-\end{equation}
-and the predicted measurement mean and covariance are then
-\begin{align}
-    \hat{\bm{y}}_k^- &= \sum_{i=0}^{2n} W_m^{(i)} \bm{Y}_k^{(i)},\\
-    \bm{P}_y &= \sum_{i=0}^{2n} W_c^{(i)}(\bm{Y}_k^{(i)} - \hat{\bm{y}}_k^-)(\bm{Y}_k^{(i)} - \hat{\bm{y}}_k^-)^T + \bm{R},
-\end{align}
-where $\bm{R}$ is the measurement noise covariance matrix. The cross-covariance between the state and measurement is
-\begin{equation}
-    \bm{P}_{xy} = \sum_{i=0}^{2n} W_c^{(i)}(\bm{X}_k^{(i)} - \bm{x}_k^-)(\bm{Y}_k^{(i)} - \hat{\bm{y}}_k^-)^T.
-\end{equation}
-
-The Kalman gain is then computed as
-\begin{equation}
-    \bm{K}_k = \bm{P}_{xy}\bm{P}_y^{-1},
-\end{equation}
-and the state and covariance are corrected using the actual measurement $\bm{y}_k$:
-\begin{align}
-    \bm{x}_k &= \bm{x}_k^- + \bm{K}_k(\bm{y}_k - \hat{\bm{y}}_k^-),\\
-    \bm{P}_k &= \bm{P}_k^- - \bm{K}_k\bm{P}_y\bm{K}_k^T.
-\end{align}
-Finally, the quaternion portion of $\bm{x}_k$ is renormalized, and the estimated imbalance uncertainty is reported as
-\begin{equation}
-    \sigma_{r_z} = \sqrt{P_{k,(r_z,r_z)}}.
-\end{equation}
-
-\section{Active Control for Balancing}
-
-In active balancing methods, the positions of each mass are controlled in real time by linear actuators. The control law is designed to reduce the effect of the $m_s\bm{r}^{\times}\bm{g}$ in the original equations of motion to zero. The torques commanded may be generated with momentum exchange devices or by actuating the masses. If the latter is chosen, the original equations of motion are formulated as
-\begin{equation} \label{equation:EomWithTau}
-    \bm{J}\dot{\bm{\omega}} + \bm{\omega}^\times \bm{J\omega} 
-    = m_s(\bm{r}_0+\Delta\bm{r})^{\times}\bm{g}
-\end{equation}
-and because the cross product is distributive over vector addition, the above equation becomes
-\begin{equation} \label{equation:EomWithTau}
-    \bm{J}\dot{\bm{\omega}} + \bm{\omega}^\times \bm{J\omega} 
-    = m_s\bm{r}_0^{\times}\bm{g} + m_s\Delta\bm{r}^{\times}\bm{g}
-\end{equation}
-The relationship between mass actuation and torque is found to be
-\begin{equation} 
-    m_s\Delta\bm{r}^{\times}\bm{g} = \bm{\tau}
-\end{equation}
-Thus a commanded torque $\bm{\tau}$ may be converted into a value for $\Delta\bm{r}$ using
-\begin{equation}\label{equation:torque_to_del_r}
-    \Delta\bm{r}=\frac{\bm{g}^{\times}\bm{\tau}}{m_s||\bm{g}||^2}
-\end{equation}
-and the corresponding commanded positions for each mass are found using \Cref{equation:delta_d_sol} or \Cref{equation:delta_d_pseudo_sol}. If torques are generated in this manner, then the system becomes underactuated as the masses can only generate torques orthogonal to the gravity vector. For the analysis of these methods, it is useful define the projection operation $\bm{P}$ as
-\begin{equation}
-    \bm{P}=\mathbb{1}-\frac{\bm{g}(\bm{g}^T)}{||\bm{g}||^2}
-\end{equation}
-Multiplication of any vector by $\bm{P}$ will project the vector into the plane orthogonal to  $\bm{g}$. Let $\bm{v}_p$ be the component of $\bm{v}$ orthogonal to $\bm{g}$ and $\bm{v}_g$ be the component of $\bm{v}$ parallel to $\bm{v}$. Both may be computed using the following
-\begin{equation}
-    \bm{v}_p = \bm{Pv}
-\end{equation}
-\begin{equation}
-    \bm{v}_g=\bm{v}-\bm{v}_p
-\end{equation}
-Because of the underactuation constraint, the methods described in \Cref{sec:under_adaptive} and \Cref{sec:under_PID} only guarantee to place the resulting center of mass in line with the gravity vector, or equivalently, it may only be used to balance $r_x$ and $r_y$. \Cref{sec:3_axis_adaptive} describes a method to simultaneously balance all three componenets of $\bm{r}$ with the aid of momentum exchange devices. 
-
-\subsection{Underactuated PID Control}\label{sec:under_PID}
-
-A straighforward approach to reduce the gravity torque to zero is to command the simulator into an equilibrium where $\hat{\bm{z}}_B=-\hat{\bm{g}}$ using soley the sliding masses. Such a position is shown in \Cref{fig:mbs_null_sol}. If the system converges to a state where $\hat{\bm{z}}_B=-\hat{\bm{g}}$ and no control torques are being applied, then it must be the case that $r_x=r_y=0$, though nothing can be concluded for $r_z$.
-
-A quaternion feedback controller can be used to command the system into this state, where the desired quaternion is converted from a set of desired Euler angles. The desired Euler angles here are zero for roll and pitch, with yaw being arbitrary. Letting $\bm{q}_d$ be this desired quaternion, the error quaternion $\bm{q}_e$ is calculated with
-\begin{equation}
-    \bm{q}_e = \bm{q}\otimes\bm{q}_d
-\end{equation}
-where $\otimes$ represents noncommunative quaternion multiplication. The commanded torque is then computed from this error. Many spacecraft feedback controllers use a law of the form
-\begin{equation}\label{equation:spacecraft_PD}
-    \bm{\tau} = -\bm{K}_p\,sign(\eta_e)\bm{\epsilon}_e-\bm{K}_d\bm{\omega}
-\end{equation}
-which functions as a PD controller with $\bm{K}_p$ and $\bm{K}_d$ representing proportional and derivative gains. In the presence of a constant distrubance such as gravitional torques, a PD controller alone will accumulate steady-state error. To extend this to a simulator under the influence of gravity, integral action must be added. The modified control law is
-\begin{equation}
-    \bm{\tau} = -\bm{K}_p\,sign(\eta_e)\bm{\epsilon}_e
-    -\bm{K}_i\int\,sign(\eta_e)\bm{\epsilon}_e\,dt
-    -\bm{K}_d\bm{\omega}
-\end{equation}
-where $\bm{K}_i$ is a new integral gain. Generating this torque using sliding masses means that $\tau_z$ will be ignored in the mapping from \Cref{equation:torque_to_del_r}. In practice, this causes the simulator to have no control about it's yaw axis which is permissible here since the desired state of ${\bm{z}}_B=-\hat{\bm{g}}$ is independent of yaw.
- 
-\subsection{Underactuated Adaptive Control}\label{sec:under_adaptive}
-The approach shown here is developed by Chesi in~\cite{chesi_automatic_2014}.
-
-The equations of motion remain the same with a control torque $\bm{\tau}$ introduced
-\begin{equation} \label{equation:EomWithTau}
-    \bm{J}\dot{\bm{\omega}} + \bm{\omega}^\times \bm{J\omega} 
-    = m_s\bm{r}_0^{\times}\bm{g} + \bm{\tau}
-\end{equation}
-
-The proposed control torque is defined as
-\begin{equation}\label{equation:proposed_adaptive}
-    \bm{\tau} = m_s\bm{g}^\times\bm{\hat{r}}_0 - k_p\bm{\omega}_p
-\end{equation}
-where $k_p$ is a tunable gain,  and $\hat{\bm{r}}_0$ is an estimate for the true inital center of mass ${\bm{r}}_0$.  $\hat{\bm{r}}_0$ is determined by the proposed adaptive law given by
-\begin{equation} \label{equation:adaptive_law}
-    \dot{\hat{\bm{r}}}_0 = -(m_s\bm{g}^{\times})^T\bm{\omega}
-\end{equation}
-\Cref{equation:proposed_adaptive} and \Cref{equation:adaptive_law} combined provide a way to generate a commanded torque using meausrements of $\bm{\omega}$ and $\bm{g}$. 
-
-To determine the stability of the closed-loop system, a Lyapunov analysis is performed. The chosen states for analysis are $\bm{\omega}$, $\bm{g}$ and $\tilde{\bm{r}}_0$, where $\tilde{\bm{r}}_0$ is the error in the $\bm{r}_0$ estimator computed from
-\begin{equation}\label{equation:r_relations}
-    \bm{r}_0= \tilde{\bm{r}}_0+\hat{\bm{r}}_0
-\end{equation} 
-Lyapunov function and its derivative are chosen to be 
-\begin{equation}
-    {V} = \frac{1}{2}\bm{\omega}^T\bm{J\omega} + \frac{1}{2}\tilde{\bm{r}}_0^T\tilde{\bm{r}}_0 + \frac{1}{2}\bm{q}^T\bm{q}
-\end{equation}
-\begin{align}
-    \dot{V} &= \bm{\omega}^T(-\bm{\omega}^\times \bm{J\omega} 
-    -m_s\bm{g}^{\times}\bm{r}_0 + \bm{\tau}) 
-    + \tilde{\bm{r}}_0^T\dot{\tilde{\bm{r}}}_0 \\
-    &= -\bm{\omega}^Tm_s\bm{g}^{\times}\bm{r}_0+\bm{\omega}^T\bm{\tau}
-    + \tilde{\bm{r}}_0^T\dot{\tilde{\bm{r}}}_0
-\end{align}
-
-Next the proposed control torque in \Cref{equation:proposed_adaptive} is substituted for $\bm{\tau}$, \Cref{equation:r_relations} is substituted for $\bm{r}_0$, and \Cref{equation:adaptive_law} is substituted for $\dot{\hat{\bm{r}}}_0$. Expanding and then simplifying the leads to
-\begin{equation}
-    \dot{V} = -k_p\bm{\omega}^T\bm{\omega}_p
-\end{equation}
-\begin{equation}
-    \dot{V} = -k_p(\bm{\omega}_p+\bm{\omega}_g)^T\bm{\omega}_p
-\end{equation}
-Using the property that $\bm{\omega}_g^T\bm{\omega}_p=\bm{0}$ (due to orthogonality), the final expression for $\dot{V}$ is
-\begin{equation}\label{equation:final_V_dot}
-    \dot{V} = -k_p||\bm{\omega}_p||^2
-\end{equation}
-
-Since $\dot{V}$ is negative semidefinite, the closed-loop system is Lyapunov stable. Additionally, under LaSalle's Invariance Principle, the system's state will converge to the largest invariant set in $\{\bm{x}:\dot V(\bm{x})=0 \}$, or $\{\bm{\omega}_p=\bm{0}\}$. Referring again to \Cref{fig:mbs_null_sol}, this corresponds to a state where the simulator is upright ($\hat{\bm{z}}_b$ points opposite of $\bm{g}$) and has no angular velocity about its horizontal axes ($\omega_x=\omega_y=0$). 
-
-% To determine the accuracy of the estimator, the dynamics of the system in the set $\{\bm{x}:\dot V(\bm{x})=0 \}$ are analyzed. The starting equations of motion in \Cref{equation:EomWithTau} are premultiplied by $\bm{P}$ and $\bm{\omega}_p=\bm{0}$ is enforced which leads to
-% \begin{equation}
-%     \bm{0}=\bm{PJ}^{-1}(m_s\bm{r}^{\times}\bm{g}+m_s\bm{g}^\times\bm{\hat{r}}) 
-% \end{equation}
-% Since the simulator is upright, $\bm{P}$ becomes constant, and $g_x=g_y=0$. Additionally the above equation can be expressed in terms of $\tilde{\bm{r}}$ using \Cref{equation:r_relations} leading to the uncoupled system of equations
-% \begin{equation}
-%     \bm{0}=m_s\begin{bmatrix}
-%     1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 0
-%     \end{bmatrix}
-%     \begin{bmatrix}
-%     J_{xx}^{-1} & 0 & 0 \\ 0 & J_{yy}^{-1} & 0 \\ 0 & 0 & J_{zz}^{-1}
-%     \end{bmatrix}
-%     \begin{bmatrix}
-%     0 & g_z & 0 \\ -g_z & 0 & 0 \\ 0 & 0 & 0
-%     \end{bmatrix}
-%     \begin{bmatrix}
-%     \tilde{r}_x  \\ \tilde{r}_y \\ \tilde{r}_z
-%     \end{bmatrix}
-% \end{equation}
-% which when explicitly written out become
-% \begin{subequations}
-%     \begin{align*}
-%       &0 = J_{xx}^{-1}g_z\tilde{r}_y \\
-%       &0 = -J_{yy}^{-1}g_z\tilde{r}_x \\
-%       &0 = 0\times\tilde{r}_z 
-%     \end{align*}
-% \end{subequations}
-
-
-\begin{figure}
-    \centering
-    \input{figures/mbs_null_sol.tikz}
-    \caption{A center of mass placement that reduces the torque due to gravity to zero, but does not vertically balance the simulator}
-    \label{fig:mbs_null_sol}
-\end{figure}
-
-\subsection{3-Axis Adaptive Control}\label{sec:3_axis_adaptive}
-3-axis adaptive control uses MEDs as method to externally excite the platform. The excitation is chosen such that simulator is never able to settle in the state shown in \Cref{fig:mbs_null_sol}. By ensuring that $\bm{r}$ is never parallel to $\bm{g}$, the only way to reduce the contribution of the term $m_s\bm{r}^{\times}\bm{g}$ in \Cref{equation:EomWithTau} to zero is to force the norm of $\bm{r}$ to be zero, thus simultaneously balancing $r_x$, $r_y$, and $r_z$. 
-
-Let $\bm{h}_s$ denote the total angular momentum of the simulator excluding MEDs, which under the assumption from \Cref{equation:h_m_eq_0} is simply computed by $\bm{h}_s=\bm{J\omega}$. Next, let $\bm{h}_d$ be a predetermined desired momentum of the simulator. The proposed 3-axis control law from \cite{kim_automatic_2009} is
-\begin{equation}
-    \bm{\tau}=\bm{K}(\bm{h}_s-\bm{h}_d)+\bm{\omega}^{\times}\bm{h}_s+\dot{\bm{h}}_d
-\end{equation}
-where $\bm{K}$ is a tunable, SPD matrix. It is important to make the distinction here that $\bm{\tau}$ is purely generated by external MEDs and not the sliding masses. The sliding masses positions' are rather governed by a new adaptive law
-\begin{equation}\label{equation:3_axis_adaptive_law}
-    \Delta\dot{\bm{r}}=m_s\bm{\Gamma}(\bm{g}^{\times})^T(\bm{h}_s-\bm{h_d})
-\end{equation}
-where $\bm{\Gamma}$ is another tunable SPD matrix. The original equations of motion from \Cref{equation:EomWithTau} with the above $\bm{\tau}$ substituted are
-\begin{equation}
-    \dot{\bm{h}_s}+\bm{\omega}^{\times}\bm{h}_s=m_s\bm{r}^{\times}\bm{g}+
-    \bm{K}(\bm{h}_s-\bm{h}_d)+\bm{\omega}^{\times}\bm{h}_s+\dot{\bm{h}}_d
-\end{equation}
-which when simplified and rearranged leads to the result
-\begin{equation}\label{equation:h_dot_result}
-    \dot{\bm{h}_s}-\dot{\bm{h}}_d=m_s\bm{r}^{\times}\bm{g}+
-    \bm{K}(\bm{h}_s-\bm{h}_d)
-\end{equation}
-
-To determine the behaviour of the proposed controller, a Lyapunov function and it's derivative are introduced. Letting $\bm{e}_h=\bm{h}_s-\bm{h}_d$ be the error between the desired and actual momentum, $V$ and $\dot{V}$ may be written as
-\begin{equation}
-    V(\bm{e}_h,\Delta\bm{r})=\frac{1}{2}\bm{e}_h^T\bm{e}_h
-    +\frac{1}{2}(\bm{r}_0+\Delta\bm{r})^T\bm{\Gamma}^{-1}(\bm{r}_0+\Delta\bm{r})
-\end{equation}
-\begin{equation}
-    \dot{V}=\bm{e}_h^T\dot{\bm{e}}_h
-    +(\bm{r}_0+\Delta\bm{r})^T\bm{\Gamma}^{-1}\Delta\dot{\bm{r}}
-\end{equation}
-After substituting the proposed adaptive law in \Cref{equation:3_axis_adaptive_law} and the result from \Cref{equation:h_dot_result}, the derivative simplifies to 
-\begin{equation}
-    \dot{V}=-\bm{e}_h^T\bm{K}\bm{e}_h
-\end{equation}
-$\dot{V}$ is negative semidefinite, so the system is Lyapunov stable. Again, under LaSalle's Invariance Principle, the system's state will converge to the largest invariant set in $\{\bm{x}:\dot V(\bm{x})=0 \}$, or $\{\bm{e}_h=\bm{0}\}$. The error dynamics from \Cref{equation:h_dot_result} in this set are
-\begin{equation}
-    \dot{\bm{e}}_h=m_s\bm{r}^{\times}\bm{g}
-\end{equation}
-To satisfy invariance, $\dot{\bm{e}}_h$ must equal $\bm{0}$, and if the MEDs ensure that $\bm{r}$ and ${\bm{g}}$ are never parallel, then the system must approach a state where $||\bm{r}||=\bm{0}$. Thus, the proposed controller simultaneously balances $r_x$, $r_y$, and $r_z$. 
-
-\section{Mass Balancing Hardware}
+\section{Mass Balancing System Survey}
 
 The balancing methods described above rely on physical actuators and sensors to enable either real-time control for active methods, or body rate and attitude data for passive methods. The choice of actuators and sensors shapes which methods are feasible and the quality of the balancing results.
+
+\subsection{Historical Development}
 
 \subsection{Actuators}
 
@@ -515,7 +19,7 @@ All balancing methods above require measurements for body rates and attitude. An
 
 IMU performance is characterized by a few key factors. The most influential is noise density, which is directly tied to the variance of the rate measurements \cite{unsal_estimation_2012}. Integrating these noisy rate measurements can cause error in the attitude estimate to accumulate, referred to as angular random walk. Bias instability is another factor that refers to how fast bias in the rate measurements changes over time. For low quality IMUs, bias instability can have an impact on even short duration tests. Bandwidth and sample rate are two other factors that collectively describe what frequency dynamics the IMU can accurately capture, but given the slow dynamics of spacecraft simulators, most sensor configurations will satisfy these requirements.
 
-\subsection{Hardware Survey}
+\subsection{Survey Results}
 
 \Cref{table:existing_testbeds} summarizes the sensor and actuator combinations reported in a variety of simulators found in literature. The physical scale of each platform and balancing performance can also be seen. 
 
@@ -575,13 +79,14 @@ Batch Estimation and Filtering \newline $<\SI{5}{\micro\metre}$ \\
 \textit{Note: Balancing results are included as reported. Results are either listed as the maximum torque due to gravity measured during testing or the estimated center of mass offset.}
 \end{table}
 
-\section{Cal Poly SADS MBS Design} 
+\section{Cal Poly SADS MBS Design and History} 
 
 The Cal Poly SADS has been developed by students and faculty since it was first introduced in 2007. The simulator features a welded aluminum structure on top of a spherical air-bearing, with four slots intended for a pyramidal reaction wheel configuration. Slots were additionally cutout along the base of the structure with mass blocks inserted. The positions of these blocks could be adjusted by hand, thus serving as the first iteration of the mass balancing system. \Cref{fig:V1} shows this first iteration, where reaction wheels and cutout slots can be seen.
-\begin{figure}[h]\label{fig:V1}
+
+\begin{figure}[h]\label{fig:gillman_final_work}
     \centering
-    \includegraphics[width=0.80\linewidth]{figures/SADS_V1.PNG}
-    \caption{The first iteration of the Cal Poly SADS \cite{mittelsteadt_cal_2007}}
+    \includegraphics[width=0.90\linewidth]{figures/FMB.png}
+    \caption{The coarse mass balances (left) and fine mass balances (right) on the previous iteration~\cite{gilman_automatic_2024}}
 \end{figure}
 
 The has system undergone numerous changes since 2007, some of which are detailed in \Cref{sec:previous_work}. The most relevant change is the installation of an LN-200 IMU, which has excellent noise characteristics as shown in \Cref{table:existing_testbeds}. Beginning in 2023 an effort began to completely overhaul the hardware onboard the SADS. This includes the development of a new set of reaction wheels, a new flight computer, as well as replacing the manual sliding masses with a new set controlled by linear actuators. Current reaction wheel development is documented in~\cite{nalley2025development}, which resulted in the design and integration of one complete wheel to the simulator. Work on a new flight computer remains unstarted, and development of the new mass balancing system is documented in~\cite{gilman_automatic_2024}, which resulted in the design of a new set of prototype linear actuators. 
@@ -591,4 +96,45 @@ The has system undergone numerous changes since 2007, some of which are detailed
     \caption{Linear actuator set developed in~\cite{gilman_automatic_2024}}
 \end{figure}
 The actuators follow the same layout as the previous iteration with six-sliding masses - two for each axis. The masses slide along a ballscrew driven by DC motors with positional feedback from rotary encoders. However when mounted on the simulator as shown in \Cref{fig:gillman_final_work}, the motors struggle to move the masses. This may be acceptable for passive balancing but is not suitable for active balancing where positions must be precisely controlled in real-time. Additionally without the flight computer, the actuators remain unproven in any real tests with a live air-bearing. 
+
+\begin{table}[h!]
+\caption{Summary of previous work on the Cal Poly Spacecraft Attitude Dynamics Simulator (SADS)}
+\label{table:sads_history}
+\centering
+\renewcommand{\arraystretch}{1.4} % row height
+
+\begin{tabularx}{\textwidth}{
+    >{\raggedright\arraybackslash}p{4cm}   % Author/Year
+    >{\raggedright\arraybackslash}p{5cm}   % Title
+    >{\raggedright\arraybackslash}X}       % Notes
+\hline
+\textbf{Author / Year} & \textbf{Title} & \textbf{Notes} \\
+\hline
+Mittelsteadt, Mehiel [2007] & 
+Cal Poly Spacecraft Attitude Dynamics Simulator: CP/SADS & 
+First iteration of the Cal Poly SADS, purely manual balancing \\[2.0em]
+
+Silva [2010] & 
+Applied System Identification for a Four Wheel Reaction Wheel Platform & 
+Introduced least squared estimation method to estimate center of mass \\[2.0em]
+
+Dam [2014] & 
+Applied Mass Properties Identification Method to the Cal Poly's Spacecraft Simulator & 
+Used least squared estimation method with significantly improved measurement system \\[2.0em]
+
+Gilman [2024] & 
+Automatic Mass Balancing of a Spacecraft Attitude Dynamics Simulator with Six Sliding Masses & 
+Completely replaced mass balancing hardware, only performed hardware-in-the-loop tests \\
+\hline
+\end{tabularx}
+\end{table}
+
+\section{Thesis Objectives}
+
+The primary goal of this thesis is to design, integrate and test a low-cost mass balancing system that achieves similar or better balancing results than previous iterations - namely the hardware results achieved by Dam in 2014. To achieve this, work will also need to be done on the SADS' overall design \textit{still need to formalize this}
+- A prototype flight computer that is compatible with Simulink Coder
+- An IMU and measurement system
+
+- provide practical insights on MBS design and implementation
+- Compare the results of various balancing methods found in literature on the same platform, provide a clear comparison to simulated and real results
 

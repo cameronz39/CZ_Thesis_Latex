@@ -1,4 +1,4 @@
-\chapter{Results and Discussion}
+\chapter{Results and Discussion}\label{chap:results}
 
 
 
@@ -144,14 +144,14 @@ The least-squares estimation method is simulated using the intended four reactio
 \begin{figure}[p]
     \centering
     \includegraphics[width=\linewidth]{plots/LSR_sim_confidence.pdf}
-    \caption{Comparison between estimated and true values}
+    \caption{Simulated comparison between estimated and true values for $r_x$ using four reaction wheels}
     \label{fig:LSR_sim_confidence}
 \end{figure}
 
 \begin{figure}[p]
     \centering
     \includegraphics[width=\linewidth]{plots/LSR_sim_confidence_1_wheel.pdf}
-    \caption{Comparison between estimated and true values}
+    \caption{Simulated comparison between estimated and true values for $r_x$ using one reaction wheel}
     \label{fig:LSR_sim_confidence_1_wheel}
 \end{figure}
 
@@ -163,9 +163,9 @@ The least-squares estimation method is simulated using the intended four reactio
 \end{figure}
 
 
-The estimated value for $\bm{r}$ over the course 10 iterations is shown in \Cref{fig:LSR_sim_runs}. The estimated values rapidly converge during the first few iterations, and eventually begin to oscillatate about $\bm{r}=\bm{0}$.The oscillations for all three components of the estimate of $\bm{r}$ are bounded between $\pm3\times10^{-7}m$. The implications this has on the final balancing results are better demonstrated in \Cref{fig:LSR_sim_confidence}. The estimated value for $r_x$ is plotted directly against the true value of $r_x$ over many iterations. While the $r_x$ estimate oscillates about 0, the true value oscillates about a non-zero, constant value. This small error between the two is not measurable to the batch-estimation algorithm due to factors like sensor and process noise. 
+The estimated value for $\bm{r}$ over the course 10 iterations is shown in \Cref{fig:LSR_sim_runs}. The estimated values rapidly converge during the first few iterations, and eventually begin to oscillatate about $\bm{r}=\bm{0}$. The oscillations for all three components of the estimate of $\bm{r}$ are bounded between $\pm3\times10^{-7}m$. In \Cref{fig:LSR_sim_confidence}, the estimated value for $r_x$ is plotted directly against the true value of $r_x$ over many iterations. While the $r_x$ estimate oscillates about 0, the true value oscillates about a non-zero, constant value. This small error between the two is not measurable to the batch-estimation algorithm due to factors like sensor and process noise. 
 
-To address this, the estimated values $r_x$, $r_y$, and $r_z$ after convergence are collected and the standard deviation $\sigma$ of the resulting sets are computed. In general, it was observed that greater variance in the converged values corresponded to greater error between the true and estimated values. In other words, the variance of the converged values (which are directly related to the amplitude of the oscillations) help place a bound on estimators performance. For example in \Cref{fig:LSR_sim_confidence}, $\sigma$ is used to create a confidence interval, and the true value of $r_x$ safely lies within the interval.
+To address this, the estimated values $r_x$, $r_y$, and $r_z$ after convergence are collected and the standard deviation $\sigma$ of the resulting sets are computed. In general, greater variance in the converged values corresponded to greater error between the true and estimated values. In other words, the variance of the converged values (which are directly related to the amplitude of the oscillations) help place a bound on estimators performance. For example in \Cref{fig:LSR_sim_confidence}, $\sigma$ is used to create a confidence interval, and the true value of $r_x$ safely lies within the interval.
 
 \begin{figure}[h]
   \centering

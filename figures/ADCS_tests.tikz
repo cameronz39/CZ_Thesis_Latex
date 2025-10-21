@@ -1,0 +1,26 @@
+\begin{tikzpicture}[
+  scale=1.0, % <— master size knob
+  every node/.style={transform shape},
+  block/.style={
+    rectangle, draw, rounded corners,
+    fill=blue!10, minimum width=7em, minimum height=3.2em,
+    align=center
+  },
+  line/.style={-Latex, thick},
+  node distance=1.3cm and 1.3cm
+]
+
+% Nodes
+\node[block] (design) {Spacecraft\\Design};
+\node[block, right=of design] (sim) {Simulation};
+\node[block, right=of sim] (hil) {Hardware-in-the-Loop\\Testing};
+\node[block, below=of hil] (ab) {Physical Dynamics\\Simulator};
+\node[block, left=of ab] (launch) {Launch};
+
+% Arrows
+\draw[line] (design) -- (sim);
+\draw[line] (sim) -- (hil);
+\draw[line] (hil) -- (ab);
+\draw[line] (ab) -- (launch);
+
+\end{tikzpicture}
