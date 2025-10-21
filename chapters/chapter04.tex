@@ -2,81 +2,82 @@
 
 
 
-\section{Underactuated PID Control}
+\section{Underactuated PID Control}\label{sec:PID_results}
 
 The underactuated PID controller is first implemented in simulation according \Cref{sec:sim_setup}. \Cref{fig:PID_sim_results} shows key system states during the balancing procedure. The platform's roll initially drops to $-17^{\circ}$ due to gravity, but the proportional action in the action in the controller quickly compensates as seen by the rapid spike in $\Delta\,d_y$. After about 45 seconds, the platform's roll, pitch, and horizontal body rates converge to 0. The sliding mass positions additionally settle to a constant value, indicating the gravitional torque has been driven towards 0. The simulation also verifies that the roll and pitch travel limits of the simulator ($\pm20^{\circ}$) have not been violated, and that the maximum speed and travel limits of the sliding masses have not been violated, even under a relatively large inital imbalance.
 
-\begin{figure}[!ht]
+\begin{figure}[p!]
     \centering
     \includegraphics[width=\linewidth]{plots/PID_sim_results.pdf}
     \caption{Simulated balancing results using PID control}
     \label{fig:PID_sim_results}
 \end{figure}
 
-\begin{figure}[!ht]
-    \centering
-    \includegraphics[width=0.9\linewidth]{plots/PID_sim_integral_error.png}
-    \caption{Projected integral error during a simulated PID run}
-    \label{fig:PID_sim_integral_error}
-\end{figure}
-
-From \Cref{fig:PID_sim_results} alone it can be inferred the controller and has horizontally balanced the platform. However, to further validate the performance of the balancing method, various values from the truth model are plotted. \Cref{fig:PID_sim_integral_error} shows the projected integral error of the controller. It is clear the integral action does indeed learn and compensate for the initial gravitional torque $\bm{\tau}_{g,0}$. The effects of the simulated controller can also be seen, with the 15 Hz discrete time integrator causing noise at steady state.
-
-\begin{figure}[!ht]
-    \centering
-    \includegraphics[width=0.9\linewidth]{plots/PID_sim_oscillations.pdf}
-    \caption{Simulated PID scillatations about $\bm{r}=0$ at steady state}
-    \label{fig:PID_sim_oscillations}
-\end{figure}
-
-\Cref{fig:PID_sim_oscillations} shows the true value of $r_x$ and $r_y$ at steady state. The values begin to oscillate with a fairly constant amplitude about the desired values of $r_x = r_y = 0$. A variety of factors here prevent further convergence. The discretization of the controller, noise in the sensor readings, and lag in the control loop all limit the performance of the system. In a real hardware test, the operator will end the balancing procedure once the sliding mass positions have converged. It can be inferred then that the final value $r_x$ and $r_y$ will land at a random position along the two curves in \Cref{fig:PID_sim_oscillations}. The ampltiude of these oscillations places a bound on the final balancing results. In this case, $r_x$ and $r_y$ are bounded by $\pm4\times10^{-5}m$, so in the worst case, the simulated PID balancing procedure has still reduced the horizontal inbalance by two orders of magnitude.
-
-Next the experimental PID results on the SADS are considered. \Cref{fig:PID_hardware_results} shows the same system states during the balancing procedure. The system qualitatively behaves in a similar manner to the simulated results. The platform's roll, pitch, and horizontal body rates converge to 0 and the sliding mass positions additionally converge towards a constant value. The values for all experimental system states are all generally smaller in magnitude compared to the simulated values from \Cref{fig:PID_sim_results}, indicating the initial imbalance was smaller.  
-
-While a plot like \Cref{fig:PID_sim_oscillations} cannot be recreated in an experimental test, the oscillations of $\Delta\bm{d}$ in \Cref{fig:PID_hardware_results} can be converted into oscillations of $\Delta\bm{r}$ using \Cref{equation:delta_d_sol}. This leads to $\Delta\,r_x$ and $\Delta\,r_y$ being bounded by $\pm2.5\times10^{-5}m$, which is similar to simulated value of $\pm4\times10^{-5}m$. This suggests good alignment between the simulated system and the experimental system, however it is unknown if the oscillations in the experimental test are about the desired values of $r_x = r_y = 0$.
-
-
-
-\begin{figure}[!ht]
+\begin{figure}[p!]
     \centering
     \includegraphics[width=\linewidth]{plots/PID_hardware_results.pdf}
     \caption{Experimental balancing results using PID control}
     \label{fig:PID_hardware_results}
 \end{figure}
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\linewidth]{plots/PID_sim_integral_error.png}
+    \caption{Projected integral error during a simulated PID run}
+    \label{fig:PID_sim_integral_error}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\linewidth]{plots/PID_sim_oscillations.pdf}
+    \caption{Simulated PID scillatations about $\bm{r}=0$ at steady state}
+    \label{fig:PID_sim_oscillations}
+\end{figure}
+
+
+From \Cref{fig:PID_sim_results} alone it can be inferred that the controller has horizontally balanced the platform. However, to further validate the performance of the balancing method, various values from the truth model are plotted. \Cref{fig:PID_sim_integral_error} shows the projected integral error of the controller. It is clear the integral action does indeed learn and compensate for the initial gravitional torque $\bm{\tau}_{g,0}$. The effects of the simulated controller can also be seen, with the 15 Hz discrete time integrator causing noise at steady state.
+
+
+\Cref{fig:PID_sim_oscillations} shows the true value of $r_x$ and $r_y$ at steady state. The values begin to oscillate with a fairly constant amplitude about the desired values of $r_x = r_y = 0$. A variety of factors here prevent further convergence. The discretization of the controller, noise in the sensor readings, and lag in the control loop all limit the performance of the system. In a real hardware test, the operator will end the balancing procedure once the sliding mass positions have converged. Thus, the final value $r_x$ and $r_y$ will land at a random position along the two curves in \Cref{fig:PID_sim_oscillations}. The ampltiude of these oscillations places a bound on the final balancing results. In this case, $r_x$ and $r_y$ are bounded by $\pm4\times10^{-5}m$, so in the worst case, the simulated PID balancing procedure has still reduced the horizontal inbalance by two orders of magnitude.
+
+Next the experimental PID results on the SADS are considered. \Cref{fig:PID_hardware_results} shows the same system states during the balancing procedure. The system qualitatively behaves in a similar manner to the simulated results. The platform's roll, pitch, and horizontal body rates converge towards zero and the sliding mass positions additionally converge towards a constant value. The values for all experimental system states are all generally smaller in magnitude compared to the simulated values from \Cref{fig:PID_sim_results}, indicating the initial imbalance was smaller.  
+
+While a plot like \Cref{fig:PID_sim_oscillations} cannot be recreated in an experimental test, the oscillations of $\Delta\bm{d}$ in \Cref{fig:PID_hardware_results} can be converted into oscillations of $\Delta\bm{r}$ using \Cref{equation:delta_d_sol}. This leads to $\Delta\,r_x$ and $\Delta\,r_y$ being bounded by $\pm2.5\times10^{-5}m$, which is similar to simulated value of $\pm4\times10^{-5}m$. This suggests good alignment between the simulated system and the experimental system, however it is unknown if the oscillations in the experimental test are about the desired values of $r_x = r_y = 0$.
+
+
+
+
 \section{Underactuated Adaptive Control}
 
 Next, the adaptive control method is implemented into the same simulation. Attempts to simulate this method however quickly created numerical instability within the simulation. To alleviate this, all sources of error discussed in \Cref{sec:sim_setup} are temporarily removed from the simulation which results in \Cref{fig:adaptive_sim_success}. The results here indicate the implemented control law works under the mathmatically ideal case. $\bm{\omega}_p$ converges to $\bm{0}$ and the sliding mass converge to the position that minimizes $r_x$ and $r_y$. However, the sliding mass velocites and rapid oscillations of the platform are not physically feasible. This behaviour is identical to the results of \cite{silva_filtering_2018} and \cite{hudson_dynamic_2019}, which both attempt to simulate the same adaptive controller. After many attempts to diagose the source of instability, it remains unclear what differs between the original implementation of this balancing method in \cite{chesi_automatic_2014}, and the implementation in \cite{silva_filtering_2018}, \cite{hudson_dynamic_2019}, and this work.
 
-\begin{figure}[!ht]
+\begin{figure}[p!]
     \centering
     \includegraphics[width=\linewidth]{plots/adaptive_sim_success.pdf}
     \caption{Simulated underactuated adaptive control results using a simplified model}
     \label{fig:adaptive_sim_success}
 \end{figure}
 
-\begin{figure}[!ht]
-    \centering
-    \includegraphics[width=\linewidth]{plots/adaptive_sim_failure.pdf}
-    \caption{Simulated underactuated adaptive control results with sensor dyanmics and onboard filtering modeled}
-\end{figure}
-
-Given the relative ease of changing control laws in the Matlab/Simulink environment, the underactuated adaptive control method is still implemented on the SADS to experiment which is seen in \Cref{fig:adaptive_hardware_failure}. Even with exensive tuning of the control gains, the simulator is generally unstable. The roll of the simulator at 120 seconds peaks at 0.4 radians, which is just beyond the $20^{\circ}$ safety limit of the test setup. In fact, \Cref{fig:adaptive_hardware_failure} shows the longest of the attempts that all were manually ended due to the simulator leaving its roll and pitch travel limits. Given the success of the PID method which has the identical goal of horizontally balancing the simulator, it was eventually decided to leave further investigation into the adaptive method as future work.  
-
-
-
-\begin{figure}[!ht]
+\begin{figure}[p!]
     \centering
     \includegraphics[width=\linewidth]{plots/adaptive_hardware_failure.pdf}
     \caption{Experimental results using underactuated adaptive control}
     \label{fig:adaptive_hardware_failure}
 \end{figure}
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\linewidth]{plots/adaptive_sim_failure.pdf}
+    \caption{Simulated underactuated adaptive control results with sensor dyanmics and onboard filtering modeled}
+\end{figure}
+
+Given the relative ease of changing control laws in the Matlab/Simulink environment, the underactuated adaptive control method is still implemented on the SADS to experiment which is seen in \Cref{fig:adaptive_hardware_failure}. Even with exensive tuning of the control gains, the simulator is generally unstable. The roll of the simulator at 120 seconds peaks at 0.4 radians, which is just beyond the $20^{\circ}$ safety limit of the test setup. In fact, \Cref{fig:adaptive_hardware_failure} shows the longest of the attempts that all were manually ended due to the simulator leaving its roll and pitch travel limits. Given the success of the PID method which has the identical goal of horizontally balancing the simulator, it was eventually decided to leave further investigation into the adaptive method as future work.  
+
 
 \section{Vertical Inbalance Estimation with Kalman Filtering}
 
 
-\begin{figure}[!ht]
+\begin{figure}[h]
   \centering
   \begin{subfigure}[t]{0.47\textwidth}
     \includegraphics[width=\linewidth]{plots/UKF_comparison.pdf}
@@ -93,7 +94,7 @@ With the underactuated PID controller successfully horizontally balancing the pl
 
 After filter convergence was demonstrated in simulation, real tumbling data from the SADS is used as input. The filter output over time during two selected iterations are shown in \Cref{fig:UKF_hardware_results}. \Cref{fig:UKF_hardware_results_a} shows the very first iteration after PID balancing. The filter quickly converges on an estimate for $r_z$, and the corresponding $1\sigma$ window is again plotted to demonstrate the filter's confidence. \Cref{fig:UKF_hardware_results_b} shows the filter output just two iterations later, where $r_z$ simply oscillates about 0. While the simulated and experimental results show similar behaviour, the simulated filter confidence is significantly higher, potentially indicating the modeling in \Cref{sec:sim_setup} did not introduce enough error into the simulation. 
 
-\begin{figure}[!ht]
+\begin{figure}[h]
   \centering
   \begin{subfigure}[t]{0.47\textwidth}
     \includegraphics[width=\linewidth]{plots/UKF_hardware_success.pdf}
@@ -119,7 +120,7 @@ In general as the true value of $r_z$ shrinks, the filter's ability to estimate 
 
 The least-squares estimation method is simulated using the intended four reaction wheel setup for the SADS. The platform's state during a batch collection run is shown in \Cref{fig:LSR_sim_excitation}. The torque profile is designed to have the platform oscillate as close as possible to it's $\pm20^{\circ}$ travel limits for roll and pitch, while simultaneously not saturating the reaction wheels. Both of these goals are met in the example run shown.
 
-\begin{figure}[ht]
+\begin{figure}[h]
   \centering
   \begin{subfigure}[t]{0.47\textwidth}
     \includegraphics[width=\linewidth]{plots/LSR_sim_all_runs.png}
@@ -133,37 +134,40 @@ The least-squares estimation method is simulated using the intended four reactio
   \label{fig:LSR_sim_runs}
 \end{figure}
 
-The estimated value for $\bm{r}$ over the course 10 iterations is shown in \Cref{fig:LSR_sim_runs}. The estimated values rapidly converge during the first few iterations, and eventually begin to oscillatate about $\bm{r}=\bm{0}$.The oscillations for all three components of the estimate of $\bm{r}$ are bounded between $\pm3\times10^{-7}m$. The implications this has on the final balancing results are better demonstrated in \Cref{fig:LSR_sim_confidence}. The estimated value for $r_x$ is plotted directly against the true value of $r_x$ over many iterations. While the $r_x$ estimate oscillates about 0, the true value oscillates about a non-zero, constant value. This small error between the two is not measurable to the batch-estimation algorithm due to factors like sensor and process noise. 
-
-To address this, the estimated values $r_x$, $r_y$, and $r_z$ after convergence are collected and the standard deviation $\sigma$ of the resulting sets are computed. In general, it was observed that greater variance in the converged values corresponded to greater error between the true and estimated values. In other words, the variance of the converged values (which are directly related to the amplitude of the oscillations) help place a bound on estimators performance. For example in \Cref{fig:LSR_sim_confidence}, $\sigma$ is used to create a confidence interval, and the true value of $r_x$ safely lies within the interval.
-
-\begin{figure}[ht]
+\begin{figure}[p]
     \centering
     \includegraphics[width=\linewidth]{plots/LSR_sim_excitation}
     \caption{Simulated platform excitation during batch estimation}
     \label{fig:LSR_sim_excitation}
 \end{figure}
 
-\begin{figure}[ht]
+\begin{figure}[p]
     \centering
     \includegraphics[width=\linewidth]{plots/LSR_sim_confidence.pdf}
     \caption{Comparison between estimated and true values}
     \label{fig:LSR_sim_confidence}
 \end{figure}
 
-With the batch estimation algorithm verified using simulated values, the procedure is repeated on the SADS. The platform's state during a batch collection run is shown in \Cref{fig:LSR_hardware_excitation}. While the experimental setup include only one reaction wheel, the SADS' pyramidal configuration means the one wheel contributes angular momentum to the system in all three axes of the body frame. 
+\begin{figure}[p]
+    \centering
+    \includegraphics[width=\linewidth]{plots/LSR_sim_confidence_1_wheel.pdf}
+    \caption{Comparison between estimated and true values}
+    \label{fig:LSR_sim_confidence_1_wheel}
+\end{figure}
 
-\begin{figure}[ht]
+\begin{figure}[p]
     \centering
     \includegraphics[width=\linewidth]{plots/LSR_hardware_excitation.png}
     \caption{Experimental platform excitation during batch estimation}
     \label{fig:LSR_hardware_excitation}
 \end{figure}
 
-\Cref{fig:LSR_hardware_runs} shows the estimated value of $r$ over 10 experimental iterations. $r$ again converges in a similar manner to the simulated test. It is important to note however the difference in orders of magnitude between \Cref{fig:LSR_sim_runs_b} and \Cref{fig:LSR_hardware_runs_b}. The oscillations after inital converge in the experimental test have a drastically higher amplitiude than the simulated case. As discussed previously, the implication of this is that the error in the experimental estimator is worse than the error in the simulated one. This difference is combination of both modeling errors in the simulation, but also a potential lack of excitation from the one reaction wheel used in the experimental setup. 
 
+The estimated value for $\bm{r}$ over the course 10 iterations is shown in \Cref{fig:LSR_sim_runs}. The estimated values rapidly converge during the first few iterations, and eventually begin to oscillatate about $\bm{r}=\bm{0}$.The oscillations for all three components of the estimate of $\bm{r}$ are bounded between $\pm3\times10^{-7}m$. The implications this has on the final balancing results are better demonstrated in \Cref{fig:LSR_sim_confidence}. The estimated value for $r_x$ is plotted directly against the true value of $r_x$ over many iterations. While the $r_x$ estimate oscillates about 0, the true value oscillates about a non-zero, constant value. This small error between the two is not measurable to the batch-estimation algorithm due to factors like sensor and process noise. 
 
-\begin{figure}[ht]
+To address this, the estimated values $r_x$, $r_y$, and $r_z$ after convergence are collected and the standard deviation $\sigma$ of the resulting sets are computed. In general, it was observed that greater variance in the converged values corresponded to greater error between the true and estimated values. In other words, the variance of the converged values (which are directly related to the amplitude of the oscillations) help place a bound on estimators performance. For example in \Cref{fig:LSR_sim_confidence}, $\sigma$ is used to create a confidence interval, and the true value of $r_x$ safely lies within the interval.
+
+\begin{figure}[h]
   \centering
   \begin{subfigure}[t]{0.47\textwidth}
     \includegraphics[width=\linewidth]{plots/LSR_hardware_all_runs.png}
@@ -178,21 +182,26 @@ With the batch estimation algorithm verified using simulated values, the procedu
 \end{figure}
 
 
+With the batch estimation algorithm verified using simulated values, the procedure is repeated on the SADS. The platform's state during a batch collection run is shown in \Cref{fig:LSR_hardware_excitation}. While the experimental setup includes only one reaction wheel, the SADS' pyramidal configuration means the one wheel contributes angular momentum to the system in all three axes of the body frame. 
+
+
+\Cref{fig:LSR_hardware_runs} shows the estimated value of $r$ over 10 experimental iterations. $r$ again converges in a similar manner to the simulated test. It is important to note however the difference in orders of magnitude between \Cref{fig:LSR_sim_runs_b} and \Cref{fig:LSR_hardware_runs_b}. The oscillations after inital converge in the experimental test have a drastically higher amplitude than the simulated case. As discussed previously, the implication of this is that the error in the experimental estimator is worse than the error in the simulated one. This difference is a combination of both modeling errors in the simulation, but also a potential lack of excitation from the one reaction wheel used in the experimental setup. 
+
+
 
 \section{Active Balancing Using Adaptive Control}
 
-\subsection{No Reaction Wheels}
-% the experimental results for this are in a seperate repo - SADS Adaptive
+The last balancing method considered is the three-axis adaptive controller, which is applied in simulation only. The momentum trajectory the simulator can be seen in \Cref{fig:three_axis_sim_excitation}. Each component of the desired angular momentum is chosen to be three sine waves with slightly varying amplitudes, phases, and frequencies. The resulting sliding mass positions are shown in \Cref{fig:three_axis_sim_positions}. The results here align well with work the completed in \cite{kim_automatic_2009}. $\Delta\,d_x$ and $\Delta\,d_y$ converge relatively quickly compared to $\Delta\bm\,d_z$, with convergence being on the order of hundreds of seconds. As also noted in \cite{kim_automatic_2009}, tuning the controller gains $\bm{K}$, and $\bm{\Gamma}$ proved to be somewhat difficult. Theoretically increasing the adaptive gain $\bm{\Gamma}$ woud lead to faster convergence of $\Delta\bm{d}$, but higher gains led to instability in the platform. Additionally, choosing a desired momentum trajectory that leads to convergence of $\Delta\bm{d}$ while not quickly saturating the reaction wheels was also difficult balance to strike. Still, the true desired values of the sliding mass positions are shown dashed in \Cref{fig:three_axis_sim_positions}, and the adaptive controller does indeed compensate for all three components of $\bm{r}$ simultaneously. The final emperically tuned gains used are 
+$\bm{K} = \text{diag}(5,5,5)$ and  $\bm{\Gamma} = 10^{-5}\text{diag}(5, 5 , 80)$
 
-\subsection{Full Reaction Wheel Setup - Simulink Only}
-
-\begin{figure}[ht]
+\begin{figure}[p]
     \centering
     \includegraphics[width=\linewidth]{plots/three_axis_sim_excitation.png}
     \caption{Simulated platform excitation for 3-axis adaptive control}
+    \label{fig:three_axis_sim_excitation}
 \end{figure}
 
-\begin{figure}[ht]
+\begin{figure}[h]
   \centering
   \begin{subfigure}[t]{0.47\textwidth}
     \includegraphics[width=\linewidth]{plots/three_axis_sim_positions_1.png}
@@ -203,25 +212,35 @@ With the batch estimation algorithm verified using simulated values, the procedu
     \caption{2nd iteration}\label{fig:b}
   \end{subfigure}
   \caption{Simulated sliding mass positions during 3-axis adaptive control}
-  \label{fig:LSR_hardware_iterations}
+  \label{fig:three_axis_sim_positions}
 \end{figure}
 
 \subsection{Verification}
 
-\begin{figure}[ht]
+Each balancing method described is verified using the external methods described in \Cref{sec:verification_methods}. The simulator is first manually positioned such that $\phi=\theta=8^{\circ}$. It is then released to tumble freely, with the body rates being recorded. \Cref{fig:KE_post} shows the experimental computed kinetic energy of the simulator over about one minute of tumbling after both manual balancing and the hybrid PID method. The smaller oscillations in kinetic energy when using the hybrid PID method already indicates the magnitude of $\bm{r}$ has been succesfully decreased. \Cref{fig:torque_post} shows the gravity torque acting on the simulator during the same run. Again, the average torque magnitude using the hybrid PID method is significantly decreased compared to manually balancing the simulator. 
+
+\begin{figure}[p]
     \centering
-    \includegraphics[width=\linewidth]{plots/hardware_verification_KE.pdf}
+    \includegraphics[width=0.85\linewidth]{plots/hardware_verification_KE.pdf}
     \caption{Kinetic energy of the simulator before and after using two-step PID balancing}
+    \label{fig:KE_post}
 \end{figure}
 
-\begin{figure}[ht]
+\begin{figure}[p]
     \centering
-    \includegraphics[width=\linewidth]{plots/hardware_verification_torque.pdf}
+    \includegraphics[width=0.85\linewidth]{plots/hardware_verification_torque.pdf}
     \caption{Norm of torque acting on the simulator before and after using two-step PID balancing}
+    \label{fig:torque_post}
 \end{figure}
+
+This process is repeated at the end of each experimental balancing method. For simulated runs, the verification test is recreated by simply setting the initial conditions of the solver to use $\phi=\theta=8^{\circ}$. As discussed in \Cref{sec:PID_results}, there is a degree of randomness to the balancing results of any given procedure. For simulated results, this is addressed by using a Monte Carlo approach, where the inital conditions of the platform are varied slightly before the simulated balancing method is applied, leading to many resulting values of $\bm{r}$ after balancing. These $\bm{r}$ values are then used in the verification test and the results are averaged. For experimental tests, this is addressed by simply repeating the procedure and averaging the results. 
+
+The final result for each method are documented in \Cref{table:final_results}. As expected, the manual balancing method shows the worst performance among all methods. The hybrid PID method shows the best performance among the experimental tests. It also shows similar results to the simulated version, further supporting agreement between the experimental and simulated systems. While the batch estimation with one wheel is superior to the manual balancing, it ultimately leads to poor balancing results compared the PID alternative, both in simulation and in the experimental tests. The best theoretical results are achieved by the batch estimation method with the full four wheel setup. It can be concluded that proper excitation of the platform is not just beneficial, but necessary, to achieve good results using batch estimation. 
+
+The results achieved by Dam are generally worse than those found in this work. This is almost certainly a result of the hardware limitations of the SADS at the time, as discussed in \Cref{sec:SADS_history}. The reported $\pm3\sigma$ value for $r_z$ in Dam's work is $-1.581\pm0.0707mm$. This is about one order of magnitude worse than high-confidence UKF estimates for $r_z$ in this work (see \Cref{fig:UKF_hardware_results_a}). Without any way to finely control the positions of the sliding masses back in 2014, this was the best achievable result at the time. The improvements to the balancing hardware discussed in \Cref{chap:methodology} avoided theses issues all together. As a result, the best experimental results in this work (the hybrid PID method) are a direct improvement over the previous MBS design on the SADS.
 
 \begin{table}[ht]
-\caption{Comparison of Balancing Methods and Performance Metrics}\label{table:balancing_methods}
+\caption{Comparison of Balancing Methods and Performance Metrics}\label{table:final_results}
 \centering
 \renewcommand{\arraystretch}{1.3}
 
@@ -237,8 +256,9 @@ Manual Balancing & 0.0652 & 0.0116 \\ \addlinespace[0.2em]
 Results from Dam & 0.0244 & 0.00782 \\ \addlinespace[0.2em]
 PID + UKF Simulated & 0.00321 & 0.000965 \\ \addlinespace[0.2em]
 PID + UKF Experimental & 0.00166 & 0.000236 \\ \addlinespace[0.2em]
-Batch Estimation Simulated & $3.89\times10^{-5}$ & 0.000116 \\ \addlinespace[0.2em]
-Batch Estimation Experimental & 0.0146 & 0.00226 \\ \addlinespace[0.2em]
+Batch Estimation Simulated (4 wheels) & $3.89\times10^{-5}$ & 0.000116 \\ \addlinespace[0.2em]
+Batch Estimation Simulated (1 wheel) & 0.0388 & 0.00296 \\ \addlinespace[0.2em]
+Batch Estimation Experimental (1 wheel) & 0.0146 & 0.00226 \\ \addlinespace[0.2em]
 3-Axis Adaptive Simulated & 0.00299 & 0.000741 \\ \addlinespace[0.2em]
 \bottomrule
 \end{tabularx}

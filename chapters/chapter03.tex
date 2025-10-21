@@ -1,44 +1,76 @@
-\chapter{Methodology}
+\chapter{Methodology}\label{chap:methodology}
 
 To apply the previously mentioned balancing methods to Cal Poly's SADS, significant progress was made on it's design both at the software and hardware level. Namely, a closed-loop feedback system was designed including a measurement system for attitude determination, a flight computer to process measurements and generate commands in real time, and linear actuators to shift the platform's center of mass.
 
-\section{System Architecture}
-
 \section{Mechanical}
 
-The goal of the mechanical design was to build off work completed in \cite{gilman_automatic_2024} and develop set of low-cost linear actuators that finely control the position of mass blocks. Taking lessons learned from previous iterations, the second main goal was to ensure that the size of the mass blocks was highly customizable, thus making the resulting center of mass envelope customizable. 
+The goal of the mechanical design was to build off work completed in \cite{gilman_automatic_2024} and develop set of low-cost linear actuators that finely control the position of mass blocks. The iteration of the MBS developed in \cite{gilman_automatic_2024} uses two sliding mass units per body axis, resulting in six and total. This layout remains unchanged in this work, and it will be assumed each pair of masses per axis will travel in unison from the linear actuator commands. This effectively making the platform function as if it has three orthogonal masses and simplifies the analysis. Taking lessons learned from previous iterations, the second main goal was to ensure that the size of the mass blocks was highly customizable, thus making the resulting center of mass envelope customizable. 
 
 \subsection{Mass Sizing}
 
-While the exact final design and mass properties of the SADS is unknown, it is still important to place an approximate upper bound on the size of the mass blocks driven by the linear actuators. This ensures that the motors and mounting hardware are not oversized and do not excessively increase the simulator's moment of inertia. A common metric used to help quantify this is a simulator's center of mass envelope. This is the set of all values $\Delta\mathbf{r}$ that the system can command when all linear actuators are in their centered positions.
+While the exact final design and mass properties of the SADS is unknown, it is still important to place an approximate upper bound on the size of the mass blocks driven by the linear actuators. This ensures that the motors and mounting hardware are not oversized and do not excessively increase the simulator's moment of inertia.
 
 \begin{figure}[h]\label{fig:full_CAD}
     \centering
     \includegraphics[width=0.95\linewidth]{figures/full_CAD.png}
     \caption{Final CAD design with all major mass contributions included, built off model completed in~\cite{gilman_automatic_2024}}
-
+    \label{fig:final_CAD}
 \end{figure}
 
 
-One important aspect of the SADS when selecting it's desired center of mass envelope is it's symmetrical design. The two heaviest systems onboard are the reaction wheels and the mass balancing system itself. The pyrimdal reaction wheel configuration means the wheels contribute little horizontal inbalance. and the wheels are roughly on the same horizontal plane as the platform's center of rotation, so they also contribute little verical inbalance. The linear actuator design will follow the same general layout in \cite{gilman_automatic_2024}, which can be seen in \Cref{fig:full_CAD}. 
+One important aspect of the SADS when designing it's desired center of mass envelope is it's symmetrical design. \Cref{fig:final_CAD} shows the final design of the CAD model for reference. The two heaviest systems onboard are the reaction wheels and the mass balancing system itself. The pyrimdal reaction wheel configuration means the wheels contribute little horizontal inbalance. Additionally the wheels are roughly on the same horizontal plane as the platform's center of rotation, so they also contribute little verical inbalance. The main source of inbalance will thus be introduced by relatively lighter components like batteries, sensors, the flight computer, and other miscellaneous electronics.
 
-The main source of inbalance will thus be introduced by relatively lighter components like batteries, sensors, the flight computer, and other miscellaneous electronics. To approximate a worse case inbalance, the heaviest of these components - the main 24V battery was placed in CAD in multiple unfavorable positions with the resulting inbalance vector recorded. 
+To approximate a worst case horizontal imbalance, the heaviest of these components - the main 24V battery was placed in CAD in multiple unfavorable positions with the resulting imbalance vector in the CAD software recorded. The black prism in \Cref{fig:final_CAD} represent this battery, and it's position is placed at various edges along the top deck of the simulator. After applying a factor of safety, the resulting horizontal center of mass envelope is determined to $||\Delta\,r_x|| \approx ||\Delta\,r_x|| \approx 0.01m$. With a travel distance of $\pm100mm$ for each rail, the mass for each rail is designed as $m_i = 1.4kg$.
+
+With the horizontal mass sizing complete, the vertical mass sizing takes a slightly different approach. Because the reaction wheels and horizontal sliding masses are positioned slightly below the center of rotation of the platform, the center of mass of the platform with with no vertical masses is biased towards $-\hat{z}_b$. The vertical masses are sized then such that when they are both in their centered postions, the vertical imbalance predicited by CAD is zero. For the vertical sliders, the designed value is $m_i = 0.65kg$. 
 
 % Isometric + Top Down CAD view of Gilman's design
 
 \subsection{Linear Actuator Design}
 
-The linear actuators use the same mounting configuration as the previous design. A ball screw is fixed\dots
+The main goal with the new linear actuator iteration is to address issues faced in \cite{gilman_automatic_2024}, where the DC motors struggled to drive the linear actuators. This issue is addressed in the new design in a variety of ways. The first is the 6V SKU-GS20173 DC motors that drive the ballscrew shaft are swapped for 24V Nema 17 stepper motors. Even though the old DC motors use a 99:1 gear ratio, the torque output of the 24V stepper motors is still more favorable at low shaft speeds. The next change is the replacement of the linear rails. On its' own, a ballscrew has one degree of rotational freedom about the shaft axis that must be restricted for it to linearly travel with no rotation. This is accomplished using a linear rail that travels along the ballscrew, and it was observed the old linear rails introduced a significant amount of friction. The new linear rails are shown and discussed further in \Cref{fig:linear_act} Finally, the ballscrew itself was found to also be introducing friction, and so each ballscrew was disassembled and serviced to reduce friction.
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{figures/plate_comparison.png}
+    \caption{Comparison between the previous iteration of mass plates (left) and the newly manufactured plates (right)}
+    \label{fig:plate_comparison}
+\end{figure}
 
+\begin{figure}[h]
+  \centering
+  \begin{subfigure}[t]{0.45\textwidth}
+    \includegraphics[width=\linewidth]{figures/linear_act_1.png}
+    \caption{Assembly with just ballscrew and linear rail}
+  \end{subfigure}\hfill
+  \begin{subfigure}[t]{0.45\textwidth}
+    \includegraphics[width=\linewidth]{figures/linear_act_2.png}
+    \caption{Assembly just before adding the final mass plate}
+  \end{subfigure}
+  \caption{Mass block assembly with linear rail in CAD}
+  \label{fig:linear_act}
+\end{figure}
 
-% images of the ball screw and plate solution + CAD?
+Another issue that was quickly identified with the previous design is that to remove or install mass plates from each rail, the entire linear actuator assembly had to be disassembled. This is addressed by manufacturing a new set of mass plates, with the comparison between the two iterations shown in \Cref{fig:plate_comparison}. The most notable change is the introduction of a slot that connects the edge of the plate to the circular cutout for the ballscrew shaft. As shown in \Cref{fig:linear_act}, this allows plates to be slid directly onto the ballscrew without any disassembly. The slot is also large enough to accomodate the new linear rail, also shown in \Cref{fig:linear_act}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\linewidth]{figures/completed_block.jpg}
+    \caption{The final mass block assembly}
+    \label{fig:plate_comparison}
+\end{figure}
+
+The final assembly is shown in \Cref{fig:plate_comparison}, which is completed by adding one plate with a smaller cutout slot to each end. The slot is small enough to prevent the inserted linear rail from sliding out, but still large enough to allow installation without disassembling the full system. 
 
 \section{Electrical}
 
-The primary goal of the electrical design is to interface the newly developed linear actuators and an IMU to the flight computer. An STM32F446RE was chosen as the primary flight computer. This board has high number of GPIO pins, a maximum clock speed of 180 MHz, is low cost, and has proven compatibility with Simulink hardware suppport packages, making it desirable for this project. Despite these benefits, using a microcontroller still has numerous drawbacks, the main one being the need to reflash the board to switch bewteen programs. In the final iteration of the SADS, the flight computer ideally runs as a Linux-based RTOS, where the operator can easily load and switch between multiple programs. 
+The primary goal of the electrical design is to interface the newly developed linear actuators and an IMU to the onboard computer. An STM32F446RE was chosen as the primary onboard computer. This board has high number of GPIO pins, a maximum clock speed of 180 MHz, is low cost, and has proven compatibility with Simulink hardware suppport package. It additionally has a floating point unit that operates on 32-bit floats, which is crucial for the rapid matrix multiplication needed to propagate a Kalman filter in realtime. Despite these benefits, using a microcontroller still has numerous drawbacks, the main one being the need to reflash the board to switch bewteen programs. In the final iteration of the SADS, the onboard computer ideally runs as a Linux-based RTOS, where the operator can easily load and switch between multiple programs. Future work for the onboard computer is discussed further in \Cref{chap:conclusion}.
 
-An MTi-03 was chosen as the IMU REFERRING TO LITERATURE REVIEW for it's noise characteristics and easy of integration with the STM32. The primary electrical interface between the IMU and flight computer are the  
+The MTi-03 was chosen as the IMU for it's noise characteristics and easy of integration with the STM32. The MTi-03 has a noise density of $0.003^{\circ}/s/\sqrt{Hz}$, which is favorable when compared to the values found on existing balancing systems as shown in \Cref{table:existing_testbeds}. The IMU and onboard computer communicate over I2C, with more detail provided in \Cref{sec:software}.
+
+
+
+
 
 \begin{figure}[h]\label{fig:OBC}
     \centering
@@ -58,7 +90,7 @@ An MTi-03 was chosen as the IMU REFERRING TO LITERATURE REVIEW for it's noise ch
 
 % electrical diagram 
 
-\section{Software}
+\section{Software}\label{sec:software}
 
 \begin{figure}
     \centering
@@ -103,7 +135,7 @@ where $\bm{x}_k^-$ is the predicted state, and $\bm{\omega}$ is taken directly f
 \end{equation}
 where $\eta_k^-$ and $\bm{\epsilon}_k^-$ are taken from $\bm{x}_k^-$, and $\bm{g}^\mathcal{N}=[0, 0,-9.81]^T$
 
-In reality, unless the accelerometer is perfectly aligned with the simulator's center of rotation, the sensor output will include the effects of centripital acceleration. However, since the MTi-03 IMU is mounted close to the center of rotation on the SADS and the body rates of the simulator during balancing are low, the effects of centripital acceleration are not included in the measurement model.
+In reality, unless the accelerometer is perfectly aligned with the simulator's center of rotation, the sensor output will include the effects of centrepital acceleration. However, since the MTi-03 IMU is mounted close to the center of rotation on the SADS and the body rates of the simulator during balancing are low, the effects of centrepital acceleration are not included in the measurement model.
 
 Following the standard EKF formulation, the process and measurement Jacobians are computed. \Cref{equation:EKF_process} is linearized about $\bm{x}_{k-1}$, while \Cref{equation:EKF_meas} is linearized about $\bm{x}_k^-$. The process Jacobian $\bm{F}$ and measurement Jacobian $\bm{H}$ are 
 \begin{equation}
@@ -141,12 +173,7 @@ Next the Kalman gain $\bm{K}$ is computed with
     \bm{K}_k = (\bm{P}_k^-\bm{H}_k^T)/(\bm{H}_k\bm{P}_k^-\bm{H}_k^T + \bm{R})
 \end{equation}
 where $\bm{R}$ is the tunable measurement noise matrix.
-\begin{figure}
-    \centering
-    \input{figures/sys_arch_passive.tikz}
-    \caption{Operation flowchart during passive balancing}
-    \label{fig:sys_arch_passive}
-\end{figure}.
+
 The filter iteration ends with the state and covariance being corrected using the Kalman gain as follows
 \begin{equation}
     \bm{x}_k = \bm{x}_k^- + \bm{K}(\bm{y}_{\text{meas}}-\hat{\bm{y}}_k^-)
@@ -157,7 +184,14 @@ The filter iteration ends with the state and covariance being corrected using th
 \end{equation}
 where $\bm{y}_{\text{meas}}$ is the accelerometer reading. At this point the quaternion is normalized using $\bm{x}_k = \bm{x}_k / ||\bm{x}_k||$ and is sent along with $\bm{g}_b$ to the control law, with $\bm{g}_b$ being computed from \Cref{equation:C_from_q}.
 
-The filter as described here still has room for improvement. Including an estimate of the gyroscope bias in the state vector would improve accuracy over longer runs, and there are more sophisticated methods to ensuring $\bm{q}$ has a unit norm. However the filter's simulated performance as described in \Cref{sec:sim_setup} proved to be adequate for mass balancing, so improvements to the filter are left as future work with more detail described in \Cref{conclusion}.
+The filter as described here still has room for improvement. Including an estimate of the gyroscope bias in the state vector would improve accuracy over longer runs, and there are more sophisticated methods to ensuring $\bm{q}$ has a unit norm. However the filter's simulated performance as described in \Cref{sec:sim_setup} proved to be adequate for mass balancing, so improvements to the filter are left as future work with more detail described in \Cref{chap:conclusion}.
+
+\begin{figure}
+    \centering
+    \input{figures/sys_arch_passive.tikz}
+    \caption{Operation flowchart during passive balancing}
+    \label{fig:sys_arch_passive}
+\end{figure}
 
 \begin{figure}
     \centering
