@@ -7,6 +7,33 @@ The balancing methods described above rely on physical actuators and sensors to 
 
 \subsection{Historical Development}
 
+\cite{young1998development} shows an early documented use of a least-squares style estimator for center of mass estimation.
+
+\cite{kim_automatic_2009} shows an early documented use an active balancing methods and an adaptive controller. The adaptive controller approach is expanded on in \cite{chesi_automatic_2014} to horizontally balancing the simulator. \cite{choi_automatic_2016} documents another active approach to balancing using a PID controller. 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.70\linewidth]{figures/NPS.png}
+    \caption{Naval Postgraduate School}
+    \label{fig:NPS}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.80\linewidth]{figures/sydney.png}
+    \caption{University of Syndey}
+    \label{fig:sydney}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.80\linewidth]{figures/georgia.png}
+    \caption{University of Georgia}
+    \label{fig:georgia}
+\end{figure}
+
+Mirroring trends in the aerospace industry, many new simulators have been reduced in size compared to these early iterations. This is includes a reduction in cost and size of key ADCS components like high quality IMUs and motor controllers. There is also a desire to test Cubesat scale saetllites and their associated hardware.
+
 \subsection{Actuators}
 
 The vast majority of spacecraft simulators use momentum exchange devices such as reaction wheels or control-moment gyros to generate control torques. Smaller CubeSat-scale platforms may use magnetorquers within a Helmholtz cage, while large scale platform may incorporate cold-gas thrusters. MEDs are exclusively used in balancing applications because of the precise, repeatable control inputs they are able to provide. 
@@ -15,9 +42,11 @@ The control of MEDs are subject to their own actuator dynamics separate from the
 
 \subsection{Sensors}
 
-All balancing methods above require measurements for body rates and attitude. An IMU or rate gyro are the primary sensors for this purpose, which can directly measure body rates and integrate them to compute attitude. In many cases, balancing results are limited by the quality of IMU data. 
+All balancing methods above require measurements for body rates and attitude. An IMU or rate gyro are the primary sensors for this purpose, which can directly measure body rates and integrate them to compute attitude. 
 
 IMU performance is characterized by a few key factors. The most influential is noise density, which is directly tied to the variance of the rate measurements \cite{unsal_estimation_2012}. Integrating these noisy rate measurements can cause error in the attitude estimate to accumulate, referred to as angular random walk. Bias instability is another factor that refers to how fast bias in the rate measurements changes over time. For low quality IMUs, bias instability can have an impact on even short duration tests. Bandwidth and sample rate are two other factors that collectively describe what frequency dynamics the IMU can accurately capture, but given the slow dynamics of spacecraft simulators, most sensor configurations will satisfy these requirements.
+
+In many cases, balancing results are limited by the quality of IMU data. 
 
 \subsection{Survey Results}
 
@@ -71,6 +100,8 @@ Harbin Institute of Technology~\cite{xu_parameter_2015} &
 Reaction Wheels & 
 \SI{0.04}{\degree\per\second} & 
 Batch Estimation and Filtering \newline $<\SI{5}{\micro\metre}$ \\
+
+
 \bottomrule
 \end{tabularx}
 

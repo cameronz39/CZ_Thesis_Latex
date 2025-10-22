@@ -531,7 +531,7 @@ The main goal with the new linear actuator iteration is to address issues faced 
     \label{fig:plate_comparison}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[p]
   \centering
   \begin{subfigure}[t]{0.45\textwidth}
     \includegraphics[width=\linewidth]{figures/linear_act_1.png}
@@ -545,16 +545,19 @@ The main goal with the new linear actuator iteration is to address issues faced 
   \label{fig:linear_act}
 \end{figure}
 
-Another issue that was quickly identified with the previous design is that to remove or install mass plates from each rail, the entire linear actuator assembly had to be disassembled. This is addressed by manufacturing a new set of mass plates, with the comparison between the two iterations shown in \Cref{fig:plate_comparison}. The most notable change is the introduction of a slot that connects the edge of the plate to the circular cutout for the ballscrew shaft. As shown in \Cref{fig:linear_act}, this allows plates to be slid directly onto the ballscrew without any disassembly. The slot is also large enough to accomodate the new linear rail, also shown in \Cref{fig:linear_act}.
-
-\begin{figure}[h]
+\begin{figure}[p]
     \centering
     \includegraphics[width=0.85\linewidth]{figures/completed_block.jpg}
     \caption{The final mass block assembly}
     \label{fig:plate_comparison}
 \end{figure}
 
-The final assembly is shown in \Cref{fig:plate_comparison}, which is completed by adding one plate with a smaller cutout slot to each end. The slot is small enough to prevent the inserted linear rail from sliding out, but still large enough to allow installation without disassembling the full system. 
+
+Another issue that was quickly identified with the previous design is that to remove or install mass plates from each rail, the entire linear actuator assembly had to be disassembled. This is addressed by manufacturing a new set of mass plates, with the comparison between the two iterations shown in \Cref{fig:plate_comparison}. The most notable change is the introduction of a slot that connects the edge of the plate to the circular cutout for the ballscrew shaft. As shown in \Cref{fig:linear_act}, this allows plates to be slid directly onto the ballscrew without any disassembly. The slot is also large enough to accomodate the new linear rail, also shown in \Cref{fig:linear_act}. 
+
+The final assembly is shown in \Cref{fig:plate_comparison}, which is completed by adding one plate with a smaller cutout slot to each end. The slot is small enough to prevent the inserted linear rail from sliding out, but still large enough to allow installation without disassembling the full system. The new assembly is verified early in the design stage via open-loop stepper motor position updates, with the exact motor control scheme discussed in the next section. The steps taken to minimize friction within the system proved to be extremely successful. In fact, the ballscrews shafts may now be turned easily by hand, even when fully loaded and integrated onto the simulator. The ability to quickly add and remove mass plates makes handling the simulator far more convenient as well.
+
+Continuing the goals of \cite{gilman_automatic_2024}, the final design still has the additional benefit of being low cost. The ballscrews, motors, and linear rails can be easily and cheapily aquired from a growing consumer CNC market, and the new mass plates are manufactured using Cal Poly's water jet cutter.
 
 \begin{figure}[h]
     \centering
@@ -577,7 +580,7 @@ The MTi-03 was chosen as the IMU for it's noise characteristics and easy of inte
 
 Each stepper motor is controlled by a DRV8825 motor driver. The driver advances the motor one step per pulse of the STEP pin. The amount of steps required for one full revolution of the shaft is customizable on the DRV8825, but lower values were observed to cause intense vibrations when integrated on the platform. The minimum value that ensured smooth operation was found to be 3200 steps per revolution. Additionally, early simulation results suggested the mass blocks may have to travel as fast as 15\si{\mm\per\second} during active balancing. Since the ballscrews advance at 10\si{mm} per revolution, this means the onboard computer will need to generate a maximum of 4800 steps per second per motor. Generating steps at this rate on the STM32 caused timing issues with other tasks such as I2C communications and filter propagatation. To take load off the STM32, it sends the desired shaft position of each motor to a seperate Teensy 4.1 over I2C. The Teensy then handles all of the required step generation.
 
-The final two interfaces with the onboard computer are the APC220 and reaction wheel interface. The APC220 communicates over UART with the STM32 to send telemetry wirelessly to a host PC. Since the simulator has full rotational freedom about yaw, telemetry during live airbearing tests must be send wirelessly. The reaction wheel interface communicates over I2C with the STM32 which accepts wheel speed commands. Reaction wheel control is disccused in \cite{nalley2025development}. \Cref{fig:wiring} shows a simplifed wiring diagram of the system including all of the boards discussed here.
+The final two interfaces with the onboard computer are the APC220 and reaction wheel interface. The APC220 communicates over UART with the STM32 to send telemetry wirelessly to a host PC. Since the simulator has full rotational freedom about yaw, telemetry during live airbearing tests cannot be sent through a wired connection. The reaction wheel interface communicates over I2C with the STM32 which accepts wheel speed commands. Reaction wheel control is disccused in \cite{nalley2025development}. \Cref{fig:wiring} shows a simplifed wiring diagram of the system including all of the boards discussed here.
 
 \begin{figure}[h]\label{fig:OBC}
     \centering
@@ -599,9 +602,9 @@ The goal of the software design is to utilize Simulink Coder with the STM32 to m
 
 The most of challenging of these is the MTi-03 IMU, which communicates using the XBus communication protocol. The MTi-03 has various data pipes depending on which address is read over I2C. In nominal operations, the IMU collects measurement data and sends it to the measurement pipe, which operates as a first-in first-out buffer. The amount of data in this buffer is stored in the pipe status address. For each new measurement, the onboard computer must first request the pipe status, read the proper amount of bytes from the measurement pipe, and finally unpack the raw XBus message into gyroscope and accelerometer readings. 
 
-To aid users, the manufacturer Movella provides an XBus library which has numerous functions to aid in this process. Because the library is written in C/C++, a MATLAB System Object is developed which bridges the gap between the XBus library and the standard MATLAB/Simulink environment. The primary data flows within the software are shown in \Cref{fig:software_flowchart}. Once the System Object outputs the raw gyroscope and accelerometer into the model, the majority of the remaining computation occurs in the MATLAB/Simulink environment. The high amout of matrix and vector manipulation within the EKF and control law makes this environment preferrable to C/C++. 
+To aid users, the manufacturer Movella provides an XBus library which has numerous functions to aid in this process. Because the library is written in C/C++, a MATLAB System Object is developed which bridges the gap between the XBus library and the standard MATLAB/Simulink environment. The primary data flows within the software are shown in \Cref{fig:software_flowchart}. Once the System Object outputs the raw gyroscope and accelerometer into the model, the majority of the remaining computation occurs in the MATLAB/Simulink environment. The high amout of matrix and vector manipulation within the EKF and control laws makes this environment preferrable to C/C++. 
 
-In addition to the Embedded Simulink model, a seperate configuration program was written C. In this program the operator communicates with the STM32 on a host PC in a terminal-like environment over UART. The program allows various system parameters to be configured like the MTi-03 sample rate and sliding masses homed positions. Debugging system issues here is also far more convenient than the Simulink model since the STM32 can print out debug telemetry in the terminal.
+In addition to the Embedded Simulink model, a seperate configuration program was written C. In this program the operator communicates with the STM32 on a host PC in a terminal-like environment over UART. The program allows various system parameters to be configured like the MTi-03 sample rate and sliding mass homing positions. Debugging system issues here is also far more convenient than the Simulink model since the STM32 can print out debug telemetry in the terminal.
 
 \subsection{Algorithm Implementation}
 
