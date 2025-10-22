@@ -7,46 +7,48 @@ The balancing methods described above rely on physical actuators and sensors to 
 
 \subsection{Historical Development}
 
-\cite{young1998development} shows an early documented use of a least-squares style estimator for center of mass estimation.
+Spacecraft dynamics simulators have of a long history in spaceflight and have adapted over the years as the corresponding flight hardware has evolved. The focus of this work is simulators that provide rotational degrees of freedom, although other configurations that enable translational motion exist. For three rotational degrees of freedom, the use of a spherical air-bearing has remained largely unchanged even over many decades. One of the earliest well-documented test setups was developed at the NASA's Marshall Flight Center in 1960, and the earliest simulator developed at a university was at Stanford in 1975 \cites{schwartz_historical_2003}. While the methods used for mass balancing on simulators from this period are not always well documented, many do indicate a form of manual balancing with sliding masses.
 
-\cite{kim_automatic_2009} shows an early documented use an active balancing methods and an adaptive controller. The adaptive controller approach is expanded on in \cite{chesi_automatic_2014} to horizontally balancing the simulator. \cite{choi_automatic_2016} documents another active approach to balancing using a PID controller. 
+As the quality of onboard sensors and computing increased, researchers begin exploring more sophisticated approach to mass balancing. For example, \cite{young1998development} shows an early documented use of a least-squares style estimator for center of mass estimation. This approach to balancing follows the standard system identification approach where the inputs and outputs of a dynamic system are recorded, and the dynamic model is used to calculate some unknown system parameter. For mass balancing, the input is a known torque applied to the simulator, the output is the simulator's body rates and attitude, and the unknown parameter is the center of mass \cite{schwartz2004comparison}.
+
+\cite{kim_system_2006} shows an early demonstration of an alternative approach to mass balancing, where an adaptive control strategy is adopted instead of offline estimation. The sliding masses are fixed to linear actuators with precise positional control. The system is again given a known torque input, and a Lyapunov analysis is conducted to find an adaptive control law for the linear actuators that minimizes the imbalance of the system. This adaptive controller approach is expanded on in \cite{chesi_automatic_2014} to horizontally balance the simulator. \cite{choi_automatic_2016} documents a similar approach where the position of the sliding masses are controlled in real-time under a PID style controller. 
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.70\linewidth]{figures/NPS.png}
-    \caption{Naval Postgraduate School}
+    \caption{Spacecraft dynamics simulator at the Naval Postgraduate School \cite{kim_automatic_2009}}
     \label{fig:NPS}
 \end{figure}
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.80\linewidth]{figures/sydney.png}
-    \caption{University of Syndey}
+    \caption{A CubeSat scale simulator at the University of Syndey \cite{kwan2015air}}
     \label{fig:sydney}
 \end{figure}
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.80\linewidth]{figures/georgia.png}
-    \caption{University of Georgia}
+    \caption{Spacecraft dynamics simulator at the University of Georgia}
     \label{fig:georgia}
 \end{figure}
 
-Mirroring trends in the aerospace industry, many new simulators have been reduced in size compared to these early iterations. This is includes a reduction in cost and size of key ADCS components like high quality IMUs and motor controllers. There is also a desire to test Cubesat scale saetllites and their associated hardware.
+Mirroring trends in the aerospace industry, many new simulators have been reduced in size compared to early iterations. This includes a reduction in cost and size of key ADCS components like high quality inertial measurement units (IMUs) and motor controllers. There is also a desire to test Cubesat-scale ADCS systems and their associated hardware \cite{chesi_automatic_2014} \cite{kwan2015air}. As a result, the barrier to entry for developing a spacecraft dynamics simulator continues to lower, and many universities have simulators actively being developed. 
 
 \subsection{Actuators}
 
-The vast majority of spacecraft simulators use momentum exchange devices such as reaction wheels or control-moment gyros to generate control torques. Smaller CubeSat-scale platforms may use magnetorquers within a Helmholtz cage, while large scale platform may incorporate cold-gas thrusters. MEDs are exclusively used in balancing applications because of the precise, repeatable control inputs they are able to provide. 
+The vast majority of spacecraft simulators use momentum-exchange-devices (MEDs) such as reaction wheels or control-moment gyroscopes (CMGs) to generate control torques. Smaller CubeSat-scale platforms may use magnetorquers within a Helmholtz cage, while large-scale platform may incorporate cold-gas thrusters. MEDs are preferred for in balancing applications due to the precise, repeatable control inputs they are able to provide at small magnitudes. 
 
-The control of MEDs are subject to their own actuator dynamics separate from the spacecraft simulator dynamics. For example, when commanding a change in speed for a reaction wheel, the wheel and motor exhibit transient behavior and their own response time. However, given that the time scale of the spacecraft dynamics are significantly slower than the actuator dynamics, the actuator dynamics can be assumed to be negligible for most cases \cite{kristiansen_modelling_2009}. A more practical limitation comes from saturation: as external torques accumulate, the angular momentum stored in the MEDs can exceed their capacity. This is particularly important for simulators under the influence of gravity. After performing a balancing procedure, a bound of the magnitude of gravitional torques can be measured using methods in \Cref{sec:mbs_problem}. Multiplying this value by the desired test duration the simulator gives an order-of-magnitude approximation for the required momentum capacity of the MEDs. In this sense, the momentum capacity of the actuators can be used to determine if balancing results are acceptable or not.
+The control of MEDs are subject to their own actuator dynamics separate from the spacecraft simulator dynamics. For example, when commanding a change in speed for a reaction wheel, the wheel and motor exhibit transient behavior and their own response time. However, given that the time scale of the spacecraft dynamics are significantly slower than the actuator dynamics, the actuator dynamics can be assumed to be negligible for most cases \cite{kristiansen_modelling_2009}. A more practical limitation comes from saturation: as external torques accumulate, the angular momentum stored in the MEDs can approach their maximum capacity. After performing a balancing procedure, a bound of the magnitude of gravitational torques can be measured using methods in \Cref{sec:mbs_problem}. This torque estimate and the actuator's momentum capacity can be used to approximate the length of the tests that can be run before saturation occurs. Or alternatively, the momentum capacity of the actuators and the desired test legnth can provide a practical bound for acceptable balancing performance.
 
 \subsection{Sensors}
 
-All balancing methods above require measurements for body rates and attitude. An IMU or rate gyro are the primary sensors for this purpose, which can directly measure body rates and integrate them to compute attitude. 
+All balancing methods above require measurements for body rates and attitude. An IMU or rate gyroscope is the primary sensors for this purpose, which can directly measure body rates and integrate them to compute attitude. 
 
 IMU performance is characterized by a few key factors. The most influential is noise density, which is directly tied to the variance of the rate measurements \cite{unsal_estimation_2012}. Integrating these noisy rate measurements can cause error in the attitude estimate to accumulate, referred to as angular random walk. Bias instability is another factor that refers to how fast bias in the rate measurements changes over time. For low quality IMUs, bias instability can have an impact on even short duration tests. Bandwidth and sample rate are two other factors that collectively describe what frequency dynamics the IMU can accurately capture, but given the slow dynamics of spacecraft simulators, most sensor configurations will satisfy these requirements.
 
-In many cases, balancing results are limited by the quality of IMU data. 
+As will be discussed in \Cref{chap:methodology}, the quality of sensor data is a common challenge faced by all mass balancing systems. The nature of the problem requires accurate knowledge of the simulator's body rates and attitude with minimal corruption from noise. Because the accuracy of attitude and body rate measurement's determines the convergence quality of an automatic balancing algorithm, IMU selection is a limiting factor in reach sub-millimeter center of mass accuracy. 
 
 \subsection{Survey Results}
 
