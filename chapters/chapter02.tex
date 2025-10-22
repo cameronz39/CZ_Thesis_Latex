@@ -114,7 +114,7 @@ Batch Estimation and Filtering \newline $<\SI{5}{\micro\metre}$ \\
 
 \section{Cal Poly SADS MBS Design and History} 
 
-The Cal Poly SADS has been developed by students and faculty since it was first introduced in 2007. The simulator features a welded aluminum structure on top of a spherical air-bearing, with four slots intended for a pyramidal reaction wheel configuration. Slots were additionally cutout along the base of the structure with mass blocks inserted. The positions of these blocks could be adjusted by hand, thus serving as the first iteration of the mass balancing system. \Cref{fig:V1} shows this first iteration, where reaction wheels and cutout slots can be seen.
+The Cal Poly SADS has been developed by students and faculty since it was first introduced in 2007. The simulator features a welded aluminum structure on top of a spherical air-bearing, with four slots intended for a pyramidal reaction wheel configuration. Linear cutouts were also made along the base of the structure and along the vertical supports, with mass blocks inserted. The positions of these blocks could be adjusted by hand, thus serving as the first iteration of the mass balancing system. 
 
 \begin{figure}[h]\label{fig:gillman_final_work}
     \centering
@@ -122,13 +122,17 @@ The Cal Poly SADS has been developed by students and faculty since it was first 
     \caption{The coarse mass balances (left) and fine mass balances (right) on the previous iteration~\cite{gilman_automatic_2024}}
 \end{figure}
 
-The has system undergone numerous changes since 2007, some of which are detailed in \Cref{sec:previous_work}. The most relevant change is the installation of an LN-200 IMU, which has excellent noise characteristics as shown in \Cref{table:existing_testbeds}. Beginning in 2023 an effort began to completely overhaul the hardware onboard the SADS. This includes the development of a new set of reaction wheels, a new flight computer, as well as replacing the manual sliding masses with a new set controlled by linear actuators. Current reaction wheel development is documented in~\cite{nalley2025development}, which resulted in the design and integration of one complete wheel to the simulator. Work on a new flight computer remains unstarted, and development of the new mass balancing system is documented in~\cite{gilman_automatic_2024}, which resulted in the design of a new set of prototype linear actuators. 
+The system has undergone numerous changes since 2007, with a key change being the introduction of three linear actuators that drive smaller set of mass blocks. The larger initial set of mass blocks that are adjusted by hand are referred to as the coarse mass balances (CMB), and the new set driven by linear actuators are referred to as the fine mass balnances.
+
+The second relevant change is the integration of an LN-200 IMU, which has excellent noise characteristics as shown in \Cref{table:existing_testbeds}. In 2014, Dam applied a least-squares style estimator for mass balancing \cite{dam_applied_2014}. The estimator showed strong convergence with the aid of the new IMU. This marked the first successful use of an estimator-based approach on the Cal Poly SADS. However, a key drawback of the system was also discovered. The vertical center of mass offset predicted by the estimator was $-1.5757,\si{mm}$, but the FMB was only able to to raise the vertical offset by $0.63,\si{mm}$. Attempts were made to shift the overall platform's center of mass upwards without the fine masses, but any changes immediately made the platform behave like an inverted pendulum.
+
+Beginning in 2023 an effort began to completely overhaul the hardware onboard the SADS. This includes the development of a new set of reaction wheels, a new flight computer, as well as replacement of the CMB and FMB. Reaction wheel development, documented in~\cite{nalley2025development}, resulted in the design and integration of one complete wheel on the simulator. Work on a new flight computer has not yet begun, and development of the new mass balancing system is documented in~\cite{gilman_automatic_2024}, which resulted in the design of a new set of prototype linear actuators. 
 \begin{figure}[h]\label{fig:gillman_final_work}
     \centering
     \includegraphics[width=0.70\linewidth]{figures/gillman_final_work.png}
     \caption{Linear actuator set developed in~\cite{gilman_automatic_2024}}
 \end{figure}
-The actuators follow the same layout as the previous iteration with six-sliding masses - two for each axis. The masses slide along a ballscrew driven by DC motors with positional feedback from rotary encoders. However when mounted on the simulator as shown in \Cref{fig:gillman_final_work}, the motors struggle to move the masses. This may be acceptable for passive balancing but is not suitable for active balancing where positions must be precisely controlled in real-time. Additionally without the flight computer, the actuators remain unproven in any real tests with a live air-bearing. 
+The actuators follow the same layout as the previous iteration with six-sliding masses - two for each axis. The masses slide along a ballscrew driven by DC motors with positional feedback from rotary encoders. However when mounted on the simulator, the motors struggle are unable to reliably move the masses under load. This may be acceptable for passive balancing but is not suitable for active balancing where positions must be precisely controlled in real-time. Additionally without the flight computer, the actuators remain unproven in any real tests with a live air-bearing. 
 
 \begin{table}[h!]
 \caption{Summary of previous work on the Cal Poly Spacecraft Attitude Dynamics Simulator (SADS)}
@@ -162,12 +166,12 @@ Completely replaced mass balancing hardware, only performed hardware-in-the-loop
 \end{tabularx}
 \end{table}
 
-\section{Thesis Objectives}
+\section{Thesis Objectives} - need to formalize
 
-The primary goal of this thesis is to design, integrate and test a low-cost mass balancing system that achieves similar or better balancing results than previous iterations - namely the hardware results achieved by Dam in 2014. To achieve this, work will also need to be done on the SADS' overall design \textit{still need to formalize this}
+The primary goal of this thesis is to design, integrate and test a low-cost mass balancing system that achieves similar or better balancing results than previous iterations - namely the hardware results achieved by Dam in 2014. To achieve this, work will also need to be done on the SADS' overall design.
+- A new iteration of the linear actuator design
 - A prototype flight computer that is compatible with Simulink Coder
-- An IMU and measurement system
+- Integration of an IMU and measurement system
 
-- provide practical insights on MBS design and implementation
 - Compare the results of various balancing methods found in literature on the same platform, provide a clear comparison to simulated and real results
 
