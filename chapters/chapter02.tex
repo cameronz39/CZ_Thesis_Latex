@@ -132,7 +132,7 @@ Beginning in 2023 an effort began to completely overhaul the hardware onboard th
     \includegraphics[width=0.70\linewidth]{figures/gillman_final_work.png}
     \caption{Linear actuator set developed in~\cite{gilman_automatic_2024}}
 \end{figure}
-The actuators follow the same layout as the previous iteration with six-sliding masses - two for each axis. The masses slide along a ballscrew driven by DC motors with positional feedback from rotary encoders. However when mounted on the simulator, the motors struggle are unable to reliably move the masses under load. This may be acceptable for passive balancing but is not suitable for active balancing where positions must be precisely controlled in real-time. Additionally without the flight computer, the actuators remain unproven in any real tests with a live air-bearing. 
+The actuators follow the same layout as the previous iteration with six-sliding masses - two for each axis. The masses slide along a ballscrew driven by DC motors with positional feedback from rotary encoders. However when mounted on the simulator, the motors are unable to reliably move the masses under load. This may be acceptable for passive balancing but is not suitable for active balancing where positions must be precisely controlled in real-time. Additionally without the flight computer, the actuators remain unproven in any real tests with a live air-bearing. 
 
 \begin{table}[h!]
 \caption{Summary of previous work on the Cal Poly Spacecraft Attitude Dynamics Simulator (SADS)}
@@ -166,12 +166,10 @@ Completely replaced mass balancing hardware, only performed hardware-in-the-loop
 \end{tabularx}
 \end{table}
 
-\section{Thesis Objectives} - need to formalize
+\section{Thesis Objectives} 
 
-The primary goal of this thesis is to design, integrate and test a low-cost mass balancing system that achieves similar or better balancing results than previous iterations - namely the hardware results achieved by Dam in 2014. To achieve this, work will also need to be done on the SADS' overall design.
-- A new iteration of the linear actuator design
-- A prototype flight computer that is compatible with Simulink Coder
-- Integration of an IMU and measurement system
+The primary goal of this thesis is to design, integrate and experimentally validate a low-cost mass balancing system for the Cal Poly SADS. The new systems aims to achieves similar or better balancing performance than previous iterations on the SADS - namely the hardware results achieved by Dam in 2014 - while also addressing mechanical and control limitations identified in earlier designs. 
 
-- Compare the results of various balancing methods found in literature on the same platform, provide a clear comparison to simulated and real results
+To achieve this, work will also need to be done on the SADS' overall design. Mechanically, a new linear actuator assembly is developed with greater torque capability, reduced friction, and improved serviceability. Because work on a new flight computer remains unstarted, a new prototype flight computer that leverages MATLAB/Simulink Coder is additionally developed. An IMU-based measurement system is integrated with the flight computer to provide attitude determination for the simulator. Together, these upgrades enable the rapid implementation and test of several balancing algorithms.
 
+The secondary goal of this work is not only to demonstrate a functional mass balancing system, but also to establish a framework for comparing different balancing strategies under identical conditions. Where applicable, identical control laws, estimators, and test procedures will implemented in both the developed simulation and physical simulator. Through this, the simulated environment can be validated against real-world behaviour and aid in bridging the gap between theoretical algorithm design and practical implementation. By evaluating both simulation and hardware results across several estimation and control approaches, the thesis provides a performance benchmark for future SADS development and other spacecraft dynamics simulators found in literature.

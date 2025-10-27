@@ -88,22 +88,77 @@ There are two main approaches to solving the mass balancing problem. The first i
 
 The second main approach is to find a feedback control law that drives the effect of the $m_s\bm{r}^{\times}\bm{g}$ term in \Cref{equation:starting_eom} to zero. In traditional spacecraft ADCS, the torques required for a feedback controller are generated using momenutum exchange devices, but here, there is the additional option to use $\Delta\bm{d}$ as a control input. Referring to \Cref{equation:starting_eom}, the dynamics of the system are influenced by the value of $\bm{r}^{\times}$, whose value can be controlled by $\Delta\bm{d}$ using \Cref{equation:delta_d_sol} or \Cref{equation:delta_d_pseudo_sol}. This class of approaches is referred to as active balancing or feedback control balancing.
 
-Once any balancing procedure has been performed, it is important to verify the results through an external verification method. Assuming the center of mass is below the center of rotation, a very rough estimate for the torque due to gravity may be obtained by tilting the simulator about one of it's principal axes, releasing it, and observing the period of resulting pendulum motion $T$ \cite{kim_automatic_2009}. The relationship between $\bm{r}$ and $T$ is given by
-\begin{equation}
-    T = 2\pi\sqrt{\frac{J_i}{m_s\,g||\bm{r}||}}
-\end{equation}
-where $J_i$ is the moment of inertia about said principle axis. After performing a balancing procedure, the value of $||\bm{r}||$ should decrease, leading to longer periods of oscillatation. 
+\subsubsection{Verification Methods}
 
-Another verification method is observing the total mechanical energy of the simulator while it undergoes this same pendulum motion. The mechanical energy is given by
+Once any balancing procedure has been performed, it is important to verify the results through an external verification method. A direct approach to this is to attempt to measure the torque due to gravity as the simulator freely tumbles. The simulator is first manually positioned into a non-upright orientation and then released. The body rates are recorded and the average torque is computed using
+\begin{equation}
+    T_{g,avg} = \text{mean}||\bm{J}\dot{\bm{\omega}} + \bm{\omega}^{\times}\bm{J}\bm{\omega}||
+\end{equation}
+
+This method requires the numerical derivative of the measured body rates to compute $\dot{\bm{\omega}}$, which may be challenging depending on the noise characteristics of the IMU.
+
+Another verification method that does not require numerical derivatives is observing the total mechanical energy of the simulator while it undergoes this same tumbling motion. The mechanical energy is given by
 \begin{equation}
     E_{mech} = \frac{1}{2}\bm{\omega}^T\bm{J}\bm{\omega} + mgh
 \end{equation}
 where $h$ is the vertical height of $\bm{r}$ \cite{silva_filtering_2018}. If the simulator is balanced, $h$ will remain relatively constant throughout the pendulum motion, and the kinetic energy term $\frac{1}{2}\bm{\omega}^T\bm{J}\bm{\omega}$ will also remain relatively constant due to the conservation of energy. As the balance of the simulator improves, the kinetic energy will oscillate with smaller amplitudes.
 
-Ideally this value is zero, but in practice mass balancing systems seek to make this value as small as possible while satsifying other project constraints like cost, time, and volume. 
+\subsection{Attitude Representation and Kinematics}
 
-\subsection{Passive Balancing Methods}
-\subsubsection{Least-Squares/Batch Estimation Algorithms}\label{sec:LSR}
+Many balancing algorithms require knowledge of the simulator's attitude in real-time. In this work, quaternions will exclusively be used in algorithms as a singularity-free representation of the simulator's attitude. Here, the quaternion $\bm{q}$ is defined as a frame rotation from the body frame to the inertial frame, with the real part $\eta$ of the quaternion first ($\eta$ = $q_0$). $\bm{q}$ is then a four component vector written as 
+\begin{equation}
+    \bm{q} = \begin{bmatrix}
+        \eta & \bm{\epsilon}
+    \end{bmatrix}^T
+    = \begin{bmatrix}
+        q_0 & q_1 & q_2 & q_3
+    \end{bmatrix}^T
+\end{equation}
+The simulator quaternion at any point may be directly converted into a direction cosine matrix using the following
+\begin{equation}\label{equation:C_from_q}
+    \bm{C}_{\mathcal{N}\leftarrow\mathcal{B}}(\bm{q})=
+    \begin{bmatrix}
+    2q_0^{2}+2q_1^{2}-1 & 2(q_1 q_2 + q_0 q_3) & 2(q_1 q_3 - q_0 q_2) \\
+    2(q_1 q_2 - q_0 q_3) & 2q_0^{2}+2q_2^{2}-1 & 2(q_2 q_3 + q_0 q_1) \\
+    2(q_1 q_3 + q_0 q_2) & 2(q_2 q_3 - q_0 q_1) & 2q_0^{2}+2q_3^{2}-1
+    \end{bmatrix}
+\end{equation}
+where $\bm{C}_{\mathcal{N}\leftarrow\mathcal{B}}$ again represents the frame rotation from $\mathcal{B}$ to $\mathcal{N}$. This means $\bm{C}_{\mathcal{N}\leftarrow\mathcal{B}}$ satisfies the following properties
+\begin{equation}
+    \bm{v}^{\mathcal{N}} = 
+    \bm{C}_{\mathcal{N}\leftarrow\mathcal{B}}\bm{v}^{\mathcal{B}}
+\end{equation}
+\begin{equation}
+    \bm{v}^{\mathcal{B}} = 
+    \bm{C}_{\mathcal{N}\leftarrow\mathcal{B}}^T\bm{v}^{\mathcal{N}}
+    =\bm{C}_{\mathcal{B}\leftarrow\mathcal{N}}\bm{v}^{\mathcal{N}}
+\end{equation}
+where $\bm{v}^{\mathcal{B}}$ represents some physical vector expressed in $\mathcal{B}$ and $\bm{v}^{\mathcal{N}}$ represents the same vector expressed in $\mathcal{N}$. 
+
+The quaternion propagates forward through time as a function of the simulator's body rate $\bm{\omega}$ according to the following differential equation
+\begin{equation}
+    \dot{\bm{q}} = \frac{1}{2}
+\begin{bmatrix}
+0 & -\omega_x & -\omega_y & -\omega_z \\
+\omega_x & 0 & \omega_z & -\omega_y \\
+\omega_y & -\omega_z & 0 & \omega_x \\
+\omega_z & \omega_y & -\omega_x & 0
+\end{bmatrix}
+\bm{q}
+\end{equation}
+This relationship forms the base of the propagatation step in the Kalman filter implemented later. 
+
+When plotting and interpreting results, the quaternion representation is often converted to Euler angles $(\phi,\theta,\psi)$, or roll, pitch, yaw respectively. This conversion is performed using
+\begin{equation}
+\begin{aligned}
+\phi &= \text{arctan2}\!\left(2(q_0 q_1 + q_2 q_3),\, 1 - 2(q_1^2 + q_2^2)\right), \\[4pt]
+\theta &= \arcsin\!\left(2(q_0 q_2 - q_3 q_1)\right), \\[4pt]
+\psi &= \text{arctan2}\!\left(2(q_0 q_3 + q_1 q_2),\, 1 - 2(q_2^2 + q_3^2)\right),
+\end{aligned}
+\end{equation}
+where $\text{arctan2}$ is the 2-argument arctangent function. This represents the attitude as a series of intrinsic rotations about the body axes using a $(3,2,1)$ rotation sequence. Although Euler angles are used in post-processing and visualization, all onboard computations are performed using quaternions to avoid singularities.
+
+\subsection{Least-Squares/Batch Estimation Algorithms}\label{sec:LSR}
 
 Batch estimation algorithms are a subset of passive balancing methods that use momentum exchange devices to excite the simulator and record the resulting body rate and attitude data. The equations of motion are manipulated to help obtain multiple estimates of $\bm{r}$, and a single, final estimate of $\bm{r}$ is calculated using least-squares error methods. Many variations of batch estimation algorithms exist, but they all start with same principle up seperating the constant mass properties from the dynamic states in the equations of motion. To accomplish this, it helps to define the following variables
 
@@ -176,7 +231,7 @@ where $n$ is the total number of measurements. $\bm{x}$ is finally computed usin
 \end{equation}
 The offline batch estimation method requires that multiple tests are run, adjusting the sliding masses after each run using \Cref{equation:delta_d_sol} or \Cref{equation:delta_d_pseudo_sol}. Assuming actuators like reaction wheels are available, this method's main advantage is it's ease of implementation. By doing all of the estimation and data processing offline, no custom software needs to be written for the simulator's onboard computer. In fact, exciting the system using this method does not require the simulator to have a working feedback controller, allowing this method to be adopted early in the design of a simulator. Researches have demonstrated success using simple open loop control to ensure that the body rates of the simulator follow a sinusoidal pattern \cite{kim_automatic_2009} \cite{dam_applied_2014} \cite{noauthor_designing_2003}.
 
-\subsubsection{Kalman Filtering for Imbalance Estimation}\label{sec:UKF}
+\subsection{Kalman Filtering for Imbalance Estimation}\label{sec:UKF}
 
 Kalman filters have extensive precedent for estimating unknown parameters in dynamic systems for aerospace applications. In traditional spacecraft attitude determination and control, the Extended Kalman Filter is the primary method for determining spacecraft body rates and attitude. While a general derivation of the Kalman filter and its' variations is beyond the scope of this thesis, a brief background of it's application in spacecraft ADCS is important. Here, the state vector of the system is formulated as
 \begin{equation}\label{equation:EKF_state_vec}
@@ -188,26 +243,7 @@ Kalman filters have extensive precedent for estimating unknown parameters in dyn
         \bm{\omega} & q_0 & q_1 & q_2 & q_3
     \end{bmatrix}^T
 \end{equation}
-where $\bm{q}$ represents the spacecraft's attitude in the form of a quaternion. In this work, $\bm{q}$ is defined as a frame rotation from the body frame to the inertial frame, with the real part $\eta$ of the quaternion first ($\eta$ = $q_0$). The spacecraft quaternion at any point may be directly converted into a direction cosine matrix using the following
-\begin{equation}\label{equation:C_from_q}
-    \bm{C}_{\mathcal{N}\leftarrow\mathcal{B}}(\bm{q})=
-    \begin{bmatrix}
-    2q_0^{2}+2q_1^{2}-1 & 2(q_1 q_2 + q_0 q_3) & 2(q_1 q_3 - q_0 q_2) \\
-    2(q_1 q_2 - q_0 q_3) & 2q_0^{2}+2q_2^{2}-1 & 2(q_2 q_3 + q_0 q_1) \\
-    2(q_1 q_3 + q_0 q_2) & 2(q_2 q_3 - q_0 q_1) & 2q_0^{2}+2q_3^{2}-1
-    \end{bmatrix}
-\end{equation}
-where $\bm{C}_{\mathcal{N}\leftarrow\mathcal{B}}$ again represents the frame rotation from $\mathcal{B}$ to $\mathcal{N}$. This means $\bm{C}_{\mathcal{N}\leftarrow\mathcal{B}}$ satisfies the following properties
-\begin{equation}
-    \bm{v}^{\mathcal{N}} = 
-    \bm{C}_{\mathcal{N}\leftarrow\mathcal{B}}\bm{v}^{\mathcal{B}}
-\end{equation}
-\begin{equation}
-    \bm{v}^{\mathcal{B}} = 
-    \bm{C}_{\mathcal{N}\leftarrow\mathcal{B}}^T\bm{v}^{\mathcal{N}}
-    =\bm{C}_{\mathcal{B}\leftarrow\mathcal{N}}\bm{v}^{\mathcal{N}}
-\end{equation}
-where $\bm{v}^{\mathcal{B}}$ represents some physical vector expressed in $\mathcal{B}$ and $\bm{v}^{\mathcal{N}}$ represents the same vector expressed in $\mathcal{N}$. In the standard EKF for spacecraft ADCS, the system state must be discretely propagated forward at each iteration. This is always done through some form of numerical integration, such as
+where $\bm{q}$ represents the spacecraft's attitude in the form of a quaternion. In the standard EKF for spacecraft ADCS, the system state must be discretely propagated forward at each iteration. This is always done through some form of numerical integration, such as
 \begin{equation}\label{equation:forward_euler}
     \bm{x}_{k} = \bm{x}_{k-1}+T\bm{f}(\bm{x}_{k-1},\bm{u}_{k-1})
 \end{equation}
@@ -227,9 +263,9 @@ where $T$ is the discrete sample period, $k$ is the iteration number, and $\bm{u
 \end{equation}
 where $\bm{\omega}_{k-1}$, $\bm{\epsilon}_{k-1}$, and $\eta_{k-1}$ are all taken directly from $\bm{x}_{k-1}$ according to \Cref{equation:EKF_state_vec}. Next, the propagated state is corrected using a set of measurements $\bm{y}$. These traditionally come from a variety of sensors, namely star trackers, magnetometers, and sun sensors. All of these work as valid measurements provided there is some function that can transform the system state into a measurement using $\bm{y} = \bm{h}(\bm{x})$. The process function and measurement function $\bm{f}$ and $\bm{h}$ may then be used to implement a variety of variations of the Kalman filter to obtain estimates of the state in the presence of process noise and measurement noise.
 
+The Kalman Filter has been applied to also estimate the imbalance vector of spacecraft simulators. \cite{silva_filtering_2018} provides a survey of a these filtering approaches and their performance. In practice, filters struggle to converge on values for $r_x$, $r_y$, and $r_z$ simultaneously. However, reliable convergence can be achieved for $r_z$ when $r_z\ll\,r_x$ and $r_z\ll\,r_y$. In other words, filtering can be applied to estimate the vertical balance after the horizontal balance has already been componensated.
 
-
-To extend these methods to estimate the vertical imbalance $r_z$, the state vector of the dynamic system is written as 
+To estimate the vertical imbalance $r_z$, the state vector of the dynamic system is written as 
 \begin{equation}
     \bm{x} = \begin{bmatrix} \bm{\omega} & \bm{q} & r_z \end{bmatrix}^T
 \end{equation}
@@ -248,16 +284,20 @@ and the associated dynamic function $\bm{f}(\bm{x}_{k-1})$ is
         0
     \end{bmatrix}
 \end{equation}
- While sensors like star trackers and magnetometers are crucial for precise attitude determination, filtering for the imbalance vector $\bm{r}$ with a free tumbling simulator can be done using soley body rate measurements. The measurement vector with this approach then is simply $\bm{y}=\bm{\omega}$ and the measurement equation becomes
+ While sensors like star trackers and magnetometers are crucial for precise attitude determination, filtering for the imbalance component $r_z$ with a free tumbling simulator can be done using soley body rate measurements. The measurement vector with this approach then is simply $\bm{y}=\bm{\omega}$ and the measurement equation becomes
 \begin{equation}
     \bm{h}(\bm{x})= \begin{bmatrix}
         \mathbb{1}_{3\times\,3} & \bm{0}_{3\times\,5}
     \end{bmatrix}\bm{x}
 \end{equation}
 
-This process and measurement model serve as a basline to implement either an Unscented Kalman Filter - with measurements purely being provided by an IMU in the form of $\bm{\omega}$, and the state $r_z$ being filtered for. \cite{silva_filtering_2018} provides an in-depth analysis of these filters' performance and their variations
+This process and measurement model serve again as a baseline to implement a filtering method. Here, an Unscented Kalman Filter (UKF) is used due to its improved handling of nonlinearites when compared to the EKF. The torque due to gravity introduces a high amount of nonlinearity to the system, which is challenging for the EKF where the process model is linearized. As demonstrated in the following section, this improved performance comes at the expense of a higher computational cost. However, because measurement data is collected during tumbling and then fed into the filter offline, no constraint is placed on computation time. 
 
-To handle the nonlinear process model without explicit linearization, the UKF constructs a set of $2n+1$ sigma points about the mean state $\bm{x}_{k-1}$ and covariance $\bm{P}_{k-1}$. These points capture the first and second moments of the state distribution and are given by
+\subsubsection{The Unscented Kalman Filter}
+
+To handle the nonlinear system without explicit linearization, the UKF takes the current best estimate of the system's state $\bm{x}_{k-1}$ and constructs a set of states called sigma points. 
+
+sigma points about the mean state $\bm{x}_{k-1}$ and covariance $\bm{P}_{k-1}$. These points are given by
 \begin{equation}
     \bm{X}_{k-1}^{(i)} =
     \begin{cases}
@@ -568,13 +608,15 @@ Continuing the goals of \cite{gilman_automatic_2024}, the final design still has
 
 \subsection{Electrical}\label{sec:electrical}
 
-\begin{figure}[h]\label{fig:wiring}
+
+
+The primary goal of the electrical design is to interface the newly developed linear actuators and an IMU to the onboard computer. An STM32F446RE was chosen as the primary onboard computer. This board has high number of GPIO pins, a maximum clock speed of 180 MHz, is low cost, and has proven compatibility with Simulink hardware support package. It additionally has a floating point unit that operates on 32-bit floats, which is crucial for the rapid matrix multiplication needed to propagate a Kalman filter in real-time. Despite these benefits, using a microcontroller still has numerous drawbacks, the main one being the need to reflash the board to switch between programs. In the final iteration of the SADS, the onboard computer ideally runs as a Linux-based RTOS, where the operator can easily load and switch between multiple programs. Future work for the onboard computer is discussed further in \Cref{chap:conclusion}.
+
+\begin{figure}[p]\label{fig:wiring}
     \centering
     \includegraphics[width=\linewidth,angle=-90]{figures/wiring.png}
     \caption{Wiring schematic}
 \end{figure}
-
-The primary goal of the electrical design is to interface the newly developed linear actuators and an IMU to the onboard computer. An STM32F446RE was chosen as the primary onboard computer. This board has high number of GPIO pins, a maximum clock speed of 180 MHz, is low cost, and has proven compatibility with Simulink hardware support package. It additionally has a floating point unit that operates on 32-bit floats, which is crucial for the rapid matrix multiplication needed to propagate a Kalman filter in real-time. Despite these benefits, using a microcontroller still has numerous drawbacks, the main one being the need to reflash the board to switch between programs. In the final iteration of the SADS, the onboard computer ideally runs as a Linux-based RTOS, where the operator can easily load and switch between multiple programs. Future work for the onboard computer is discussed further in \Cref{chap:conclusion}.
 
 The MTi-03 was chosen as the IMU for it's noise characteristics and easy of integration with the STM32. The MTi-03 has a noise density of $0.003\si{\degree\per\second\per\Hz^{1/2}}$, which is favorable when compared to the values found on existing balancing systems as shown in \Cref{table:existing_testbeds}. The IMU and onboard computer communicate over I2C, with more detail provided in \Cref{sec:software}.
 
@@ -594,7 +636,7 @@ The final two interfaces with the onboard computer are the APC220 and reaction w
 
 The goal of the software design is to utilize Simulink Coder with the STM32 to make the implementation of the discussed balancing algorithms simpler. For this method to be viable, the Simulink model must interface with the external boards in the system as discussed in \Cref{sec:electrical}. 
 
-\begin{figure}
+\begin{figure}[h]
     \centering
     \input{figures/software_flowchart.tikz}
     \caption{Functional software architecture during balancing}
@@ -692,7 +734,7 @@ The filter as described here still has room for improvement. Including an estima
 
 With the EKF implemented, passive balancing becomes relatively simple. The operator manually sets the initial attitude of the simulator and begins recording telemetry. The simulator tumbles either freely or under the influence of the open loop reaction wheel commands depending on balancing method being used. The reaction wheel interface is additionally able to feedback the recorded torque which is bundled with the telemetry. 
 
-The attitude, body rates, and reaction wheel torques are loaded onto the host PC. The data is post processed and inputted into either the UKF or the least-squares estimator depending on the algorithm. Both the UKF and least-squares estimator are implemented in MATLAB directly mirroring the equations as laid out in \Cref{sec:LSR} and \Cref{sec:UKF}. For the batch estimation algorithm, the discrete-time integrals are handled through trapezoidal integration. The resulting estimate for $\bm{r}$ is converted into a set of new mass positions $\Delta{r}$, which are finally applied through the stepper motors. This process is repeated until the estimates converge, with the exact conditions for convergence being discussed further in \Cref{chap:results}. 
+The attitude, body rates, and reaction wheel torques are loaded onto the host PC. The data is post processed and inputted into either the UKF or the least-squares estimator depending on the algorithm. Both the UKF and least-squares estimator are implemented in MATLAB directly mirroring the equations as laid out in \Cref{sec:LSR} and \Cref{sec:UKF}. For the batch estimation algorithm, the discrete-time integrals are handled through trapezoidal integration. The resulting estimate for $\bm{r}$ is converted into a set of new mass positions $\Delta\bm{r}$, which are finally applied through the stepper motors. This process is repeated until the estimates converge, with the exact conditions for convergence being discussed further in \Cref{chap:results}. 
 
 \begin{figure}
     \centering
