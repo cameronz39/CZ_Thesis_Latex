@@ -269,8 +269,8 @@ To estimate the vertical imbalance $r_z$, the state vector of the dynamic system
 \begin{equation}
     \bm{x} = \begin{bmatrix} \bm{\omega} & \bm{q} & r_z \end{bmatrix}^T
 \end{equation}
-and the associated dynamic function $\bm{f}(\bm{x}_{k-1})$ is
-\begin{equation}
+and the associated process model $\bm{f}(\bm{x}_{k-1})$ is
+\begin{equation}\label{equation:UKF_process}
     \bm{f}(\bm{x}_{k-1}) = \begin{bmatrix}
         \bm{J}^{-1}(-\bm{\omega}_{k-1}^\times \bm{J\omega}_{k-1} + m_s
         (\begin{bmatrix}
@@ -291,13 +291,13 @@ and the associated dynamic function $\bm{f}(\bm{x}_{k-1})$ is
     \end{bmatrix}\bm{x}
 \end{equation}
 
-This process and measurement model serve again as a baseline to implement a filtering method. Here, an Unscented Kalman Filter (UKF) is used due to its improved handling of nonlinearites when compared to the EKF. The torque due to gravity introduces a high amount of nonlinearity to the system, which is challenging for the EKF where the process model is linearized. As demonstrated in the following section, this improved performance comes at the expense of a higher computational cost. However, because measurement data is collected during tumbling and then fed into the filter offline, no constraint is placed on computation time. 
+This process and measurement model serve again as a baseline to implement a filtering method. Here, an Unscented Kalman Filter (UKF) is used due to its improved handling of nonlinearites when compared to the EKF. The torque due to gravity introduces a high amount of nonlinearity to the system, which is challenging for the EKF where the process model is linearized. As demonstrated in the following section, this improved performance comes at the expense of a higher computational cost. However, because measurement data is collected during tumbling and then fed into the filter offline, no constraint is placed on computation time, making the UKF a practical and robust option.
 
 \subsubsection{The Unscented Kalman Filter}
 
-To handle the nonlinear system without explicit linearization, the UKF takes the current best estimate of the system's state $\bm{x}_{k-1}$ and constructs a set of states called sigma points. 
+The UKF represents the uncertainty in the current state estimate and covariance using a set of sample points known as sigma points. These points are distributed symmetrically about the current best estimate of the system's state $\bm{x}_{k-1}$, which represents the mean of the distribution. 
 
-sigma points about the mean state $\bm{x}_{k-1}$ and covariance $\bm{P}_{k-1}$. These points are given by
+The set of sigma points is given by
 \begin{equation}
     \bm{X}_{k-1}^{(i)} =
     \begin{cases}
@@ -306,54 +306,50 @@ sigma points about the mean state $\bm{x}_{k-1}$ and covariance $\bm{P}_{k-1}$. 
         \bm{x}_{k-1} - \bm{r}_{i-n}, & i = n+1,\dots,2n
     \end{cases}
 \end{equation}
-where $\bm{r}_i$ are the columns of $\sqrt{(n+\lambda)\bm{P}_{k-1}}$ obtained via Cholesky decomposition. The scaling parameter $\lambda = \alpha^2(n+\kappa) - n$ is computed from the tuning parameters $\alpha$, $\kappa$, and $\beta$, which control the spread and weighting of the sigma points.
+where $\bm{r}_i$ are the columns of $\sqrt{(n+\lambda)\bm{P}_{k-1}}$. The scaling parameter $\lambda = \alpha^2(n+\kappa) - n$ is computed from the tuning parameters $\alpha$ and $\kappa$, which control the spread and weighting of the sigma points.
 
-Each sigma point is then propagated through the dynamic model $\bm{f}(\cdot)$ over a timestep $T$:
+Each sigma point is then propagated through the process model $\bm{f}(\cdot)$ given in \Cref{equation:UKF_process}
 \begin{equation}
     \bm{X}_k^{(i)} = \bm{f}(\bm{X}_{k-1}^{(i)})\,T + \bm{X}_{k-1}^{(i)}.
 \end{equation}
-The quaternion portion of each propagated point is normalized to maintain valid orientation representation.
 
-The predicted mean and covariance are computed using the weighted sigma points:
+By propgating a full distribution of representatives states through the nonlinear process, the effects of nonlinearity are better captured in the filter. The predicted mean and covariance are computed soley from the set of propgated sigma points. 
 \begin{equation}
     \bm{x}_k^- = \sum_{i=0}^{2n} W_m^{(i)} \bm{X}_k^{(i)}, \qquad
-    \bm{P}_k^- = \sum_{i=0}^{2n} W_c^{(i)}(\bm{X}_k^{(i)} - \bm{x}_k^-)(\bm{X}_k^{(i)} - \bm{x}_k^-)^T + \bm{Q},
+    \bm{P}_k^- = \sum_{i=0}^{2n} W_c^{(i)}(\bm{X}_k^{(i)} - \bm{x}_k^-)(\bm{X}_k^{(i)} - \bm{x}_k^-)^T + \bm{Q}_k,
 \end{equation}
-where $\bm{Q}$ is the process noise covariance matrix. The weights $W_m^{(i)}$ and $W_c^{(i)}$ correspond to the mean and covariance weights, defined as
+where $\bm{Q}_k$ is the tunable process noise covariance matrix. The weights $W_m^{(i)}$ and $W_c^{(i)}$ represent the mean and covariance weights respectively, and are defined as
 \begin{align}
     W_m^{(0)} &= \frac{\lambda}{n+\lambda}, &
-    W_c^{(0)} &= \frac{\lambda}{n+\lambda} + (1-\alpha^2+\beta),\\
+    W_c^{(0)} &= \frac{\lambda}{n+\lambda} + (1-\alpha^2+2),\\
     W_m^{(i)} &= W_c^{(i)} = \frac{1}{2(n+\lambda)}, \quad i=1,\dots,2n.
 \end{align}
 
-
-Each propagated sigma point is passed through the measurement model:
+For the correction step, each propagated sigma point is first passed through the measurement model 
 \begin{equation}
     \bm{Y}_k^{(i)} = \bm{h}(\bm{X}_k^{(i)}),
 \end{equation}
-and the predicted measurement mean and covariance are then
+and the predicted measurement and measurement covariance are
 \begin{align}
     \hat{\bm{y}}_k^- &= \sum_{i=0}^{2n} W_m^{(i)} \bm{Y}_k^{(i)},\\
-    \bm{P}_y &= \sum_{i=0}^{2n} W_c^{(i)}(\bm{Y}_k^{(i)} - \hat{\bm{y}}_k^-)(\bm{Y}_k^{(i)} - \hat{\bm{y}}_k^-)^T + \bm{R},
+    \bm{P}_y &= \sum_{i=0}^{2n} W_c^{(i)}(\bm{Y}_k^{(i)} - \hat{\bm{y}}_k^-)(\bm{Y}_k^{(i)} - \hat{\bm{y}}_k^-)^T + \bm{R}_k,
 \end{align}
-where $\bm{R}$ is the measurement noise covariance matrix. The cross-covariance between the state and measurement is
+where $\bm{R}_k$ is the tunable measurement noise covariance matrix. The cross-covariance between the state and measurement is
 \begin{equation}
     \bm{P}_{xy} = \sum_{i=0}^{2n} W_c^{(i)}(\bm{X}_k^{(i)} - \bm{x}_k^-)(\bm{Y}_k^{(i)} - \hat{\bm{y}}_k^-)^T.
 \end{equation}
 
-The Kalman gain is then computed as
+The Kalman gain in the UKF is a function of the cross-covariance matrix and measurement covariance matrix defined as 
 \begin{equation}
     \bm{K}_k = \bm{P}_{xy}\bm{P}_y^{-1},
 \end{equation}
-and the state and covariance are corrected using the actual measurement $\bm{y}_k$:
+Finally, the state and covariance are corrected using the actual measurement $\bm{y}_k$ as
 \begin{align}
     \bm{x}_k &= \bm{x}_k^- + \bm{K}_k(\bm{y}_k - \hat{\bm{y}}_k^-),\\
     \bm{P}_k &= \bm{P}_k^- - \bm{K}_k\bm{P}_y\bm{K}_k^T.
 \end{align}
-Finally, the quaternion portion of $\bm{x}_k$ is renormalized, and the estimated imbalance uncertainty is reported as
-\begin{equation}
-    \sigma_{r_z} = \sqrt{P_{k,(r_z,r_z)}}.
-\end{equation}
+The filter outputs the estimate for $r_z$ directly from $\bm{x}_k$, and proceeds to the next timestep by setting $\bm{x}_k\rightarrow\bm{x}_{k-1}$ and $\bm{P}_k\rightarrow\bm{P}_{k-1}$.
+
 
 \subsection{Active Control for Balancing}\label{sec:active_methods}
 
@@ -427,13 +423,13 @@ where $k_p$ is a tunable gain,  and $\hat{\bm{r}}_0$ is an estimate for the true
 \end{equation}
 \Cref{equation:proposed_adaptive} and \Cref{equation:adaptive_law} combined provide a way to generate a commanded torque using meausrements of $\bm{\omega}$ and $\bm{g}$. 
 
-To determine the stability of the closed-loop system, a Lyapunov analysis is performed. The chosen states for analysis are $\bm{\omega}$, $\bm{g}$ and $\tilde{\bm{r}}_0$, where $\tilde{\bm{r}}_0$ is the error in the $\bm{r}_0$ estimator computed from
+To determine the stability of the closed-loop system, a Lyapunov analysis is performed. The chosen states for analysis are $\bm{\omega}$ and $\tilde{\bm{r}}_0$, where $\tilde{\bm{r}}_0$ is the error in the $\bm{r}_0$ estimator computed from
 \begin{equation}\label{equation:r_relations}
     \bm{r}_0= \tilde{\bm{r}}_0+\hat{\bm{r}}_0
 \end{equation} 
-Lyapunov function and its derivative are chosen to be 
+The Lyapunov function and its derivative are chosen to be 
 \begin{equation}
-    {V} = \frac{1}{2}\bm{\omega}^T\bm{J\omega} + \frac{1}{2}\tilde{\bm{r}}_0^T\tilde{\bm{r}}_0 + \frac{1}{2}\bm{q}^T\bm{q}
+    {V} = \frac{1}{2}\bm{\omega}^T\bm{J\omega} + \frac{1}{2}\tilde{\bm{r}}_0^T\tilde{\bm{r}}_0
 \end{equation}
 \begin{align}
     \dot{V} &= \bm{\omega}^T(-\bm{\omega}^\times \bm{J\omega} 
@@ -757,4 +753,21 @@ To run the an active balancing operations, the proper Simulink model is compiled
     \label{fig:sys_arch_active}
 \end{figure}
 
-\section{Simulation Setup}\label{sec:sim_setup}
+\section{Simulation Development}\label{sec:sim_setup}
+
+A simulation is developed in parallel to the SADS hardware to help verify design decisions and further validate results. Compenents are implemented in the simulation that model a variety of physical limitations the balancing performance.
+
+\subsection{Plant Model}
+
+The plant model solves the below differential equation
+
+\begin{equation}
+    \dot{\bm{\omega}} = \bm{J}^{-1}(-\bm{\omega}^\times \bm{J\omega} 
+    - \bm{\omega}^\times\bm{h}_c + m_s\bm{r}_0^{\times}\bm{g} + m_s\Delta\bm{r}^{\times}\bm{g}
+    - \dot{\bm{h}}_c)
+\end{equation}
+
+\subsection{Sensors}
+
+\subsection{Actuators}
+
