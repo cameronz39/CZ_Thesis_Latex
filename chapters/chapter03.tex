@@ -778,11 +778,13 @@ To run the an active balancing operations, the proper Simulink model is compiled
 
 \section{Simulation Development}\label{sec:sim_setup}
 
-A high-fidelity simulation is developed in Simulink alongside the SADS hardware to enable rapid control law development and **hardware validation. Running the simulation in parallel with physical testing allows control algorithms to be tuned and verified safely before deployment, while also providing a digital twin for post-test analysis. The simulation models the same physical subsystems present in hardware—mass properties, actuators, and sensors—but includes tunable parameters that emulate real-world imperfections such as inertia uncertainty, sensor bias, and wheel misalignment. This parallel simulation not only accelerates the development cycle but also ensures that results obtained from the hardware can be compared directly against a known truth model.
+A high-fidelity simulation is developed in Simulink alongside the SADS hardware to help rapidly develop code for the onboard computer. Running the simulation before physical testing allows balancing algorithms to be tuned, debugged, and verified safely before deployment. In fact, large sections of code developed in the simulation environment are directly reused in the embedded Simulink model that is flashed onto flight computer.
+
+The simulation models the same physical subsystems present in the hardware usch mass properties, actuators, and sensors. It also includes tunable parameters that simulate real-world imperfections such as inertia uncertainty, sensor bias, and wheel misalignment. Modeling these imperfections ensures that results obtained from the hardware can be better compared against a known truth model.
 
 \subsection{Truth vs. Measured Quantities}
 
-An important distinction in this simulation framework is between *truth values* (denoted by the subscript $\text{tr}$) and *measured or estimated values* available to the onboard computer. The truth model represents the actual physical dynamics of the simulator, whereas the onboard algorithms operate only on noisy, biased, and discretized sensor data. This distinction is critical: all real control systems act on imperfect information, and the gap between truth and observation directly affects estimation accuracy and control performance. By explicitly modeling both domains, the simulation provides a means to quantify how sensor limitations and modeling errors degrade balancing performance and filter convergence.
+An important distinction in this simulation framework is between truth values and measured or estimated values available to the onboard computer. The truth model represents the actual physical dynamics of the simulator, whereas the onboard algorithms operate only on noisy, biased, and discretized sensor data. By explicitly modeling both domains, the simulation provides a way to quantify how sensor limitations and real-world imperfactions degrade balancing performance.
 
 \subsection{Plant Model}
 The plant represents the truth dynamics of the simulator and forms the reference against which onboard estimates are compared. The plant model solves the following differential equation
@@ -791,7 +793,7 @@ The plant represents the truth dynamics of the simulator and forms the reference
     - \bm{\omega}_\text{tr}^\times\bm{h}_{c,\text{tr}} + m_s\bm{r}_0^{\times}\bm{g}_\text{tr} + m_s\Delta\bm{r}^{\times}\bm{g}_\text{tr}
     - \dot{\bm{h}}_{c,\text{tr}})
 \end{equation}
-which when solved yields $\bm{\omega}_\text{tr}$. Again, values subscripted with $\text{tr}$ denote true physical values that the onboard computer and balancing algorithm do not have access to. To start, $\bm{J}_\text{tr}$ is used to account for errors in the estimation of $\bm{J}$. Many balancing methods require knowledge of the simulator's moment of inertia $\bm{J}$, and the estimate for this value in this work is taken from CAD. Given the geometery of the SADS is well known and the mass of each compenent is carefully measured, this estimate is assumed to be fairly accurate. Still, to account for errors in the CAD model, the value of inertia used in the truth model $\bm{J}_\text{tr}$ is perturbed from the CAD estimate. This perturbation is performed using
+which when solved yields $\bm{\omega}_\text{tr}$. Values subscripted with $\text{tr}$ denote true physical values that the onboard computer and balancing algorithm do not have access to. To start, $\bm{J}_\text{tr}$ is used to account for errors in the estimation of $\bm{J}$. Many balancing methods require knowledge of the simulator's moment of inertia $\bm{J}$, and the estimate for this value in this work is taken from CAD. Given the geometery of the SADS is well known and the mass of each compenent is carefully measured, this estimate is assumed to be fairly accurate. Still, to account for errors in the CAD model, the value of inertia used in the truth model $\bm{J}_\text{tr}$ is perturbed from the CAD estimate. This perturbation is performed using
 \begin{equation}
     \bm{J}_\text{tr} = \begin{bmatrix}
         a_1J_{xx} & a_4J_{xy} & a_5J_{xz} \\
@@ -806,7 +808,6 @@ Once the solver obtains $\bm{\omega}_\text{tr}$, the quaternion is obtained usin
 \subsection{Sensors}
 
 The sensor model converts $\bm{\omega}_\text{tr}$ and $\bm{g}_{\text{tr}}$ into gyroscope and accelerometer measurements used by the onboard computer. As mentioned earlier, the accelerometer does not directly meausre the gravity vector in the body frame, but rather the specific force acting on the sensor which includes the effects centriptal acceleration. The value $\bm{g}_{b,\text{tr}}$ is discretized according to the 20 Hz sample rate of the filter and control system, indexed by $k$. Finally, the discreted value is corrupted by measurement noise and bias. The complete model for the accelerometer output is
-
 \begin{equation}
     \bm{y}_{\text{accel},k}= (\bm{\omega}_{\text{tr}}^{\times}\bm{r}_\text{IMU})^{\times}\bm{\omega}_{\text{tr}}-\bm{g}_{\text{tr}} + \bm{n}_{\text{accel},k} + \bm{b}_{\text{accel},k}
 \end{equation}
@@ -860,8 +861,8 @@ where $\hat{\bm{t}}_i$ is a random unit vector orthogonal to $\hat{\bm{e}}_i$ th
         \hat{\bm{s}}_{1,\text{tr}} & \hat{\bm{s}}_{2,\text{tr}} & \hat{\bm{s}}_{3,\text{tr}} & \hat{\bm{s}}_{4,\text{tr}}
     \end{bmatrix}
 \end{equation}
-The for $\dot{\bm{h}}_c$ used in the plant is then calculated with
+The value for $\dot{\bm{h}}_{c,\text{tr}}$ used in the plant is then calculated with
 \begin{equation}
-    \dot{\bm{h}}_c = \bm{A}_\text{tr}\bm{\tau}_\text{wheels}
+    \dot{\bm{h}}_{c,\text{tr}} = \bm{A}_\text{tr}\bm{\tau}_\text{wheels}
 \end{equation}
 For the SADS, a perturbation angle of $1.5^{\circ}$ is chosen to account for the overall structure - which includes the mounting slots for the wheels - being welded. These perturbations are especially important to simulate the performance of the batch estimation method, where measurements of $\dot{\bm{h}}_{c,\text{tr}}$ and $\bm{h}_{c,\text{tr}}$ are used in the estimate for the center of mass offset.  

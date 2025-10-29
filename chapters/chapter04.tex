@@ -115,10 +115,8 @@ In general as the true value of $r_z$ shrinks, the filter's ability to estimate 
 
 
 \section{Passive Balancing Using Least-Squares Estimation}
-% experimental results only use 1 RW
-% simulation results should include 1 RW and 4 RWs to compare (unless the one RW setup turns out good)
 
-The least-squares estimation method is simulated using the intended four reaction wheel setup for the SADS. The platform's state during a batch collection run is shown in \Cref{fig:LSR_sim_excitation}. The torque profile is designed to have the platform oscillate as close as possible to it's $\pm20^{\circ}$ travel limits for roll and pitch, while simultaneously not saturating the reaction wheels. Both of these goals are met in the example run shown.
+The least-squares batch estimation method is first simulated using the intended four reaction wheel setup for the SADS. The platform's state during a batch collection run is shown in \Cref{fig:LSR_sim_excitation}. The torque profile is designed to have the platform oscillate as close as possible to it's $\pm20^{\circ}$ travel limits for roll and pitch, while simultaneously not saturating the reaction wheels. Both of these goals are met in the example run shown.
 
 \begin{figure}[h]
   \centering
@@ -163,9 +161,49 @@ The least-squares estimation method is simulated using the intended four reactio
 \end{figure}
 
 
-The estimated value for $\bm{r}$ over the course 10 iterations is shown in \Cref{fig:LSR_sim_runs}. The estimated values rapidly converge during the first few iterations, and eventually begin to oscillatate about $\bm{r}=\bm{0}$. The oscillations for all three components of the estimate of $\bm{r}$ are bounded between $\pm3\times10^{-7}m$. In \Cref{fig:LSR_sim_confidence}, the estimated value for $r_x$ is plotted directly against the true value of $r_x$ over many iterations. While the $r_x$ estimate oscillates about 0, the true value oscillates about a non-zero, constant value. This small error between the two is not measurable to the batch-estimation algorithm due to factors like sensor and process noise. 
+The estimated value for $\bm{r}$ over the course 10 iterations is shown in \Cref{fig:LSR_sim_runs}. The estimated values rapidly converge during the first few iterations, and eventually begin to oscillatate about $\bm{r}=\bm{0}$. While the estimate of $\bm{r}$ converges towards $\bm{0}$ with some bound, this does not necessarily guarantee the true value of $\bm{r}$ is also converging towards. This is demonstrated in \Cref{fig:LSR_sim_confidence}, where the estimated value for $r_x$ is plotted directly against the true value of $r_x$ over many iterations. While the $r_x$ estimate oscillates about 0, the true value oscillates about a non-zero, constant value. This small error between the two is not measurable to the batch-estimation algorithm due to factors like sensor and process noise. 
 
-To address this, the estimated values $r_x$, $r_y$, and $r_z$ after convergence are collected and the standard deviation $\sigma$ of the resulting sets are computed. In general, greater variance in the converged values corresponded to greater error between the true and estimated values. In other words, the variance of the converged values (which are directly related to the amplitude of the oscillations) help place a bound on estimators performance. For example in \Cref{fig:LSR_sim_confidence}, $\sigma$ is used to create a confidence interval, and the true value of $r_x$ safely lies within the interval.
+The simulated procedure is repeated using one reaction wheel to better represent the limitations of the current experimental test setup. \Cref{fig:LSR_sim_confidence_1_wheel} shows the same comparison between the estimated value for $r_x$ and the true value over many iterations. Even with one wheel, the estimator qualitatively behaves the same. After about 12 iterations, the estimated value begins oscillating about $r_x=0$, while the true value oscillatates about a non-zero value. The key difference between the two is the scale of the estimated values and the associated error. The scaling of the y-axis in the one wheel test is four orders of magnitude larger than the four wheel test.
+
+After convergence, the estimated values $r_x$, $r_y$, and $r_z$ are collected and the standard deviation $\sigma$ of the resulting sets are computed. The variance of the converged estimates provide a way to empirically measure the uncertainty of the estimator. Higher variance corresponds to a larger residual offset between the estimate and true center of mass. In both the four-wheel and one-wheel procedures, the true value of $r_x$ lies within the confidence interval created from $\sigma$, so the simulated results confirm that the batch estimator provides a consistent---but excitation-limited---way to approximate the true imbalance. 
+
+\begin{table}[h!]
+\caption{Performance summary of least-squares batch estimation}
+\label{table:LSR_table}
+\centering
+\renewcommand{\arraystretch}{1.3} % row height
+\begin{tabularx}{\textwidth}{
+    >{\raggedright\arraybackslash}p{4.4cm}   % Test case
+    >{\centering\arraybackslash}p{4.4cm}     % Sigma
+    >{\centering\arraybackslash}X     % Mean error
+}
+\hline
+\textbf{Test Case} &
+\textbf{Std. Deviation, $\sigma$ [m]} &
+\textbf{Mean Error [m]} \\
+\hline
+Simulated (4 Wheels) &
+$2.99\times10^{-8}$ &
+$4.55\times10^{-8}$ \\[1.2em]
+
+Simulated (1 Wheel) &
+$4.08\times10^{-6}$ &
+$2.43\times10^{-4}$ \\[1.2em]
+
+Experimental (1 Wheel) &
+$1.60\times10^{-5}$ &
+--- \\ 
+\hline
+\end{tabularx}
+\end{table}
+
+% sim four wheel sig: 2.99e-08
+% sim four wheel mean err: 4.55e-08
+
+% sim one wheel sig: 4.0834e-06
+% sim one wheel mean err: 2.43e-04
+
+% exp one wheel sig: 1.6e-05
 
 \begin{figure}[h]
   \centering
@@ -181,17 +219,15 @@ To address this, the estimated values $r_x$, $r_y$, and $r_z$ after convergence 
   \label{fig:LSR_hardware_runs}
 \end{figure}
 
-
 With the batch estimation algorithm verified using simulated values, the procedure is repeated on the SADS. The platform's state during a batch collection run is shown in \Cref{fig:LSR_hardware_excitation}. While the experimental setup includes only one reaction wheel, the SADS' pyramidal configuration means the one wheel contributes angular momentum to the system in all three axes of the body frame. 
 
+The experimental results in \Cref{fig:LSR_hardware_runs} confirm that the least-squares batch estimator behaves consistently with simulation, converging toward a bounded region around the true center of mass. However, the significantly larger oscillations after convergence highlight the limitations of the current one-wheel setup. The results across the simulated and experimental tests are documented in \Cref{table:LSR_table}, where there is an increased variance in $\bm{r}$ compared the the simulated four-wheel results. While unmodeled system dynamics worsen the estimator, a majority of this difference can be attributed to the reduced excitation from using a single reaction wheel.
 
-\Cref{fig:LSR_hardware_runs} shows the estimated value of $r$ over 10 experimental iterations. $r$ again converges in a similar manner to the simulated test. It is important to note however the difference in orders of magnitude between \Cref{fig:LSR_sim_runs_b} and \Cref{fig:LSR_hardware_runs_b}. The oscillations after inital converge in the experimental test have a drastically higher amplitude than the simulated case. As discussed previously, the implication of this is that the error in the experimental estimator is worse than the error in the simulated one. This difference is a combination of both modeling errors in the simulation, but also a potential lack of excitation from the one reaction wheel used in the experimental setup. 
-
-
+Despite these differences, the estimator demonstrates stable convergence and repeatable behavior, validating its practical feasibility for the SADS platform. These results establish a baseline performance level for the batch estimation method for which future iterations can be compared.
 
 \section{Active Balancing Using Adaptive Control}
 
-The last balancing method considered is the three-axis adaptive controller, which is applied in simulation only. The momentum trajectory the simulator can be seen in \Cref{fig:three_axis_sim_excitation}. Each component of the desired angular momentum is chosen to be three sine waves with slightly varying amplitudes, phases, and frequencies. The resulting sliding mass positions are shown in \Cref{fig:three_axis_sim_positions}. The results here align well with work the completed in \cite{kim_automatic_2009}. $\Delta\,d_x$ and $\Delta\,d_y$ converge relatively quickly compared to $\Delta\bm\,d_z$, with convergence being on the order of hundreds of seconds. As also noted in \cite{kim_automatic_2009}, tuning the controller gains $\bm{K}$, and $\bm{\Gamma}$ proved to be somewhat difficult. Theoretically increasing the adaptive gain $\bm{\Gamma}$ woud lead to faster convergence of $\Delta\bm{d}$, but higher gains led to instability in the platform. Additionally, choosing a desired momentum trajectory that leads to convergence of $\Delta\bm{d}$ while not quickly saturating the reaction wheels was also difficult balance to strike. Still, the true desired values of the sliding mass positions are shown dashed in \Cref{fig:three_axis_sim_positions}, and the adaptive controller does indeed compensate for all three components of $\bm{r}$ simultaneously. The final emperically tuned gains used are 
+The last balancing method considered is the three-axis adaptive controller, which is applied in simulation only. The momentum trajectory of the simulator can be seen in \Cref{fig:three_axis_sim_excitation}. Each component of the desired angular momentum is chosen to be three sine waves with slightly varying amplitudes, phases, and frequencies. The resulting sliding mass positions are shown in \Cref{fig:three_axis_sim_positions}. The results here align well with work the completed in \cite{kim_automatic_2009}. $\Delta\,d_x$ and $\Delta\,d_y$ converge relatively quickly compared to $\Delta\bm\,d_z$, with convergence being on the order of hundreds of seconds. As also noted in \cite{kim_automatic_2009}, tuning the controller gains $\bm{K}$, and $\bm{\Gamma}$ proved to be somewhat difficult. Theoretically, increasing the adaptive gain $\bm{\Gamma}$ woud lead to faster convergence of $\Delta\bm{d}$, but higher gains led to instability in the platform. Choosing a desired momentum trajectory that leads to convergence of $\Delta\bm{d}$ while not quickly saturating the reaction wheels was also difficult balance to strike. Still, the desired values of the sliding mass positions are shown dashed in \Cref{fig:three_axis_sim_positions}, and the adaptive controller does indeed compensate for all three components of $\bm{r}$ simultaneously. The final emperically tuned gains used are 
 $\bm{K} = \text{diag}(5,5,5)$ and  $\bm{\Gamma} = 10^{-5}\text{diag}(5, 5 , 80)$
 
 \begin{figure}[p]
