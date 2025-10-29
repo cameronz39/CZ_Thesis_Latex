@@ -136,7 +136,7 @@ where $\bm{C}_{\mathcal{N}\leftarrow\mathcal{B}}$ again represents the frame rot
 where $\bm{v}^{\mathcal{B}}$ represents some physical vector expressed in $\mathcal{B}$ and $\bm{v}^{\mathcal{N}}$ represents the same vector expressed in $\mathcal{N}$. 
 
 The quaternion propagates forward through time as a function of the simulator's body rate $\bm{\omega}$ according to the following differential equation
-\begin{equation}
+\begin{equation}\label{equation:quat_kinematics}
     \dot{\bm{q}} = \frac{1}{2}
 \begin{bmatrix}
 0 & -\omega_x & -\omega_y & -\omega_z \\
@@ -172,7 +172,7 @@ Batch estimation algorithms are a subset of passive balancing methods that use m
 \end{equation}
 \begin{equation}
     \bm{x} = \begin{bmatrix}
-        J_{xx} & J_{yy} & J_{zz} & J_{xy} & J_{xz} & J_{yz} & m_s\,r_x & m_s\,r_y & m_s\,gr_z
+        J_{xx} & J_{yy} & J_{zz} & J_{xy} & J_{xz} & J_{yz} & m_s\,r_x & m_s\,r_y & m_s\,r_z
     \end{bmatrix}^T
 \end{equation}
 Here, $\bm{\Omega}$ is formulated to simplfy the resulting algebra, while $\bm{x}$ is formulated to fully encode all of the simulator's mass properties.
@@ -215,7 +215,7 @@ which allows \Cref{equation:LSM_no_k} to be rewritten as
 \end{equation}
 
 Since all measurements are corrupted by noise, there will not be any single value of $\bm{x}$ that will satisfy \Cref{equation:LSM_with_k} for all $k$. Instead, the key idea with least squares estimation methods is to find a value of $\bm{x}$ that minimizes the error in \Cref{equation:LSM_with_k} across all $k$. The most common way to achieve this is to create augmented versions of $\bm{A}$ and $\bm{T}$ as
-\begin{equation}
+\begin{equation}\label{equation:A_bar}
     \bar{\bm{A}}=\begin{bmatrix}
         \bm{A}_0 & \bm{A}_1 & \cdots & \bm{A}_n
     \end{bmatrix}\in \mathbb{R}^{3n \times 9}
@@ -229,11 +229,34 @@ where $n$ is the total number of measurements. $\bm{x}$ is finally computed usin
 \begin{equation}
     \bm{x}=\bar{\bm{A}}^{\dagger}\bar{\bm{T}}
 \end{equation}
+
+Alternatively, if the inertia of the simulator is already well-known, then $\bm{x}$ can be reformulated as
+\begin{equation}
+    \bm{x} = \begin{bmatrix}
+        m_s\,r_x & m_s\,r_y & m_s\,r_z
+    \end{bmatrix}^T
+\end{equation} 
+which rearranges $\bm{A}_k$ and $\bm{T}_k$ into
+
+\begin{equation}
+    \bm{A}_k=
+    \int_{t_0}^{t_k}\bm{g}^{\times}\,dt
+\end{equation}
+
+\begin{equation}
+    \bm{T}_k=-{\bm{h_c}} - \int_{t_0}^{t}\bm{\omega}^{\times}\bm{h_c}\,dt
+    - \biggl(
+    \int_{t_0}^{t_k}\dot{\bm{\Omega}} + \bm{\omega}^{\times}\bm{\Omega}\,dt
+    \biggl)
+    \hat{\bm{J}}
+\end{equation}
+where $\hat{\bm{J}}= [\hat{J}_{xx}\ \hat{J}_{yy}\ \hat{J}_{zz}\ \hat{J}_{xy}\ \hat{J}_{xz}\ \hat{J}_{yz}]^T$ is the already known estimate of the simulator's inertia. The steps to solve for $\bm{x}$ then proceed identically starting from \Cref{equation:A_bar}
+
 The offline batch estimation method requires that multiple tests are run, adjusting the sliding masses after each run using \Cref{equation:delta_d_sol} or \Cref{equation:delta_d_pseudo_sol}. Assuming actuators like reaction wheels are available, this method's main advantage is it's ease of implementation. By doing all of the estimation and data processing offline, no custom software needs to be written for the simulator's onboard computer. In fact, exciting the system using this method does not require the simulator to have a working feedback controller, allowing this method to be adopted early in the design of a simulator. Researches have demonstrated success using simple open loop control to ensure that the body rates of the simulator follow a sinusoidal pattern \cite{kim_automatic_2009} \cite{dam_applied_2014} \cite{noauthor_designing_2003}.
 
 \subsection{Kalman Filtering for Imbalance Estimation}\label{sec:UKF}
 
-Kalman filters have extensive precedent for estimating unknown parameters in dynamic systems for aerospace applications. In traditional spacecraft attitude determination and control, the Extended Kalman Filter is the primary method for determining spacecraft body rates and attitude. While a general derivation of the Kalman filter and its' variations is beyond the scope of this thesis, a brief background of it's application in spacecraft ADCS is important. Here, the state vector of the system is formulated as
+Kalman filters have extensive precedent for estimating unknown parameters in dynamic systems for aerospace applications. In traditional spacecraft attitude determination and control, the Extended Kalman Filter (EKF) is the primary method for determining spacecraft body rates and attitude. While a general derivation of the Kalman filter and its' variations is beyond the scope of this thesis, a brief background of it's application in spacecraft ADCS is important. Here, the state vector of the system is formulated as
 \begin{equation}\label{equation:EKF_state_vec}
     \bm{x} = \begin{bmatrix}\bm{\omega} \\ \bm{q} \end{bmatrix}
     =\begin{bmatrix}
@@ -647,7 +670,7 @@ In addition to the Embedded Simulink model, a seperate configuration program was
 
 \subsection{Algorithm Implementation}
 
-\subsubsection{Onboard Filtering for Attitude Determination}
+\subsubsection{Onboard Filtering for Attitude Determination}\label{sec:EKF}
 
 For most balancing methods, the onboard computer must calculate a value for $\bm{q}$ in real-time. To accomplish this, an Extended Kalman Filter is implemented in the MATLAB/Simulink environment which is then autocoded and deployed on the STM32. The goal of this filter is to propagate the state forward using the gyroscope output, and correct it with the accelerometer. The onboard EKF state then is simply $\bm{x} = \bm{q}$. If a balancing algorithm requires a value for $\bm{\omega}$, the gyroscope output is used. The state is propagated using
 \begin{equation}\label{equation:EKF_process}
@@ -716,13 +739,13 @@ where $\bm{R}$ is the tunable measurement noise matrix.
 
 The filter iteration ends with the state and covariance being corrected using the Kalman gain as follows
 \begin{equation}
-    \bm{x}_k = \bm{x}_k^- + \bm{K}(\bm{y}_{\text{meas}}-\hat{\bm{y}}_k^-)
+    \bm{x}_k = \bm{x}_k^- + \bm{K}_k(\bm{y}_{\text{meas},k}-\hat{\bm{y}}_k^-)
 \end{equation}
 \begin{equation}
     \bm{P}_k = (\mathbb{1} - \bm{K}_k\bm{H}_k)\bm{P}_k^-(\mathbb{1} - \bm{K}_k\bm{H}_k)^T
     + \bm{K}_k\bm{R}\bm{K}_k^T
 \end{equation}
-where $\bm{y}_{\text{meas}}$ is the accelerometer reading. At this point the quaternion is normalized using $\bm{x}_k = \bm{x}_k / ||\bm{x}_k||$ and is sent along with $\bm{g}_b$ to the control law, with $\bm{g}_b$ being computed from \Cref{equation:C_from_q}.
+where $\bm{y}_{\text{meas},k}$ is the accelerometer reading. At this point the quaternion is normalized using $\bm{x}_k = \bm{x}_k / ||\bm{x}_k||$ and is sent along with $\bm{g}_b$ to the control law, with $\bm{g}_b$ being computed from \Cref{equation:C_from_q}. The filter and the control law both run at 20 Hz in all balancing operations.
 
 The filter as described here still has room for improvement. Including an estimate of the gyroscope bias in the state vector would improve accuracy over longer runs, and there are more sophisticated methods to enforcing a unit norm for $\bm{q}$. However the filter's simulated performance as described in \Cref{sec:sim_setup} proved to be adequate for mass balancing, so improvements to the filter are left as future work with more detail described in \Cref{chap:conclusion}.
 
@@ -755,19 +778,90 @@ To run the an active balancing operations, the proper Simulink model is compiled
 
 \section{Simulation Development}\label{sec:sim_setup}
 
-A simulation is developed in parallel to the SADS hardware to help verify design decisions and further validate results. Compenents are implemented in the simulation that model a variety of physical limitations the balancing performance.
+A high-fidelity simulation is developed in Simulink alongside the SADS hardware to enable rapid control law development and **hardware validation. Running the simulation in parallel with physical testing allows control algorithms to be tuned and verified safely before deployment, while also providing a digital twin for post-test analysis. The simulation models the same physical subsystems present in hardware—mass properties, actuators, and sensors—but includes tunable parameters that emulate real-world imperfections such as inertia uncertainty, sensor bias, and wheel misalignment. This parallel simulation not only accelerates the development cycle but also ensures that results obtained from the hardware can be compared directly against a known truth model.
+
+\subsection{Truth vs. Measured Quantities}
+
+An important distinction in this simulation framework is between *truth values* (denoted by the subscript $\text{tr}$) and *measured or estimated values* available to the onboard computer. The truth model represents the actual physical dynamics of the simulator, whereas the onboard algorithms operate only on noisy, biased, and discretized sensor data. This distinction is critical: all real control systems act on imperfect information, and the gap between truth and observation directly affects estimation accuracy and control performance. By explicitly modeling both domains, the simulation provides a means to quantify how sensor limitations and modeling errors degrade balancing performance and filter convergence.
 
 \subsection{Plant Model}
-
-The plant model solves the below differential equation
-
+The plant represents the truth dynamics of the simulator and forms the reference against which onboard estimates are compared. The plant model solves the following differential equation
 \begin{equation}
-    \dot{\bm{\omega}} = \bm{J}^{-1}(-\bm{\omega}^\times \bm{J\omega} 
-    - \bm{\omega}^\times\bm{h}_c + m_s\bm{r}_0^{\times}\bm{g} + m_s\Delta\bm{r}^{\times}\bm{g}
-    - \dot{\bm{h}}_c)
+    \dot{\bm{\omega}}_\text{tr} = \bm{J}_\text{tr}^{-1}(-\bm{\omega}_\text{tr}^\times \bm{J_\text{tr}\omega_\text{tr}} 
+    - \bm{\omega}_\text{tr}^\times\bm{h}_{c,\text{tr}} + m_s\bm{r}_0^{\times}\bm{g}_\text{tr} + m_s\Delta\bm{r}^{\times}\bm{g}_\text{tr}
+    - \dot{\bm{h}}_{c,\text{tr}})
 \end{equation}
+which when solved yields $\bm{\omega}_\text{tr}$. Again, values subscripted with $\text{tr}$ denote true physical values that the onboard computer and balancing algorithm do not have access to. To start, $\bm{J}_\text{tr}$ is used to account for errors in the estimation of $\bm{J}$. Many balancing methods require knowledge of the simulator's moment of inertia $\bm{J}$, and the estimate for this value in this work is taken from CAD. Given the geometery of the SADS is well known and the mass of each compenent is carefully measured, this estimate is assumed to be fairly accurate. Still, to account for errors in the CAD model, the value of inertia used in the truth model $\bm{J}_\text{tr}$ is perturbed from the CAD estimate. This perturbation is performed using
+\begin{equation}
+    \bm{J}_\text{tr} = \begin{bmatrix}
+        a_1J_{xx} & a_4J_{xy} & a_5J_{xz} \\
+        a_4J_{xy} & a_2J_{yy} & a_6J_{yz} \\
+        a_5J_{xz} & a_6J_{yz} & a_3J_{zz} \\
+    \end{bmatrix}\qquad\,a_i\sim\mathcal{N}(1,0.10)
+\end{equation}
+where the components $J_{(ij)}$ are taken from the CAD estimate.
+
+Once the solver obtains $\bm{\omega}_\text{tr}$, the quaternion is obtained using the kinematic differential equation introduced in \Cref{equation:quat_kinematics} and the quaternion is converted into a value for $\bm{g}_\text{tr}$. These truth values for the body rate and gravity vector are then passed onto the sensor model.
 
 \subsection{Sensors}
 
+The sensor model converts $\bm{\omega}_\text{tr}$ and $\bm{g}_{\text{tr}}$ into gyroscope and accelerometer measurements used by the onboard computer. As mentioned earlier, the accelerometer does not directly meausre the gravity vector in the body frame, but rather the specific force acting on the sensor which includes the effects centriptal acceleration. The value $\bm{g}_{b,\text{tr}}$ is discretized according to the 20 Hz sample rate of the filter and control system, indexed by $k$. Finally, the discreted value is corrupted by measurement noise and bias. The complete model for the accelerometer output is
+
+\begin{equation}
+    \bm{y}_{\text{accel},k}= (\bm{\omega}_{\text{tr}}^{\times}\bm{r}_\text{IMU})^{\times}\bm{\omega}_{\text{tr}}-\bm{g}_{\text{tr}} + \bm{n}_{\text{accel},k} + \bm{b}_{\text{accel},k}
+\end{equation}
+where $\bm{r}_\text{IMU}$ is the position of the IMU, and $\bm{n}_{\text{accel},k}$ and $\bm{b}_{\text{accel},k}$ are the contributions from the measurement noise and bias respectively.
+
+The model for the gyroscope output follows in a similar manner as
+\begin{equation}
+    \bm{y}_{\text{gyro},k}= \bm{\omega}_{\text{tr}} + \bm{n}_{\text{gyro},k} + \bm{b}_{\text{gyro},k}
+\end{equation}
+
+The gyroscope and accelerometer measurement noise $\bm{n}_k$ is modeled using the Band-Limited White Noise Block in Simulink, with the parameters being taken from the sensor specifications of the MTi-03 IMU. 
+
+The measurement bias is implemented using a first-order Gauss-Markov Model \cite{unsal_estimation_2012}, which allows $\bm{b}_k$ to be computed using
+\begin{equation}
+    \bm{b}_{k} = a\,\bm{b}_{k-1} + \bm{w}_k, \qquad
+    a = e^{-T_s/T_c}, \qquad
+    \bm{w}_k \sim \mathcal{N}\!\left(\bm{0},\,\sigma_x^2 (1-e^{-2T_s/T_c})\,\bm{I}\right),
+\end{equation}
+where $T_c$ is the correlation time constant, $\sigma_x$ is the stationary standard deviation of the bias, and $T_s$ is the sample period. For slow varying bias, $T_c$ is chosen to be large $(\sim2000\text{s})$, and $\sigma_x$ is taken from the sensor specifications of the MTi-03 IMU. 
+
+The final measurements $\bm{y}_{\text{accel},k}$ and $\bm{y}_{\text{gyro},k}$ are passed onto the onboard computer to be used as inputs in the EKF. Referring to \Cref{sec:EKF}, within the EKF these values corresponed to $\bm{y}_{\text{gyro},k}\rightarrow\bm{\omega}_k$ and $\bm{y}_{\text{accel},k}\rightarrow\bm{y}_{\text{meas},k}$.
+
 \subsection{Actuators}
 
+The actuators in the simulation include the sliding masses and reaction wheel pyramid. The controller takes the commanded torque $\bm{\tau}_c$ and converts into desired torques for the four reaction wheels using the allocation matrix $\bm{A}$. For four evenly spaced in wheels a pyramidal configuration, the allocation matrix is
+\begin{equation}
+    \bm{A} = 
+    \begin{bmatrix}
+        c & -c & -c &  c \\
+        c & c  & -c & -c \\
+        s & s & s & s
+    \end{bmatrix}
+\end{equation}
+where $c = \cos(\theta)/\sqrt{2}$, $s = \sin\theta$, and $\theta$ is the wheel elevation angle.
+
+The commanded individual wheel torques are computed in the controller using 
+\begin{equation}
+    \bm{\tau}_\text{wheels} = \bm{A}^{\dagger}\bm{\tau}_c
+\end{equation}
+However, when determining the torque acting on the simulator in the truth model, it is important to account for the effects of wheel misalignment. Ideally, the columns of $\bm{A}$ represent the unit vectors of each wheel's spin axis, but manufacturing defects and mounting errors result in the true spin axes deviating slightly. 
+
+ To introduce the effects of wheel misalignment, each nominal wheel spin axis $\hat{\bm{s}}_i$ (the $i$th column of $\bm{A}$) is perturbed by a small angular deviation $\alpha$ in a random direction orthogonal to $\hat{\bm{s}}_i$. The perturbed (true) spin axis $\hat{\bm{s}}_{i,\text{tr}}$ is computed as
+\begin{equation}\label{equation:wheel_perturb}
+    \hat{\bm{s}}_{i,\text{tr}} = 
+    \cos(\alpha)\,\hat{\bm{s}}_i 
+    + \sin(\alpha)\,\hat{\bm{t}}_i,
+\end{equation}
+where $\hat{\bm{t}}_i$ is a random unit vector orthogonal to $\hat{\bm{e}}_i$ that defines the direction of the perturbation. The true allocation matrix $\bm{A}_\text{tr}$ is then
+\begin{equation}
+    \bm{A}_\text{tr}=\begin{bmatrix}
+        \hat{\bm{s}}_{1,\text{tr}} & \hat{\bm{s}}_{2,\text{tr}} & \hat{\bm{s}}_{3,\text{tr}} & \hat{\bm{s}}_{4,\text{tr}}
+    \end{bmatrix}
+\end{equation}
+The for $\dot{\bm{h}}_c$ used in the plant is then calculated with
+\begin{equation}
+    \dot{\bm{h}}_c = \bm{A}_\text{tr}\bm{\tau}_\text{wheels}
+\end{equation}
+For the SADS, a perturbation angle of $1.5^{\circ}$ is chosen to account for the overall structure - which includes the mounting slots for the wheels - being welded. These perturbations are especially important to simulate the performance of the batch estimation method, where measurements of $\dot{\bm{h}}_{c,\text{tr}}$ and $\bm{h}_{c,\text{tr}}$ are used in the estimate for the center of mass offset.  
