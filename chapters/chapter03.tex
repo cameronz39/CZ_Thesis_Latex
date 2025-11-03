@@ -327,7 +327,7 @@ Each sigma point is then propagated through the process model $\bm{f}(\cdot)$ gi
     \bm{X}_k^{(i)} = \bm{f}(\bm{X}_{k-1}^{(i)})\,T + \bm{X}_{k-1}^{(i)}.
 \end{equation}
 
-By propagating a full distribution of representative states through the nonlinear process, the effects of nonlinearity are better captured in the filter. The predicted mean and covariance are computed soley from the set of propgated sigma points. 
+By propagating a full distribution of representative states through the nonlinear process, the effects of nonlinearity are better captured in the filter. The predicted mean and covariance are computed soley from the set of propagated sigma points. 
 \begin{equation}
     \bm{x}_k^- = \sum_{i=0}^{2n} W_m^{(i)} \bm{X}_k^{(i)}, \qquad
     \bm{P}_k^- = \sum_{i=0}^{2n} W_c^{(i)}(\bm{X}_k^{(i)} - \bm{x}_k^-)(\bm{X}_k^{(i)} - \bm{x}_k^-)^T + \bm{Q}_k,

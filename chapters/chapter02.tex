@@ -9,18 +9,14 @@ The balancing methods described above rely on physical actuators and sensors to 
 
 Spacecraft dynamics simulators have of a long history in spaceflight and have adapted over the years as the corresponding flight hardware has evolved. The focus of this work is simulators that provide rotational degrees of freedom, although other configurations that enable translational motion exist. For three rotational degrees of freedom, the use of a spherical air-bearing has remained largely unchanged even over many decades. One of the earliest well-documented test setups was developed at the NASA's Marshall Flight Center in 1960, and the earliest simulator developed at a university was at Stanford in 1975 \cites{schwartz_historical_2003}. While the methods used for mass balancing on simulators from this period are not always well documented, many do indicate a form of manual balancing with sliding masses.
 
-As the quality of onboard sensors and computing increased, researchers begin exploring more sophisticated approach to mass balancing. For example, Young in 1998 shows an early documented use of a least-squares style estimator for center of mass estimation \cite{young1998development}. This approach to balancing follows the standard system identification approach where the inputs and outputs of a dynamic system are recorded, and the dynamic model is used to calculate some unknown system parameter. For mass balancing, the input is a known torque applied to the simulator, the output is the simulator's body rates and attitude, and the unknown parameter is the center of mass \cite{schwartz2004comparison}.
-
-Kim and Argawal introduced an alternative approach to mass balancing, where an adaptive control strategy is adopted instead of offline estimation \cite{kim_system_2006}. The sliding masses are fixed to linear actuators with precise positional control. The system is given a known torque input using reaction wheels, and a Lyapunov analysis is conducted to find an adaptive control law for the linear actuators that minimizes the imbalance of the system. This adaptive controller approach is expanded on by Choi in 2014 to horizontally balance the simulator but without the aid of MEDs \cite{kim_system_2006}. The vertical imbalance is then estimated using a Kalman filter. Both of these adaptive controllers are further validated in experimentation with real air-bearings.
-
-The concept of horizontally balancing an air-bearing platform soley using sliding masses is explored in simulation in a number of studies \cite{choi_automatic_2016} \cite{xuan2016pid} \cite{hua2018study}. Choi in 2016 uses a PID-based controller in an experimental test setup with promising results, but is unable to verify the final balancing results without vertically balancing the platform \cite{choi_automatic_2016}. 
-
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.70\linewidth]{figures/NPS.png}
     \caption{Spacecraft dynamics simulator at the Naval Postgraduate School \cite{kim_automatic_2009}}
     \label{fig:NPS}
 \end{figure}
+
+As the quality of onboard sensors and computing increased, researchers begin exploring more sophisticated approach to mass balancing. For example, Young in 1998 shows an early documented use of a least-squares style estimator for center of mass estimation \cite{young1998development}. This approach to balancing follows the standard system identification approach where the inputs and outputs of a dynamic system are recorded, and the dynamic model is used to calculate some unknown system parameter. For mass balancing, the input is a known torque applied to the simulator, the output is the simulator's body rates and attitude, and the unknown parameter is the center of mass \cite{schwartz2004comparison}.
 
 \begin{figure}[h]
     \centering
@@ -35,6 +31,14 @@ The concept of horizontally balancing an air-bearing platform soley using slidin
     \caption{A CubeSat scale simulator at the University of Syndey \cite{kwan2015air}}
     \label{fig:sydney}
 \end{figure}
+
+
+Kim and Argawal introduced an alternative approach to mass balancing, where an adaptive control strategy is adopted instead of offline estimation \cite{kim_system_2006}. The sliding masses are fixed to linear actuators with precise positional control. The system is given a known torque input using reaction wheels, and a Lyapunov analysis is conducted to find an adaptive control law for the linear actuators that minimizes the imbalance of the system. This adaptive controller approach is expanded on by Choi in 2014 to horizontally balance the simulator but without the aid of MEDs \cite{kim_system_2006}. The vertical imbalance is then estimated using a Kalman filter. Both of these adaptive controllers are further validated in experimentation with real air-bearings.
+
+The concept of horizontally balancing an air-bearing platform soley using sliding masses is explored in simulation in a number of studies \cite{choi_automatic_2016} \cite{xuan2016pid} \cite{hua2018study}. Choi in 2016 uses a PID-based controller in an experimental test setup with promising results, but is unable to verify the final balancing results without vertically balancing the platform \cite{choi_automatic_2016}. 
+
+
+
 
 
 Mirroring trends in the aerospace industry, many new simulators have been reduced in size compared to early iterations. This includes a reduction in cost and size of key ADCS components like high quality inertial measurement units (IMUs) and motor controllers. There is also a desire to test Cubesat-scale ADCS systems and their associated hardware \cite{chesi_automatic_2014} \cite{kwan2015air}. As a result, the barrier to entry for developing a spacecraft dynamics simulator continues to lower, and many universities have simulators actively being developed. 
@@ -128,9 +132,9 @@ The Cal Poly SADS has been developed by students and faculty since it was first 
 
 The system has undergone numerous changes since 2007, with a key change being the introduction of three linear actuators that drive smaller set of mass blocks. The larger initial set of mass blocks that are adjusted by hand are referred to as the coarse mass balances (CMB), and the new set driven by linear actuators are referred to as the fine mass balnances.
 
-The second relevant change is the integration of an LN-200 IMU, which has excellent noise characteristics as shown in \Cref{table:existing_testbeds}. In 2014, Dam applied a least-squares style estimator for mass balancing \cite{dam_applied_2014}. The estimator showed strong convergence with the aid of the new IMU. This marked the first successful use of an estimator-based approach on the Cal Poly SADS. However, a key drawback of the system was also discovered. The vertical center of mass offset predicted by the estimator was $-1.5757,\si{mm}$, but the FMB was only able to to raise the vertical offset by $0.63,\si{mm}$. Attempts were made to shift the overall platform's center of mass upwards without the fine masses, but any changes immediately made the platform behave like an inverted pendulum.
+The second relevant change is the integration of an LN-200 IMU, which has excellent noise characteristics as shown in \Cref{table:existing_testbeds}. In 2014, Dam applied a least-squares style estimator for mass balancing \cite{dam_applied_2014}. The estimator showed strong convergence with the aid of the new IMU. This marked the first successful use of an estimator-based approach on the Cal Poly SADS. However, a key drawback of the system was also discovered. The vertical center of mass offset predicted by the estimator was $-1.5757\si{mm}$, but the FMB was only able to to raise the vertical offset by $0.63\si{mm}$. Attempts were made to shift the overall platform's center of mass upwards without the fine masses, but any changes immediately made the platform behave like an inverted pendulum.
 
-Beginning in 2023 an effort began to completely overhaul the hardware onboard the SADS. This includes the development of a new set of reaction wheels, a new flight computer, as well as replacement of the CMB and FMB. Reaction wheel development, documented in~\cite{nalley2025development}, resulted in the design and integration of one complete wheel on the simulator. Work on a new flight computer has not yet begun, and development of the new mass balancing system is documented in~\cite{gilman_automatic_2024}, which resulted in the design of a new set of prototype linear actuators. 
+Beginning in 2023 an effort began to completely overhaul the hardware onboard the SADS. This includes the development of a new set of reaction wheels, a new flight computer, as well as replacement of the CMB and FMB. Reaction wheel development, documented by Nalley~\cite{nalley2025development}, resulted in the design and integration of one complete wheel on the simulator. Work on a new flight computer has not yet begun, and development of the new mass balancing system is documented in~\cite{gilman_automatic_2024}, which resulted in the design of a new set of prototype linear actuators. 
 \begin{figure}[h]\label{fig:gillman_final_work}
     \centering
     \includegraphics[width=0.70\linewidth]{figures/gillman_final_work.png}
