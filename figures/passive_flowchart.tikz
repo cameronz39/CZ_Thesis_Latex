@@ -1,0 +1,71 @@
+\usetikzlibrary{arrows.meta, shapes.geometric, shapes.misc, positioning,calc}
+
+\begin{tikzpicture}[
+  scale=0.63,  
+  node distance=10mm and 3mm,
+  >=Latex,
+  block/.style={rectangle, rounded corners=2mm, draw, align=center, minimum width=45mm, minimum height=8mm},
+  decision/.style={diamond, draw, aspect=2, align=center, inner xsep=1mm, inner ysep=2mm},
+  terminator/.style={ellipse, draw, align=center, minimum width=28mm, minimum height=8mm},
+  junction/.style={circle, draw, fill=black, inner sep=1.2pt},
+  lbl/.style={font=\footnotesize\bfseries}
+]
+
+% Root
+\node[block] (start) {\textbf{Manual Balance}};
+
+\node[junction,below=of start] (first_junc) {};
+
+% Branch headings
+\node[lbl, below left=3mm and 14mm of start.south] (b1h) {Two-Step Hybrid Method};
+\node[lbl, below right=3mm and 14mm of start.south] (b2h) {Batch Estimation Method};
+
+% Branch 1 (left column)
+\node[block, below =of first_junc,xshift=-8em] (b1s2) { Horizontal imbalance\\compensation\\(PID or Adaptive)};
+\node[block, below=of b1s2] (b1s3a) {Perturb simulator\\\& record free-\\tumbling data};
+\node[block, below=of b1s3a] (b1s3b) {Pass data through\\UKF \& update\\mass positions};
+\node[decision, below=of b1s3b] (b1dec) {Mass positions\\converged?};
+
+% Branch 2 (right column)
+\node[block] (b2s2) at ($(first_junc |- b1s3a)+(13em,0)$) {Excite platform with\\reaction wheel \\ \& record data};
+\node[block] (b2s3a) at (b2s2 |- b1s3b){Pass data through\\least-squares estimator\\\& update mass positions};
+\node[decision] (b2dec) at (b2s2 |- b1dec) {Mass positions\\converged?};
+
+% Common join and terminator
+\node[junction] at ($(start |- b1dec.south)+(0,-6mm)$) (join) {};
+\node[terminator, below=12mm of join] (done) {\textbf{Done}};
+
+% Split from Manual Balance to both branches
+\draw[-] (start.south) -- (first_junc);
+
+\draw[->] (first_junc) -| (b1s2.north);
+\draw[->] (first_junc) -| (b2s2.north);
+
+% Branch 1 flow
+\draw[->] (b1s2) -- (b1s3a);
+\draw[->] (b1s3a) -- (b1s3b);
+\draw[->] (b1s3b) -- (b1dec);
+
+% Branch 2 flow
+\draw[->] (b2s2) -- (b2s3a);
+\draw[->] (b2s3a) -- (b2dec);
+
+% Yes paths to common join
+\draw[-] (b1dec.south) -- ++(0,-6mm) -| node[pos=0.25, above, font=\footnotesize\itshape]{Yes} (join.center);
+\draw[-] (b2dec.south) -- ++(0,-6mm) -| node[pos=0.25, above, font=\footnotesize\itshape]{Yes} (join.center);
+
+% From join to Done
+\draw[->] (join) -- (done);
+
+% No loop-backs
+% Branch 1: No -> back to (3a)
+\path (b1s3a.west) ++(-14mm,0) coordinate (b1L);
+\draw[->] (b1dec.west) -- ++(-14mm,0) node[pos=0.5, above, font=\footnotesize\itshape]{No}
+           |- (b1s3a.west);
+
+% Branch 2: No -> back to (3a) of Branch 2
+\path (b2s3a.east) ++(14mm,0) coordinate (b2R);
+\draw[->] (b2dec.east) -- ++(14mm,0) node[pos=0.5, above, font=\footnotesize\itshape]{No}
+           |- (b2s2.east);
+
+\end{tikzpicture}

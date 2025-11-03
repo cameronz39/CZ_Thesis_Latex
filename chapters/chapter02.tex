@@ -9,9 +9,11 @@ The balancing methods described above rely on physical actuators and sensors to 
 
 Spacecraft dynamics simulators have of a long history in spaceflight and have adapted over the years as the corresponding flight hardware has evolved. The focus of this work is simulators that provide rotational degrees of freedom, although other configurations that enable translational motion exist. For three rotational degrees of freedom, the use of a spherical air-bearing has remained largely unchanged even over many decades. One of the earliest well-documented test setups was developed at the NASA's Marshall Flight Center in 1960, and the earliest simulator developed at a university was at Stanford in 1975 \cites{schwartz_historical_2003}. While the methods used for mass balancing on simulators from this period are not always well documented, many do indicate a form of manual balancing with sliding masses.
 
-As the quality of onboard sensors and computing increased, researchers begin exploring more sophisticated approach to mass balancing. For example, \cite{young1998development} shows an early documented use of a least-squares style estimator for center of mass estimation. This approach to balancing follows the standard system identification approach where the inputs and outputs of a dynamic system are recorded, and the dynamic model is used to calculate some unknown system parameter. For mass balancing, the input is a known torque applied to the simulator, the output is the simulator's body rates and attitude, and the unknown parameter is the center of mass \cite{schwartz2004comparison}.
+As the quality of onboard sensors and computing increased, researchers begin exploring more sophisticated approach to mass balancing. For example, Young in 1998 shows an early documented use of a least-squares style estimator for center of mass estimation \cite{young1998development}. This approach to balancing follows the standard system identification approach where the inputs and outputs of a dynamic system are recorded, and the dynamic model is used to calculate some unknown system parameter. For mass balancing, the input is a known torque applied to the simulator, the output is the simulator's body rates and attitude, and the unknown parameter is the center of mass \cite{schwartz2004comparison}.
 
-\cite{kim_system_2006} shows an early demonstration of an alternative approach to mass balancing, where an adaptive control strategy is adopted instead of offline estimation. The sliding masses are fixed to linear actuators with precise positional control. The system is again given a known torque input, and a Lyapunov analysis is conducted to find an adaptive control law for the linear actuators that minimizes the imbalance of the system. This adaptive controller approach is expanded on in \cite{chesi_automatic_2014} to horizontally balance the simulator. \cite{choi_automatic_2016} documents a similar approach where the position of the sliding masses are controlled in real-time under a PID style controller. 
+Kim and Argawal introduced an alternative approach to mass balancing, where an adaptive control strategy is adopted instead of offline estimation \cite{kim_system_2006}. The sliding masses are fixed to linear actuators with precise positional control. The system is given a known torque input using reaction wheels, and a Lyapunov analysis is conducted to find an adaptive control law for the linear actuators that minimizes the imbalance of the system. This adaptive controller approach is expanded on by Choi in 2014 to horizontally balance the simulator but without the aid of MEDs \cite{kim_system_2006}. The vertical imbalance is then estimated using a Kalman filter. Both of these adaptive controllers are further validated in experimentation with real air-bearings.
+
+The concept of horizontally balancing an air-bearing platform soley using sliding masses is explored in simulation in a number of studies \cite{choi_automatic_2016} \cite{xuan2016pid} \cite{hua2018study}. Choi in 2016 uses a PID-based controller in an experimental test setup with promising results, but is unable to verify the final balancing results without vertically balancing the platform \cite{choi_automatic_2016}. 
 
 \begin{figure}[h]
     \centering
@@ -22,17 +24,18 @@ As the quality of onboard sensors and computing increased, researchers begin exp
 
 \begin{figure}[h]
     \centering
+    \includegraphics[width=0.80\linewidth]{figures/georgia.png}
+    \caption{Spacecraft dynamics simulator at the University of Georgia \cite{choi_automatic_2016}}
+    \label{fig:georgia}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
     \includegraphics[width=0.80\linewidth]{figures/sydney.png}
     \caption{A CubeSat scale simulator at the University of Syndey \cite{kwan2015air}}
     \label{fig:sydney}
 \end{figure}
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.80\linewidth]{figures/georgia.png}
-    \caption{Spacecraft dynamics simulator at the University of Georgia}
-    \label{fig:georgia}
-\end{figure}
 
 Mirroring trends in the aerospace industry, many new simulators have been reduced in size compared to early iterations. This includes a reduction in cost and size of key ADCS components like high quality inertial measurement units (IMUs) and motor controllers. There is also a desire to test Cubesat-scale ADCS systems and their associated hardware \cite{chesi_automatic_2014} \cite{kwan2015air}. As a result, the barrier to entry for developing a spacecraft dynamics simulator continues to lower, and many universities have simulators actively being developed. 
 
@@ -40,7 +43,7 @@ Mirroring trends in the aerospace industry, many new simulators have been reduce
 
 The vast majority of spacecraft simulators use momentum-exchange-devices (MEDs) such as reaction wheels or control-moment gyroscopes (CMGs) to generate control torques. Smaller CubeSat-scale platforms may use magnetorquers within a Helmholtz cage, while large-scale platform may incorporate cold-gas thrusters. MEDs are preferred for in balancing applications due to the precise, repeatable control inputs they are able to provide at small magnitudes. 
 
-The control of MEDs are subject to their own actuator dynamics separate from the spacecraft simulator dynamics. For example, when commanding a change in speed for a reaction wheel, the wheel and motor exhibit transient behavior and their own response time. However, given that the time scale of the spacecraft dynamics are significantly slower than the actuator dynamics, the actuator dynamics can be assumed to be negligible for most cases \cite{kristiansen_modelling_2009}. A more practical limitation comes from saturation: as external torques accumulate, the angular momentum stored in the MEDs can approach their maximum capacity. After performing a balancing procedure, a bound of the magnitude of gravitational torques can be measured using methods in \Cref{sec:mbs_problem}. This torque estimate and the actuator's momentum capacity can be used to approximate the length of the tests that can be run before saturation occurs. Or alternatively, the momentum capacity of the actuators and the desired test legnth can provide a practical bound for acceptable balancing performance.
+The control of MEDs are subject to their own actuator dynamics separate from the spacecraft simulator dynamics. For example, when commanding a change in speed for a reaction wheel, the wheel and motor exhibit transient behavior and their own response time. However, given that the time scale of the spacecraft dynamics are significantly slower than the actuator dynamics, the actuator dynamics can be assumed to be negligible for most cases \cite{kristiansen_modelling_2009}. A more practical limitation comes from saturation: as external torques accumulate, the angular momentum stored in the MEDs can approach their maximum capacity. After performing a balancing procedure, a bound of the magnitude of gravitational torques can be measured using methods in \Cref{sec:mbs_problem}. This torque estimate and the actuator's momentum capacity can be used to approximate the length of the tests that can be run before saturation occurs. This mean the momentum capacity of the actuators and the desired test legnth can provide a practical bound for acceptable balancing performance.
 
 \subsection{Sensors}
 
@@ -48,11 +51,11 @@ All balancing methods above require measurements for body rates and attitude. An
 
 IMU performance is characterized by a few key factors. The most influential is noise density, which is directly tied to the variance of the rate measurements \cite{unsal_estimation_2012}. Integrating these noisy rate measurements can cause error in the attitude estimate to accumulate, referred to as angular random walk. Bias instability is another factor that refers to how fast bias in the rate measurements changes over time. For low quality IMUs, bias instability can have an impact on even short duration tests. Bandwidth and sample rate are two other factors that collectively describe what frequency dynamics the IMU can accurately capture, but given the slow dynamics of spacecraft simulators, most sensor configurations will satisfy these requirements.
 
-As will be discussed in \Cref{chap:methodology}, the quality of sensor data is a common challenge faced by all mass balancing systems. The nature of the problem requires accurate knowledge of the simulator's body rates and attitude with minimal corruption from noise. Because the accuracy of attitude and body rate measurement's determines the convergence quality of an automatic balancing algorithm, IMU selection is a limiting factor in reach sub-millimeter center of mass accuracy. 
+As will be discussed in \Cref{chap:methodology}, the quality of sensor data is a common challenge faced by all mass balancing systems. The nature of the problem requires accurate knowledge of the simulator's body rates and attitude with minimal corruption from noise. Because the accuracy of attitude and body rate measurement's determines the convergence quality of an automatic balancing algorithm, IMU selection is a limiting factor in reaching sub-millimeter center of mass accuracy. 
 
 \subsection{Survey Results}
 
-\Cref{table:existing_testbeds} summarizes the sensor and actuator combinations reported in a variety of simulators found in literature. The physical scale of each platform and balancing performance can also be seen. 
+\Cref{table:existing_testbeds} summarizes the sensor and actuator combinations reported in a variety of simulators found in literature.
 
 \begin{table}[!ht]
 \caption{Existing spacecraft dynamics simulators and their balancing methods}\label{table:existing_testbeds}
@@ -60,45 +63,46 @@ As will be discussed in \Cref{chap:methodology}, the quality of sensor data is a
 \renewcommand{\arraystretch}{1.3}
 
 \begin{tabularx}{\textwidth}{
-    >{\raggedright\arraybackslash}p{3cm}   % Institution
-    >{\raggedright\arraybackslash}p{3.5cm} % Actuators
-    >{\raggedright\arraybackslash}p{2.2cm} % Noise Density
+    >{\raggedright\arraybackslash}p{2.8cm}   % Institution
+    >{\centering\arraybackslash}p{1.3cm} % mass
+    >{\raggedright\arraybackslash}p{3.2cm} % Actuators
+    >{\centering\arraybackslash}p{2.5cm} % Noise Density
     >{\raggedright\arraybackslash}X}       % Balancing Method and Results
 \toprule
-\textbf{Institution} & \textbf{Actuators} & \textbf{Noise Density} & \textbf{Balancing Method and Results} \\
+\textbf{Institution} & \textbf{Mass [kg]} & \textbf{Actuators} & \textbf{Gyro Noise [°/s]} & \textbf{Method and Results} \\
 \midrule
-Cal Poly San Luis Obispo~\cite{dam_applied_2014} & 
+Cal Poly San Luis Obispo~\cite{dam_applied_2014} & 29.6 &
 Reaction Wheels & 
 \SI{0.0025}{\degree\per\second} & 
 Batch Estimation \newline $<\SI{1.5}{\milli\metre}$ \\
 \addlinespace[0.75em]
 
-Georgia Tech~\cite{choi_automatic_2016} & 
+Georgia Tech~\cite{choi_automatic_2016} & 134 &
 Reaction Wheels & 
 \SI{0.05}{\degree\per\second} & 
 Underactuated Feedback Control \\
 \addlinespace[0.75em]
-Naval Postgraduate School~\cite{kim_system_2006} & 
+Naval Postgraduate School ~\cite{kim_system_2006} & 800 &
 Control Moment Gyros & 
 \SI{0.007}{\degree\per\second} & 
 Fully Actuated Feedback Control \newline $<\SI{0.327}{\newton\metre}$ \\
 \addlinespace[0.75em]
-University of Brasília~\cite{silva_filtering_2018} & 
+University of Brasília~\cite{silva_filtering_2018} & 13.9 &
 Reaction Wheels, Magnetorquers & 
 \SI{0.05}{\degree\per\second} & 
 Batch Estimation and Filtering \newline $<\num{3.5e-5}\,\si{\newton\metre}$ \\
 \addlinespace[0.75em]
-University of Bologna~\cite{modenini2020dynamic} & 
+University of Bologna~\cite{modenini2020dynamic} & 11.5 &
 Reaction Wheels & 
 \SI{0.004}{\degree\per\second} & 
 Underactuated Feedback Control \newline $<\num{5e-5}\,\si{\newton\metre}$ \\
 \addlinespace[0.75em]
-University of Florida~\cite{saulnier2014six} & 
+University of Florida~\cite{saulnier2014six} & - &
 Thrusters & 
-N/A & 
+- & 
 Manual Balancing \\
 \addlinespace[0.75em]
-Harbin Institute of Technology~\cite{xu_parameter_2015} & 
+Harbin Institute of Technology~\cite{xu_parameter_2015} & 127 &
 Reaction Wheels & 
 \SI{0.04}{\degree\per\second} & 
 Batch Estimation and Filtering \newline $<\SI{5}{\micro\metre}$ \\
