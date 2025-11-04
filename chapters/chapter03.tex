@@ -782,12 +782,22 @@ The plant represents the truth dynamics of the simulator and forms the reference
 which when solved yields $\bm{\omega}_\text{tr}$. Values subscripted with $\text{tr}$ denote true physical values that the onboard computer and balancing algorithm do not have access to. To start, $\bm{J}_\text{tr}$ is used to account for errors in the estimation of $\bm{J}$. Many balancing methods require knowledge of the simulator's moment of inertia $\bm{J}$, and the estimate for this value in this work is taken from CAD. Given the geometery of the SADS is well known and the mass of each compenent is carefully measured, this estimate is assumed to be fairly accurate. Still, to account for errors in the CAD model, the value of inertia used in the truth model $\bm{J}_\text{tr}$ is perturbed from the CAD estimate. This perturbation is performed using
 \begin{equation}
     \bm{J}_\text{tr} = \begin{bmatrix}
-        a_1J_{xx} & a_4J_{xy} & a_5J_{xz} \\
-        a_4J_{xy} & a_2J_{yy} & a_6J_{yz} \\
-        a_5J_{xz} & a_6J_{yz} & a_3J_{zz} \\
+        a_1\hat{J}_{xx} & a_4\hat{J}_{xy} & a_5\hat{J}_{xz} \\
+        a_4\hat{J}_{xy} & a_2\hat{J}_{yy} & a_6\hat{J}_{yz} \\
+        a_5\hat{J}_{xz} & a_6\hat{J}_{yz} & a_3\hat{J}_{zz} \\
     \end{bmatrix}\qquad\,a_i\sim\mathcal{N}(1,0.10\:\text{kg}\cdot\text{m}^2)
 \end{equation}
-where the components $J_{(ij)}$ are taken from the CAD estimate.
+where the components $\hat{J}_{(ij)}$ are taken from the CAD estimate. The mass of the simulator $m_s$ is a direct measurement from experimental test setup. The final mass properties used in the simulation are
+\begin{equation}
+    \hat{\bm{J}} = \begin{bmatrix}
+        1.298  & -0.014 & 0.004 \\
+        -0.014 &  1.025 & 0.008 \\
+        0.004  &  0.008 & 1.243 \\
+
+    \end{bmatrix}\:\text{kg}\cdot\text{m}^2,
+    \qquad
+    m_s = 29.6\,\text{kg}
+\end{equation}
 
 Once the solver obtains $\bm{\omega}_\text{tr}$, the quaternion is obtained using the kinematic differential equation introduced in \Cref{equation:quat_kinematics} and the quaternion is converted into a value for $\bm{g}_\text{tr}$. These truth values for the body rate and gravity vector are then passed onto the sensor model.
 

@@ -35,7 +35,13 @@ The underactuated PID controller is first implemented in simulation according \C
 \end{figure}
 
 
-From \Cref{fig:PID_sim_results} alone it can be inferred that the controller has horizontally balanced the platform. However, to further validate the performance of the balancing method, various values from the truth model are plotted. \Cref{fig:PID_sim_integral_error} shows the projected integral error of the controller. It is clear the integral action does indeed learn and compensate for the initial gravitional torque $\bm{\tau}_{g,0}$. The effects of the simulated controller can also be seen, with the 15 Hz discrete time integrator causing noise at steady state.
+From \Cref{fig:PID_sim_results} alone it can be inferred that the controller has horizontally balanced the platform. However, to further validate the performance of the balancing method, various values from the truth model are plotted.
+
+One quantity of interest is the integral action of the controller. As proposed in the \Cref{sec:under_PID}, the integral action of the controller should accumulate to cancel the distrubance torque due to gravity. To account for the underactuation constraint, the integral action is also projected using $\bm{P}$ as this is the only component of the integral contribution that is realized in the system. The projected integral error is defined as 
+\begin{equation}
+ \bm{z} = m_s\bm{r}_0^{\times}\bm{g} - \bm{PK}_i\int\text{sign}(\eta_e)\bm{\epsilon}_e\,dt
+\end{equation}
+and for the controller to successfully minimize the horizontal imbalance, this value must tend towards zero. \Cref{fig:PID_sim_integral_error} shows the projected integral error of the controller in simulation. It is clear the integral action does indeed learn and compensate for the initial gravitional torque after about 40 seconds, further validating this approach. 
 
 
 \Cref{fig:PID_sim_oscillations} shows the true value of $r_x$ and $r_y$ at steady state. The values begin to oscillate with a fairly constant amplitude about the desired values of $r_x = r_y = 0$. A variety of factors here prevent further convergence. The discretization of the controller, noise in the sensor readings, and lag in the control loop all limit the performance of the system. In a real hardware test, the operator will end the balancing procedure once the sliding mass positions have converged. Thus, the final value $r_x$ and $r_y$ will land at a random position along the two curves in \Cref{fig:PID_sim_oscillations}. The ampltiude of these oscillations places a bound on the final balancing results. In this case, $r_x$ and $r_y$ are bounded by $\pm4\times10^{-5}m$, so in the worst case, the simulated PID balancing procedure has still reduced the horizontal inbalance by two orders of magnitude.

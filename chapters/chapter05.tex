@@ -1,7 +1,22 @@
 \chapter{Conclusion} \label{chap:conclusion}
 
-With the integration of all four reaction wheels, the batch estimation method could be repeated with proper exciation. The simulation results in this work suggest the four-wheel batch estimation method could achieve better results than the hybrid PID method
+\section{Summary}
+
+
+
+\section{Future Work}
+
+The balancing system developed in this work serves as a functional basis for the SADS' next iteration. Future work should focus on potential improvements to balancing performance and making the system more future-proof.
+
+\subsection{Remaining Balancing Methods}
+
+With the integration of all four reaction wheels, the batch estimation method could be repeated with proper exciation. The simulation results in this work suggest the four-wheel batch estimation method could achieve better results than the hybrid PID method at the cost of the procedure taking much longer.
 
 Using four reaction wheels would also allow the implementation of the 3-axis adaptive controller on the SADS. While the simulation results predict slightly worse performance from this method, it has the benefit being a one-step procedure as opposed to the iterative schemes used in other balancing methods. The closed-loop reaction wheel control needed in this method also serves as a natural transistion into implementing 3-axis quaternion feedback controllers.
 
-While the STM32 worked well for the prototyping completed in this work, using microcontroller
+\subsection{Balancing Verification with 3-axis Attitude Control}
+While the verification methods used in this work confirm a reduction in the mean torque due to gravity, more sophisticated methods exist to characterize this torque. A method used by Kim and Argawal is to command the simulator to hold a set of representative attitudes and record the average change in angular momentum of the simulator at steady state \cite{kim_automatic_2009}. With no torque due to gravity, once the simulator settles on a new attitude, the angular momentum should theoretically remain constant. In reality, the actuators will begin to saturate as they reject the torque due to gravity. This approach has the added benefit of giving the operator insight into which attitudes are more negatively impacted by gravity.
+
+\subsection{Onboard Computer}
+
+While the STM32 worked well for the prototyping completed in this work, using a microcontroller has numerous drawbacks. Swapping balancing algorithms requires the controller to be flashed again using the host PC, which requires a wired connection. Future work should include a revised Linux-based onboard computer, which would allow an operator to load various algorithms and configure them in real-time over a wireless LAN connection. Much of the software written for this work---including the IMU driver---could be reused with minimal changes. 
