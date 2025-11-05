@@ -4,21 +4,18 @@
 
 This thesis presented the design, implementation, and experimental test of a low-cost automatic mass balancing system for the Cal Poly Spacecraft Attitude Dynamics Simulator. Motivated by the final goal of recreating attitude dynamics in a laboratory environment, the torque due to gravity is minimized through a combination of mechanical, eletrical, and algorithmic developments. 
 
-A modular, low-cost linear actuator set was designed to replace previous iterations found on the SADS that suffered from an insufficient center of mass envelope, unreliable torque output, and maintenance challenges. The resulting system has consistent, high-torque acutation through stepper motors, reduced-friction components, modular sliding mass to rapidly reconfigure the center-of-mass envelope, and full integration with the SADS structure. 
+A modular, low-cost linear actuator set was designed to replace previous iterations found on the SADS that suffered from an insufficient center of mass envelope and unreliable torque output. The resulting system has consistent, high-torque actuation through stepper motors, reduced-friction components, modular sliding mass to rapidly reconfigure the center-of-mass envelope, and full integration with the SADS structure. 
 
 An onboard processing pipeline was implemented using an STM32 microcontroller and an MTi-03 IMU. The associated software leverages Simulink and C/C++ drivers to rapidly prototype and test balancing algorithms. This includes drivers for sensors and actuators and quaternion-based attitude estimation with an Extended Kalman Filter. A parallel high-fidelity simulation environment was developed to aid controller design and quantify the effects of practical limitations in the system like reaction wheel misalignment and sensor noise.
 
 Four balancing algorithms are implemented on the experimental test setup: underactuated PID and adaptive control, unscented Kalman filtering for vertical offset estimation, and least-squares batch estimation. The underactuated PID method shows the strongest performance, achieving sub-millimeter horizontal imbalance. The UKF succesfully estimates the vertical imbalance, although its convergence is not guaranteed after two to three iterations. The batch estimation method also converges reliably, although comparison to simulated results suggest its performance is significantly limited by the use one reaction wheel.
 
-The underactuated PID method followed by the UKF method together can reduce the torque due to gravity to the order of \SI{e-4}{\newton\meter}. Overall, this work establishes a successful iteration of an automatic mass balancing system for the SADS and provides a benchmark for future balancing approaches and hardware upgrades to be compared with. The modular architecture and simulation-to-hardware workflow also help to well position the SADS for future research in spacecraft controls. 
-
-
-
+The underactuated PID method followed by the UKF method together can reduce the torque due to gravity to the order of \SI{e-4}{\newton\meter}. Overall, this work establishes a successful iteration of an automatic mass balancing system for the SADS and provides a benchmark for future balancing approaches and hardware upgrades to be compared with. The modular architecture and simulation-to-hardware workflow also help to well position the SADS for future research in spacecraft controls.
 
 
 \section{Future Work}
 
-The balancing system developed in this work serves as a functional basis for the SADS' next iteration. Future work should focus on potential improvements to balancing performance and making the system more future-proof. 
+The balancing system developed in this work serves as a functional basis for the SADS' next iteration. Future work should focus on potential improvements to balancing performance and making the software more robust. 
 
 \subsection{Remaining Balancing Methods}
 
@@ -31,4 +28,4 @@ While the verification methods used in this work confirm a reduction in the mean
 
 \subsection{Onboard Computer}
 
-While the STM32 worked well for the prototyping completed in this work, using a microcontroller has numerous drawbacks. Swapping balancing algorithms requires the controller to be flashed again using the host PC, which requires a wired connection. Future work should include a revised Linux-based onboard computer, which would allow an operator to load various algorithms and configure them in real-time over a wireless LAN connection. Much of the software written for this work---including the IMU driver---could be reused with minimal changes. 
+While the STM32 worked well for the prototyping completed in this work, using a microcontroller has numerous drawbacks. Swapping balancing algorithms requires the controller to be flashed again using the host PC, which requires a wired connection. Future work should include a revised Linux-based onboard computer, which would allow an operator to load various algorithms and configure them in real-time over a wireless LAN connection. Much of the software written for this work---including the IMU driver---could be reused with minimal changes. The onboard filter could also be augmented with a more sophisticated measurement model and include the gyroscope bias as a dynamic state. 
