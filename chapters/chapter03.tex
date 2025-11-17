@@ -146,7 +146,7 @@ When plotting and interpreting results, the quaternion representation is often c
 \psi &= \text{arctan2}\!\left(2(q_0 q_3 + q_1 q_2),\, 1 - 2(q_2^2 + q_3^2)\right),
 \end{aligned}
 \end{equation}
-where $\text{arctan2}$ is the 2-argument arctangent function. This represents the attitude as a series of intrinsic rotations about the body axes using a $(3,2,1)$ rotation sequence. Although Euler angles are used in post-processing and visualization, all onboard computations are performed using quaternions to avoid singularities.
+where $\text{arctan2}$ is the 2-argument arctangent function~\cite{bernardes2022quaternion}. This represents the attitude as a series of intrinsic rotations about the body axes using a $(3,2,1)$ rotation sequence. Although Euler angles are used in post-processing and visualization, all onboard computations are performed using quaternions to avoid singularities.
 
 \subsection{Least-Squares/Batch Estimation Algorithms}\label{sec:LSR}
 
@@ -155,9 +155,9 @@ Batch estimation algorithms are a subset of passive balancing methods that use m
 \begin{equation}
     \bm{\Omega} =
         \begin{bmatrix}
-            \omega_1 & 0 & 0 & -\omega_2 & -\omega_3 & 0 \\
-            0 & \omega_2 & 0 & -\omega_1 & 0 & -\omega_3 \\
-            0 & 0 & \omega_3 & 0 & -\omega_1 & -\omega_2
+            \omega_x & 0 & 0 & \omega_y & \omega_z & 0 \\
+            0 & \omega_y & 0 & \omega_x & 0 & \omega_z \\
+            0 & 0 & \omega_z & 0 & \omega_x & \omega_y
         \end{bmatrix}
 \end{equation}
 \begin{equation}
@@ -521,7 +521,7 @@ While the exact final design and mass properties of the SADS is unknown, it is s
 
  \Cref{fig:final_CAD} shows the final design of the CAD model for reference. The two heaviest systems onboard are the reaction wheels and the mass balancing system itself. One important aspect of the SADS when designing its desired center of mass envelope is its symmetrical design. For example, the pyramidal reaction-wheel configuration contributes little horizontal imbalance. Additionally the wheels are roughly on the same horizontal plane as the platform's center of rotation, so they also contribute little vertical imbalance. The main source of imbalance will thus be introduced by relatively smaller components like batteries, sensors, the flight computer, and other miscellaneous electronics.
 
-To approximate a worst case horizontal imbalance, the heaviest of these smaller components---the main 24V battery---was placed in CAD in multiple unfavorable positions with the resulting imbalance vector in the CAD software recorded. The black prism in \Cref{fig:final_CAD} represent this battery, and its position is placed at various edges along the top deck of the simulator. After applying a factor of safety, the resulting horizontal center of mass envelope is determined to be $||\Delta\,r_x|| \approx ||\Delta\,r_x|| \approx \SI{0.01}{\meter}$. With a travel distance of $\pm\SI{100}{\mm}$ per rail, the total mass for each rail is designed as $m_i = \SI{1.4}{\kg}$.
+To approximate a worst case horizontal imbalance, the heaviest of these smaller components---the main 24V battery---was placed in CAD in multiple unfavorable positions with the resulting imbalance vector in the CAD software recorded. The black prism in \Cref{fig:final_CAD} represent this battery, and its position is placed at various edges along the top deck of the simulator. After applying a factor of safety, the resulting horizontal center of mass envelope is determined to be $||\Delta\,r_x|| \approx ||\Delta\,r_x|| \approx \SI{0.01}{\meter}$. With a travel distance of $\pm\SI{110}{\mm}$ per rail, the total mass for each rail is designed as $m_i = \SI{1.4}{\kg}$.
 
 With the horizontal mass sizing complete, the vertical mass sizing takes a slightly different approach. Because the reaction wheels and horizontal sliding masses are positioned slightly below the center of rotation of the platform, the center of mass of the platform with no vertical masses is biased towards $-\hat{\bm{z}}_b$. The vertical masses are sized such that when they are both in their centered positions, the vertical imbalance predicited by CAD is zero. For the vertical sliders, the designed value is $m_i = \SI{0.65}{\kg}$. 
 
