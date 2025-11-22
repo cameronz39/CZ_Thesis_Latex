@@ -4,7 +4,7 @@
 
 \section{Underactuated PID Control}\label{sec:PID_results}
 
-The underactuated PID controller is first implemented in simulation according to \Cref{sec:sim_setup}. \Cref{fig:PID_sim_results} shows key system states during the balancing procedure. The platform's roll initially drops to $-17^{\circ}$ due to gravity, but the proportional action quickly compensates, as seen by the rapid spike in $\Delta\,d_y$ at $t=0$. After about 45 seconds, the platform's roll, pitch, and horizontal body rates converge to 0. The sliding mass positions additionally settle to a constant value, indicating the gravitational torque has been driven towards zero. The simulation also verifies that the roll and pitch travel limits of the simulator ($\pm15^{\circ}$) have not been violated, and that the travel limits of the sliding masses ($\pm$\SI{110}{\mm}) have not been violated even under a relatively large inital imbalance.
+The underactuated PID controller is first implemented in simulation according to \Cref{sec:sim_setup}. \Cref{fig:PID_sim_results} shows key system states during the balancing procedure. After about 45 seconds, the platform's roll, pitch, and horizontal body rates converge to a bounded region. The sliding mass positions additionally settle to a constant value, suggesting the gravitational torque has been driven towards zero. The simulation also verifies that the roll and pitch limits of the simulator ($\pm15^{\circ}$) have not been violated and that the travel limits of the sliding masses ($\pm$\SI{110}{\mm}) have not been violated.
 
 \begin{figure}[p!]
     \centering
@@ -34,22 +34,19 @@ The underactuated PID controller is first implemented in simulation according to
     \label{fig:PID_sim_oscillations}
 \end{figure}
 
-
 To further validate the performance of the balancing method, various values from the truth model are plotted. One quantity of interest is the integral action of the controller. As proposed in the \Cref{sec:under_PID}, the integral action of the controller should accumulate to cancel the distrubance torque due to gravity. To account for the underactuation constraint, the integral action is also projected using $\bm{P}$ as this is the only component of the integral contribution that is realized in the system. The projected integral error is defined as 
 \begin{equation}
  \bm{z} = m_s\bm{r}_0^{\times}\bm{g} - \bm{P}\bm{K}_i\int\text{sign}(\eta_e)\bm{\epsilon}_e\,dt
 \end{equation}
-and for the controller to successfully minimize the horizontal imbalance, this value should tend towards zero under ideal conditions. \Cref{fig:PID_sim_integral_error} shows the projected integral error of the controller in simulation. It is important to restate that the controller has no knowledge of the value of $\bm{r}_0$ at any point, but the integral action does indeed learn and compensate for the initial gravitational torque after about 40 seconds, further validating this approach. 
+and for the controller to successfully minimize the horizontal imbalance, this value should tend towards zero. \Cref{fig:PID_sim_integral_error} shows the projected integral error of the controller in simulation. It is important to restate that the controller has no knowledge of the value of $\bm{r}_0$ at any point, but the integral action does indeed learn and compensate for the initial gravitational torque after about 40 seconds, further validating this approach. 
 
+\Cref{fig:PID_sim_oscillations} shows the true value of $r_x$ and $r_y$ at steady state. The values begin to oscillate about the desired values of $r_x = r_y = 0$. A variety of factors here prevent further convergence. The discretization of the controller, noise in the sensor readings, and lag in the control loop all limit the performance of the system. In a real hardware test, the operator will end the balancing procedure once the sliding mass positions have converged. Thus, the final value $r_x$ and $r_y$ will be bounded by the two curves in \Cref{fig:PID_sim_oscillations}. The amplitude of these oscillations helps place a bound on the final balancing results. In this case, $r_x$ and $r_y$ are bounded by $\pm$\SI{5e-5}{\meter}, and in the in the simulation, the initial horizontal imbalance is chosen to be $r_x=\SI{-6e-4}{\meter}$ and $r_y=\SI{1.6e-4}{\meter}$. The simulated PID balancing procedure thus reduced the horizontal imbalance along $x$ by over a full order of magnitude.
 
-\Cref{fig:PID_sim_oscillations} shows the true value of $r_x$ and $r_y$ at steady state. The values begin to oscillate with a fairly constant amplitude near the desired values of $r_x = r_y = 0$. A variety of factors here prevent further convergence. The discretization of the controller, noise in the sensor readings, and lag in the control loop all limit the performance of the system. In a real hardware test, the operator will end the balancing procedure once the sliding mass positions have converged. Thus, the final value $r_x$ and $r_y$ will be bounded by the two curves in \Cref{fig:PID_sim_oscillations}. The amplitude of these oscillations thus places a bound on the final balancing results. In this case, $r_x$ and $r_y$ are bounded by $\pm$\SI{4e-5}{\meter}, and in the in the simulation, the intitial horizontal imbalance is chosen to be $r_x=\SI{4e-3}{\meter}$ and $r_y=\SI{4e-3}{\meter}$. The simulated PID balancing procedure thus reduces the horizontal imbalance by two orders of magnitude.
+Next the experimental PID results on the SADS are considered. \Cref{fig:PID_hardware_results} shows the same system states during the balancing procedure. The system behaves qualitatively in a similar manner to the simulated results. The platform's roll, pitch, and horizontal body rates converge towards zero and the sliding mass positions additionally converge towards a constant value. The time for these states to enter a bounded region and their natural frequencies are also similar ($\approx\SI{45}{\sec}$ and $\approx\SI{0.35}{\Hz}$ respectively).
 
-Next the experimental PID results on the SADS are considered. \Cref{fig:PID_hardware_results} shows the same system states during the balancing procedure. The system behaves qualitatively in a similar manner to the simulated results. The platform's roll, pitch, and horizontal body rates converge towards zero and the sliding mass positions additionally converge towards a constant value. The values for all the system states are all generally smaller in magnitude compared to the simulated values from \Cref{fig:PID_sim_results}, indicating the initial imbalance was smaller.  
+To help estimate the performance of the experimental system, a center of mass bound is calculated. While a plot like \Cref{fig:PID_sim_oscillations} cannot be recreated in an experimental test, the oscillations of $\Delta\bm{d}$ in the hardware can be converted into oscillations of $\Delta\bm{r}$ using \Cref{equation:delta_d_sol}. This leads to $\Delta\,r_x$ and $\Delta\,r_y$ being bounded by $\pm$\SI{2.5e-5}{\meter} in the experimental test which is similar to the simulated value of $\pm$\SI{5e-5}{\meter}. This suggests further alignment between the simulated system and the experimental system.
 
-While a plot like \Cref{fig:PID_sim_oscillations} cannot be recreated in an experimental test, the oscillations of $\Delta\bm{d}$ in \Cref{fig:PID_hardware_results} can be converted into oscillations of $\Delta\bm{r}$ using \Cref{equation:delta_d_sol}. This leads to $\Delta\,r_x$ and $\Delta\,r_y$ being bounded by $\pm$\SI{2.5e-5}{\meter} in the experimental test which is similar to simulated value of $\pm$\SI{4e-5}{\meter}. This suggests strong alignment between the simulated system and the experimental system.
-
-
-
+The experimental results still exhibit differences, however. During the transient phase, the amplitudes of the sliding mass oscillations are smaller in the simulation compared to the experimental results. Meanwhile, the simulated body rates and Euler angles during the same period are larger than the experimental ones. A likely cause for this is the different initial conditions between the two systems. It was observed that the transient phase of the simulation is sensitive to the platform's initial roll, pitch, and body rates. The simulation sets these intial values to zero, but this is difficult to exactly replicate on the experimental test setup. Since the converged state of the system is of much greater interest than the transient phase, these differences can be reasonably disregarded when comparing controller performance. 
 
 \section{Underactuated Adaptive Control}
 
@@ -273,7 +270,7 @@ This process is applied at the end of each experimental balancing method. For si
 
 The final results for each method are documented in \Cref{table:final_results}. As expected, the manual balancing method shows the worst performance among all methods. The hybrid PID method shows the best performance among the experimental tests. It also shows similar results to the simulated version, further supporting agreement between the experimental and simulated systems. While the batch estimation method with one wheel is superior to manual balancing, it ultimately leads to poor balancing results compared the PID alternative, both in simulation and in the experimental tests. The best theoretical results are achieved by the batch estimation method with the full four wheel setup. It can be concluded that proper excitation of the platform is not just beneficial, but necessary, to achieve good results using batch estimation. 
 
-The results achieved by Dam are generally worse than those found in this work. This is almost certainly a result of the hardware limitations of the SADS at the time, as discussed in \Cref{sec:previous_work}. The reported $\pm3\sigma$ value for $r_z$ in Dam's work is $-1.581\pm0.0707\si{mm}$. This is about a full order of magnitude worse than the high-confidence UKF estimates for $r_z$ in this work (see \Cref{fig:UKF_hardware_results_a}). Since the vertical imbalance in Dam's work was not in the center of mass envelope of the FMB, this was the best achievable result at the time. The improvements to the balancing hardware discussed in \Cref{chap:methodology} avoided theses issues all together. As a result, the best experimental results in this work---the hybrid PID method---are a direct improvement over the previous MBS iteration on the SADS.
+The results achieved by Dam are generally less accurate than those found in this work. This is almost certainly a result of the hardware limitations of the SADS at the time, as discussed in \Cref{sec:previous_work}. The reported $\pm3\sigma$ value for $r_z$ in Dam's work is $-1.581\pm0.0707\si{mm}$. This is about a full order of magnitude larger than the high-confidence UKF estimates for $r_z$ in this work (see \Cref{fig:UKF_hardware_results_a}). Since the vertical imbalance in Dam's work was not in the center of mass envelope of the FMB, this was the best achievable result at the time. The improvements to the balancing hardware discussed in \Cref{chap:methodology} avoided theses issues all together. As a result, the best experimental results in this work---the hybrid PID method---are a direct improvement over the previous MBS iteration on the SADS.
 
 \begin{table}[ht]
 \caption{Comparison of Balancing Methods and Performance Metrics}\label{table:final_results}
@@ -281,26 +278,26 @@ The results achieved by Dam are generally worse than those found in this work. T
 \renewcommand{\arraystretch}{1.3}
 
 \begin{tabularx}{\textwidth}{
-    >{\raggedright\arraybackslash}p{4cm}
+    >{\raggedright\arraybackslash}p{5cm}
     >{\centering\arraybackslash}p{3cm}
     >{\centering\arraybackslash}X
 }
 \toprule
 \textbf{Method} & \textbf{Mean Torque Norm [N·m]} & \textbf{max ($\Delta$KE) [J]} \\
 \midrule
-Manual Balancing & 0.0652 & 0.0116 \\ \addlinespace[0.2em]
-Results from Dam, 2014 & 0.0244 & 0.00782 \\ \addlinespace[0.2em]
-PID + UKF Simulated & 0.00321 & \num{9.65e-4} \\ \addlinespace[0.2em]
+Manual Balancing & \num{6.52e-2} & \num{1.16e-2} \\ \addlinespace[0.2em]
+Results from Dam, 2014 & \num{2.44e-2} & \num{7.82e-3} \\ \addlinespace[0.2em]
+PID + UKF Simulated & \num{3.21e-3} & \num{9.65e-4} \\ \addlinespace[0.2em]
 PID + UKF Experimental & \num{8.66e-4} & \num{2.36e-4} \\ \addlinespace[0.2em]
 Batch Estimation Simulated (4 wheels) & \num{2.99e-5} & \num{1.16e-4} \\ \addlinespace[0.2em]
-Batch Estimation Simulated (1 wheel) & 0.0388 & 0.00296 \\ \addlinespace[0.2em]
-Batch Estimation Experimental (1 wheel) & 0.0146 & 0.00226 \\ \addlinespace[0.2em]
-3-Axis Adaptive Simulated & 0.00299 & \num{7.41e-4} \\ \addlinespace[0.2em]
+Batch Estimation Simulated (1 wheel) & \num{3.88e-2} & \num{2.96e-3}\\ \addlinespace[0.2em]
+Batch Estimation Experimental (1 wheel) & \num{1.46e-2} & \num{2.26e-3} \\ \addlinespace[0.2em]
+3-Axis Adaptive Simulated & \num{2.99e-3} & \num{7.41e-4} \\ \addlinespace[0.2em]
 \bottomrule
 \end{tabularx}
 \end{table}
 
-Referring \Cref{table:existing_testbeds}, the balancing results can also be compared to other universities. The residual torque after using the hybrid PID method aligns well with other universities given the physical scale of the SADS. That is, the balancing performance is worse than the small-scale simulators at the Universities of Brasília and Bologna ($\sim\SI{10}{kg}$), but better than the results of the much larger simulator at the Naval Postgraduate School ($\SI{800}{kg}$).
+Referring \Cref{table:existing_testbeds}, the balancing results can also be compared to other universities. The residual torque after using the hybrid PID method aligns well with other universities given the physical scale of the SADS. That is, the estimated gravity torque is greater than the small-scale simulators at the Universities of Brasília and Bologna ($\sim\SI{10}{kg}$), but less than the results of the much larger simulator at the Naval Postgraduate School ($\SI{800}{kg}$).
 
 \section{Implications for Future SADS Operation}
 
