@@ -10,6 +10,10 @@ A wide range of approaches have been applied to the mass balancing problem for a
 
 Spacecraft dynamics simulators have a long history in spaceflight and have adapted over the years as the corresponding flight hardware has evolved. The focus of this work is on simulators that provide rotational degrees of freedom, although other configurations that enable translational motion exist. For three rotational degrees of freedom, the use of a spherical air-bearing has remained largely unchanged even over many decades. One of the earliest well-documented test setups was developed at NASA's Marshall Flight Center in 1960, and the earliest simulator developed at a university was at Stanford in 1975~\cite{schwartz_historical_2003}. While the methods used for mass balancing on simulators from this period are not always well documented, many do indicate a form of manual balancing with sliding masses.
 
+As the quality of onboard sensors and computing increased, researchers began exploring more sophisticated approach to mass balancing. For example, Young in 1998 showed an early documented use of a least-squares style estimator for center of mass estimation~\cite{young1998development}. This approach to balancing follows the standard system identification approach where the inputs and outputs of a dynamic system are recorded, and the dynamic model is used to calculate some unknown system parameter. For mass balancing, the input is a known torque applied to the simulator and the output is the simulator's body rates and attitude. The unknown parameter can be formulated to include mass properties like the inertia and center of mass~\cite{schwartz2004comparison}.
+
+Kim and Argawal later introduced an alternative approach to mass balancing, where an adaptive control strategy is adopted instead of offline estimation~\cite{kim_system_2006}. The sliding masses are fixed to linear actuators allowing for precise positional control, with the experimental platform shown in \Cref{fig:NPS}. The system is given a known torque input using control moment gyroscopes, and a Lyapunov analysis is conducted to find an adaptive control law for the linear actuators that minimizes the imbalance of the system. This adaptive controller approach is expanded on by Choi in 2014 to horizontally balance the simulator but without the aid of momentum exchange devices~\cite{kim_system_2006}. The vertical imbalance is then estimated using a Kalman filter. Both of these adaptive controllers are further validated in experimentation with real air-bearings.
+
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.70\linewidth]{figures/NPS.png}
@@ -17,7 +21,7 @@ Spacecraft dynamics simulators have a long history in spaceflight and have adapt
     \label{fig:NPS}
 \end{figure}
 
-As the quality of onboard sensors and computing increased, researchers began exploring more sophisticated approach to mass balancing. For example, Young in 1998 showed an early documented use of a least-squares style estimator for center of mass estimation~\cite{young1998development}. This approach to balancing follows the standard system identification approach where the inputs and outputs of a dynamic system are recorded, and the dynamic model is used to calculate some unknown system parameter. For mass balancing, the input is a known torque applied to the simulator and the output is the simulator's body rates and attitude. The unknown parameter can be formulated to include mass properties like the inertia and center of mass~\cite{schwartz2004comparison}.
+The concept of horizontally balancing an air-bearing platform solely using sliding masses is further explored in simulation in a number of studies~\cite{choi_automatic_2016}~\cite{xuan2016pid}~\cite{hua2018study}. Choi in 2016 used a PID-based controller in an experimental test setup show in \Cref{fig:georgia}. This work showed promising results, but was unable to verify the final balancing results without vertically balancing the platform~\cite{choi_automatic_2016}. 
 
 \begin{figure}[h]
     \centering
@@ -26,20 +30,14 @@ As the quality of onboard sensors and computing increased, researchers began exp
     \label{fig:georgia}
 \end{figure}
 
+Mirroring trends in the aerospace industry, many new simulators have been reduced in size compared to early iterations. This includes a reduction in cost and size of key ADCS components like inertial measurement units (IMUs) and motor controllers. There is also a desire to test CubeSat-scale ADCS systems and their associated hardware~\cite{kwan2015air}~\cite{chesi_automatic_2014}. \Cref{fig:sydney} shows an example simulator at the University of Sydney that is both low-cost and CubeSat-scale, yet is still capable of full 3-axis control.  The barrier to entry for developing a spacecraft dynamics simulator continues to lower, and many universities have simulators actively being developed. 
+
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.80\linewidth]{figures/sydney.png}
-    \caption{A CubeSat scale simulator at the University of Syndey~\cite{kwan2015air}}
+    \caption{A CubeSat-scale simulator at the University of Syndey~\cite{kwan2015air}}
     \label{fig:sydney}
 \end{figure}
-
-
-Kim and Argawal later introduced an alternative approach to mass balancing, where an adaptive control strategy is adopted instead of offline estimation~\cite{kim_system_2006}. The sliding masses are fixed to linear actuators with precise positional control. The system is given a known torque input using control moment gyroscopes, and a Lyapunov analysis is conducted to find an adaptive control law for the linear actuators that minimizes the imbalance of the system. This adaptive controller approach is expanded on by Choi in 2014 to horizontally balance the simulator but without the aid of momentum exchange devices~\cite{kim_system_2006}. The vertical imbalance is then estimated using a Kalman filter. Both of these adaptive controllers are further validated in experimentation with real air-bearings.
-
-The concept of horizontally balancing an air-bearing platform solely using sliding masses is further explored in simulation in a number of studies~\cite{choi_automatic_2016}~\cite{xuan2016pid}~\cite{hua2018study}. Choi in 2016 used a PID-based controller in an experimental test setup with promising results, but was unable to verify the final balancing results without vertically balancing the platform~\cite{choi_automatic_2016}. 
-
-
-Mirroring trends in the aerospace industry, many new simulators have been reduced in size compared to early iterations. This includes a reduction in cost and size of key ADCS components like high quality inertial measurement units (IMUs) and motor controllers. There is also a desire to test CubeSat-scale ADCS systems and their associated hardware~\cite{kwan2015air}~\cite{chesi_automatic_2014}. As a result, the barrier to entry for developing a spacecraft dynamics simulator continues to lower, and many universities have simulators actively being developed. 
 
 \subsection{Actuators}
 
@@ -137,7 +135,7 @@ The second relevant change is the integration of an LN-200 IMU, which has excell
 
 Beginning in 2023 an effort began to completely overhaul the hardware onboard the SADS. This includes the development of a new set of reaction wheels, a new flight computer, as well as replacement of the CMB and FMB. Reaction wheel development, documented by Nalley~\cite{nalley2025development}, resulted in the design and integration of one complete wheel on the simulator. Development of the new mass balancing system is documented by Gilman which resulted in the design of a new set of prototype linear actuators~\cite{gilman_automatic_2024}. Work on a new iteration of an onboard computer remained unstarted at the onset of this work.
 
-The actuators developed by Gilman follow the same layout as the previous iteration with six-sliding masses---two for each axis. The masses slide along a ballscrew driven by DC motors with positional feedback from rotary encoders, as show in \Cref{fig:gillman_final_work}. However when mounted on the simulator, the motors are unable to reliably move the masses under load. This may be acceptable for passive balancing but is not suitable for active balancing where positions must be precisely controlled in real-time. Additionally without the flight computer, the actuators remain unproven in any real tests with a live air-bearing. 
+The actuators developed by Gilman follow the same layout as the previous iteration with six-sliding masses---two for each axis. The masses slide along a ballscrew driven by DC motors with positional feedback from rotary encoders, as shown in \Cref{fig:gillman_final_work}. However when mounted on the simulator, the motors are unable to reliably move the masses under load. This may be acceptable for passive balancing but is not suitable for active balancing where positions must be precisely controlled in real-time. Additionally without the flight computer, the actuators remain unproven in any real tests with a live air-bearing. 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.70\linewidth]{figures/gillman_final_work.png}

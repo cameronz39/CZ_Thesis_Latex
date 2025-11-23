@@ -2,9 +2,9 @@
 \begin{tikzpicture}[scale=3, line cap=round, line join=round]
 
 % Inertial frame (I)
-\draw[->, thick] (0,0) -- (2,0) node[below right] {$\hat{x}_N$};
-\draw[->, thick] (0,0) -- (0,2) node[above left] {$\hat{z}_N$};
-\draw[->, thick] (0,0) -- (-1.2,-1.2) node[below right] {$\hat{y}_N$};
+\draw[->, thick] (0,0) -- (1.6,0) node[below right] {$\bm{x}_N$};
+\draw[->, thick] (0,0) -- (0,1.6) node[above left] {$\bm{z}_N$};
+\draw[->, thick] (0,0) -- (-0.9,-0.9) node[below right] {$\bm{y}_N$};
 \node[below right] at (0,0) {$O$};
 
 % Cylinder representing platform ------------------------------
@@ -20,37 +20,37 @@
 
 % Body frame (B), shifted and rotated
 \begin{scope}[rotate=0]
-    \draw[->, thick, red] (0,0) -- (1.05,0.05) node[below right] {$\hat{x}_B$};
-    \draw[->, thick, red] (0,0) -- (0,1.2) node[above left] {$\hat{z}_B$};
-    \draw[->, thick, red] (0,0) -- (-0.14,-0.85) node[below left] {$\hat{y}_B$};
+    \draw[->, thick, red] (0,0) -- (1.05,0.05) node[below right] {$\bm{x}_B$};
+    \draw[->, thick, red] (0,0) -- (0,1.2) node[above left] {$\bm{z}_B$};
+    \draw[->, thick, red] (0,0) -- (-0.14,-0.85) node[below left] {$\bm{y}_B$};
     % \node[below left, red] at (0,0) {$\mathcal{B}$};
 
     % START M2 --------------------------------------
     \draw[->] (0,0) -- (-0.3,0.4) coordinate (rho2_end) 
-        node[pos=0.65, below] {$\vv{\bm{\rho}_2}$};
+        node[pos=0.65, below] {${\bm{\rho}_2}$};
 
     \draw[->, dashed] (rho2_end) -- ++(0,0.5) coordinate (u2_end)  
-        node[above left] {$\vv{\bm{u}_2}$};
+        node[above left] {${\bm{u}_2}$};
 
     \path (rho2_end) -- (u2_end) 
         node[pos=0.7, circle, fill=black, inner sep=1.5pt, label=left:$m_2$] {};
 
     % START M1 --------------------------------------
      \draw[->] (0,0) -- (0.55,0.3) coordinate (rho1_end) 
-        node[midway, above] {$\vv{\bm{\rho}_1}$};
+        node[midway, above] {${\bm{\rho}_1}$};
 
     \draw[->, dashed] (rho1_end) -- ++(0.5,0.06) coordinate (u1_end)  
-        node[above left] {$\vv{\bm{u}_1}$};
+        node[above left] {${\bm{u}_1}$};
 
     \path (rho1_end) -- (u1_end) 
         node[pos=0.3, circle, fill=black, inner sep=1.5pt, label=below right:$m_1$] {};
 
     % START M3 -----------------------------------
     \draw[->] (0,0) -- (-0.5,-0.05) coordinate (rho3_end) 
-        node[midway, below] {$\vv{\bm{\rho}_3}$};
+        node[midway, below] {${\bm{\rho}_3}$};
 
     \draw[->, dashed] (rho3_end) -- ++(-0.1,-0.3) coordinate (u3_end)  
-        node[below left] {$\vv{\bm{u}_3}$};
+        node[below left] {${\bm{u}_3}$};
 
     \path (rho3_end) -- (u3_end) 
         node[pos=0.3, circle, fill=black, inner sep=1.5pt, label=left:$m_3$] {};
@@ -58,7 +58,7 @@
 
 % START COM r ----------------------------------
 \draw[->, thick] (0,0) -- (0, -0.65) coordinate (r_end)
-    node[above right] {$\vv{\mathbf{r}}$};
+    node[above right] {${\bm{r}}$};
 
 
 \draw ($(r_end)+0.07*(r_end)$) circle (0.06);

@@ -13,8 +13,7 @@ This section introduces the mathematical formulation of key balancing methods fo
     \label{fig:mbs_problem}
 \end{figure}
 
-
-\Cref{fig:mbs_problem} defines the geometry of the problem in a general case. $O$ represents the common origin of the inertial frame $\mathcal{N}$ and the body-fixed principle frame of the simulator $\mathcal{B}$. $O$ is chosen to be the center of rotation. If frictionless rotation is assumed, then the simulator follows Euler's rotational equations of motion with gravity acting as a torque~\cite{healy_mass_2006}. The governing equation is 
+The problem definition here is based on work by Kim and Argawal~\cite{kim_automatic_2009}. \Cref{fig:mbs_problem} defines the geometry of the problem in a general case. $O$ represents the common origin of the inertial frame $\mathcal{N}$ and the body-fixed principle frame of the simulator $\mathcal{B}$. $O$ is chosen to be the center of rotation. If frictionless rotation is assumed, then the simulator follows Euler's rotational equations of motion with gravity acting as a torque~\cite{healy_mass_2006}. The governing equation is 
 \begin{equation}
     \bm{J}\,\dot{\bm{\omega}} + \bm{\omega}^{\times}\,\bm{J}\bm{\omega} = \bm{T}_g
 \end{equation}
@@ -421,6 +420,13 @@ which functions as a PD controller with $\bm{K}_p$ and $\bm{K}_d$ representing p
 \end{equation}
 where $\bm{K}_i$ is a new integral gain. Generating this torque using sliding masses means that $\tau_z$ will be ignored in the mapping from \Cref{equation:torque_to_del_r}. In practice, this causes the simulator to have no control about its yaw axis which is permissible here since the desired state of ${\bm{z}}_B=-\hat{\bm{g}}$ is independent of yaw.
 
+\begin{figure}
+    \centering
+    \input{figures/mbs_null_sol.tikz}
+    \caption{A center of mass placement that reduces the torque due to gravity to zero, but does not vertically balance the simulator}
+    \label{fig:mbs_null_sol}
+\end{figure}
+
 \subsubsection{Underactuated Adaptive Control}\label{sec:under_adaptive}
 An alternative approach to horizontally balancing the platform using solely the sliding masses is developed by Chesi~\cite{chesi_automatic_2014}. This approach derives an estimator for the initial imbalance vector using a Lyapunov-based analysis. The estimate for the initial imbalance is denoted by $\hat{\bm{r}}_0$ and the error of the estimator is denoted as $\tilde{\bm{r}}_0$. The two values are related by 
 \begin{equation}\label{equation:r_relations}
@@ -457,13 +463,6 @@ By substituting \Cref{equation:r_relations}, \Cref{equation:proposed_adaptive}, 
 \end{equation}
 
 Since $\dot{V}$ is negative semidefinite, the closed-loop system is Lyapunov stable. Additionally, under LaSalle's Invariance Principle, the system's state will converge to the largest invariant set in $\{\bm{x}:\dot V(\bm{x})=0 \}$, or $\{\bm{\omega}_p=\bm{0}\}$. Referring again to \Cref{fig:mbs_null_sol}, this corresponds to a state where the simulator is upright ($\hat{\bm{z}}_b$ points opposite of $\bm{g}$) and has no angular velocity about its horizontal axes ($\omega_x=\omega_y=0$). 
-
-\begin{figure}
-    \centering
-    \input{figures/mbs_null_sol.tikz}
-    \caption{A center of mass placement that reduces the torque due to gravity to zero, but does not vertically balance the simulator}
-    \label{fig:mbs_null_sol}
-\end{figure}
 
 \subsubsection{3-Axis Adaptive Control}\label{sec:3_axis_adaptive}
 Kim and Argawal developed a 3-axis adaptive control law that uses MEDs as a method to externally excite the platform \cite{kim_automatic_2009}. The excitation is chosen such that the simulator is never able to settle in the state shown in \Cref{fig:mbs_null_sol}. By ensuring that $\bm{r}$ is never parallel to $\bm{g}$, the only way to reduce the contribution of the term $m_s\bm{r}^{\times}\bm{g}$ in \Cref{equation:EomWithTau} to zero is to force the norm of $\bm{r}$ to be zero, thus simultaneously balancing $r_x$, $r_y$, and $r_z$. 
@@ -518,15 +517,14 @@ The goal of the mechanical design was to build on the work completed by Gilman a
 
 While the exact final design and mass properties of the SADS is unknown, it is still important to place an approximate upper bound on the size of the mass blocks driven by the linear actuators. This ensures that the motors and mounting hardware are not oversized and do not excessively increase the simulator's moment of inertia.
 
-\begin{figure}[h]\label{fig:full_CAD}
+ \Cref{fig:final_CAD} shows the final design of the CAD model for reference. The two heaviest systems onboard are the reaction wheels and the mass balancing system itself. One important aspect of the SADS when designing its desired center of mass envelope is its symmetrical design. For example, the pyramidal reaction-wheel configuration contributes little horizontal imbalance. Additionally the wheels are roughly on the same horizontal plane as the platform's center of rotation, so they also contribute little vertical imbalance. The main source of imbalance will thus be introduced by relatively smaller components like batteries, sensors, the flight computer, and other miscellaneous electronics.
+
+ \begin{figure}[h]
     \centering
     \includegraphics[width=0.95\linewidth]{figures/full_CAD.png}
     \caption{Final CAD design with all major mass contributions included, built off model completed in~\cite{gilman_automatic_2024}}
     \label{fig:final_CAD}
 \end{figure}
-
-
- \Cref{fig:final_CAD} shows the final design of the CAD model for reference. The two heaviest systems onboard are the reaction wheels and the mass balancing system itself. One important aspect of the SADS when designing its desired center of mass envelope is its symmetrical design. For example, the pyramidal reaction-wheel configuration contributes little horizontal imbalance. Additionally the wheels are roughly on the same horizontal plane as the platform's center of rotation, so they also contribute little vertical imbalance. The main source of imbalance will thus be introduced by relatively smaller components like batteries, sensors, the flight computer, and other miscellaneous electronics.
 
 To approximate a worst case horizontal imbalance, the heaviest of these smaller components---the main 24V battery---was placed in CAD in multiple unfavorable positions with the resulting imbalance vector in the CAD software recorded. The black prism in \Cref{fig:final_CAD} represent this battery, and its position is placed at various edges along the top deck of the simulator. The resulting horizontal center of mass bounds predicted by CAD are $||r_x|| < \SI{0.0078}{\meter}$ and $||r_y|| < \SI{0.0078}{\meter}$. After adding margin to the design, the final horizontal center of mass envelope is designed to be $\text{max}||\Delta\,r_x||=\text{max}||\Delta\,r_y||\approx\SI{0.01}{\meter}$. With a travel distance of $\pm\SI{110}{\mm}$ per rail, the total mass for each horizontal axis is designed as $m_i = \SI{1.4}{\kg}$.
 
@@ -536,12 +534,17 @@ With the horizontal mass sizing complete, the vertical mass sizing takes a sligh
 
 The main goal with the new linear actuator is to address issues faced in the previous iteration, where the DC motors struggled to drive the sliding masses~\cite{gilman_automatic_2024}. This issue is addressed in the new design in a variety of ways. The first is the 6V DC motors that drive the ballscrew shaft are swapped for 24V stepper motors. Even though the old DC motors use a 99:1 gear ratio, the torque output of the 24V stepper motors is still more favorable at low shaft speeds. The next change is the replacement of the linear rails. On its own, a ballscrew has one rotational degree of freedom about the shaft axis that must be restricted for it to linearly travel with no rotation. This restriction is done using a linear rail that travels alongside the ballscrew, and it was observed the old linear rails introduced a significant amount of friction. A new set of rails are integrated that feature recirculating linear bearings. Finally, the ballscrew itself was found to also be introducing friction, and so each ballscrew was disassembled and serviced to reduce friction.
 
+
+Another issue that was quickly identified with the previous design is that to remove or install mass plates from each rail, the entire linear actuator assembly had to be disassembled. This is addressed by manufacturing a new set of mass plates, with the comparison between the two iterations shown in \Cref{fig:plate_comparison}. The most notable change is the introduction of a slot that connects the edge of the plate to the circular cutout for the ballscrew shaft. As shown in \Cref{fig:linear_act}, this allows plates to be slid directly onto the ballscrew without any disassembly. The slot is also large enough to accommodate the new linear rail, also shown in \Cref{fig:linear_act}. 
+
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.8\linewidth]{figures/plate_comparison.png}
     \caption{Comparison between the previous iteration of mass plates (left) and the newly manufactured plates (right)}
     \label{fig:plate_comparison}
 \end{figure}
+
+The final assembly is shown in \Cref{fig:completed_block}, which is completed by adding one plate with a smaller cutout slot to each end. The slot is small enough to prevent the inserted linear rail from sliding out, but still large enough to fit over the ballscrew shaft. The new assembly was verified early in the design stage via open-loop stepper motor position updates, with the exact motor control scheme discussed in the next section. The steps taken to minimize friction within the system proved to have a high impact. In fact, the ballscrews shafts are now adjustable by hand, even when fully loaded and integrated onto the simulator. The ability to quickly add and remove mass plates makes handling the simulator far more convenient as well. Finally, the center of mass envelope using this new system is customizable. The envelope may be expanded by simply integrating more mass plates onto the stack, and it may be reduced by swapping out steel mass plates for 3D-printed equivalents.
 
 \begin{figure}[p]
   \centering
@@ -564,48 +567,47 @@ The main goal with the new linear actuator is to address issues faced in the pre
     \label{fig:completed_block}
 \end{figure}
 
-
-Another issue that was quickly identified with the previous design is that to remove or install mass plates from each rail, the entire linear actuator assembly had to be disassembled. This is addressed by manufacturing a new set of mass plates, with the comparison between the two iterations shown in \Cref{fig:plate_comparison}. The most notable change is the introduction of a slot that connects the edge of the plate to the circular cutout for the ballscrew shaft. As shown in \Cref{fig:linear_act}, this allows plates to be slid directly onto the ballscrew without any disassembly. The slot is also large enough to accommodate the new linear rail, also shown in \Cref{fig:linear_act}. 
-
-The final assembly is shown in \Cref{fig:completed_block}, which is completed by adding one plate with a smaller cutout slot to each end. The slot is small enough to prevent the inserted linear rail from sliding out, but still large enough to fit over the ballscrew shaft. The new assembly was verified early in the design stage via open-loop stepper motor position updates, with the exact motor control scheme discussed in the next section. The steps taken to minimize friction within the system proved to have a high impact. In fact, the ballscrews shafts are now adjustable by hand, even when fully loaded and integrated onto the simulator. The ability to quickly add and remove mass plates makes handling the simulator far more convenient as well. Finally, the center of mass envelope may by adjusted by swapping out a select number of steel mass plates for 3D-printed equivalents.
-
 Continuing the goals of~\cite{gilman_automatic_2024}, the final design still has the additional benefit of being low cost. The ballscrews, motors, and linear rails can be easily and cheaply acquired from the consumer CNC market, and the new mass plates are manufactured using Cal Poly's water jet cutter.
-
+\iffalse
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.85\linewidth,angle=-90]{figures/new_mbs_pic.jpg}
     \caption{The SADS and air bearing support with the new mass balance system integrated}
     \label{fig:new_mbs_pic}
 \end{figure}
-
+\fi
 \subsection{Electrical}\label{sec:electrical}
 
+The primary goal of the electrical design is to interface the newly developed linear actuators and an IMU to the onboard computer. All key eletrical connections are documented in \Cref{fig:wiring}. An STM32F446RE was chosen as the primary onboard computer. This board has a high number of GPIO pins, a maximum clock speed of 180 MHz, is low cost, and has proven compatibility with Simulink for code generation. It additionally has a floating point unit that operates on 32-bit floats, which is crucial for the rapid matrix multiplication needed to propagate a Kalman filter in real-time. Despite these benefits, using a microcontroller still has numerous drawbacks, the main one being the need to reflash the board to switch between programs. Future work for the onboard computer is discussed further in \Cref{chap:conclusion}.
 
-
-The primary goal of the electrical design is to interface the newly developed linear actuators and an IMU to the onboard computer. An STM32F446RE was chosen as the primary onboard computer. This board has a high number of GPIO pins, a maximum clock speed of 180 MHz, is low cost, and has proven compatibility with Simulink for code generation. It additionally has a floating point unit that operates on 32-bit floats, which is crucial for the rapid matrix multiplication needed to propagate a Kalman filter in real-time. Despite these benefits, using a microcontroller still has numerous drawbacks, the main one being the need to reflash the board to switch between programs. Future work for the onboard computer is discussed further in \Cref{chap:conclusion}.
-
-\begin{figure}[p]\label{fig:wiring}
+\begin{figure}[p]
     \centering
     \includegraphics[width=\linewidth,angle=-90]{figures/wiring.png}
     \caption{Wiring schematic}
+    \label{fig:wiring}
 \end{figure}
 
-The MTi-03 was chosen as the IMU for its noise characteristics and ease of integration with the STM32. While the LN-200 IMU used in previous iterations of the SADS has excellent noise characteristics, it comes with an extensive integration document and unproven compatibility with STM32. To minimize the risk associated with this project, the MTi-03 is chosen and integration of the LN-200 is left as future work. The MTi-03 has a noise density of $0.003\si{\degree\per\second\per\Hz^{1/2}}$, which is favorable when compared to the values found on existing balancing systems as shown in \Cref{table:existing_testbeds}. The IMU and onboard computer communicate over I2C, with more detail provided in \Cref{sec:software}.
+The MTi-03 was chosen as the IMU for its noise characteristics and ease of integration with the STM32. While the LN-200 IMU used in previous iterations of the SADS has excellent noise characteristics, it comes with an extensive integration process and unproven compatibility with STM32. To minimize the risk associated with this project, the MTi-03 is chosen and integration of the LN-200 is left as future work. The MTi-03 has a noise density of $0.003\si{\degree\per\second\per\Hz^{1/2}}$, which is favorable when compared to the values found on existing balancing systems as shown in \Cref{table:existing_testbeds}. The IMU and onboard computer communicate over I2C, with more detail provided in \Cref{sec:software}. The IMU and STM32 stack on the simulator is shown in \Cref{fig:OBC}.
 
-\begin{figure}[h]\label{fig:OBC}
+\begin{figure}[h]
     \centering
     \includegraphics[width=0.80\linewidth]{figures/OBC.jpg}
     \caption{The STM32F446RE, MTi-03, and APC220 (bottom left) integrated onto the simulator}
+    \label{fig:OBC}
 \end{figure}
 
 Each stepper motor is controlled by a DRV8825 motor driver. The amount of steps required for one full revolution of the shaft is customizable on the DRV8825, but lower values were observed to cause intense vibrations when integrated on the platform. The minimum value that ensured smooth operation was found to be 3200 steps per revolution. Additionally, early simulation results suggested the mass blocks may have to travel as fast as 15\si{\mm\per\second} during active balancing. Since the ballscrews advance at 10\si{mm} per revolution, this means the onboard computer will need to generate a maximum of 4800 steps per second per motor. Generating steps at this rate on the STM32 caused timing issues with other simultaneous tasks  such as I2C communications and filter propagation. To reduce computational load, the STM32 instead sends the desired shaft position of each motor to a separate Teensy 4.0 over I2C which handles all of the required step generation.
 
-The final two interfaces with the onboard computer are the APC220 and reaction wheel interface. The APC220 communicates over UART with the STM32 to send telemetry wirelessly to a host PC. Since the simulator has full rotational freedom about yaw, telemetry during live air-bearing tests cannot be sent through a wired connection. The reaction wheel interface communicates over I2C with the STM32 which accepts wheel speed commands. Reaction wheel control is discussed in \cite{nalley2025development}. \Cref{fig:wiring} shows a simplified wiring diagram of the system including all of the boards discussed in this section.
+The final two interfaces with the onboard computer are the APC220 and reaction wheel interface. The APC220 communicates over UART with the STM32 to send telemetry wirelessly to a host PC. Since the simulator has full rotational freedom about yaw, telemetry during live air-bearing tests cannot be sent through a wired connection. The reaction wheel interface communicates over I2C with the STM32 which accepts wheel speed commands. Reaction wheel control is discussed in work by Nalley~\cite{nalley2025development}. \Cref{fig:wiring} shows a simplified wiring diagram of the system including all of the boards discussed in this section.
 
 
 \subsection{Software}\label{sec:software}
 
 The goal of the software design is to utilize Simulink Coder with the STM32 to make the implementation of the discussed balancing algorithms simpler. For this method to be viable, the Simulink model must interface with the external boards in the system as discussed in \Cref{sec:electrical}. 
+
+The most challenging interface is the MTi-03 IMU, which communicates using the XBus communication protocol. The MTi-03 has various data pipes depending on which address is read over I2C. In nominal operations, the IMU collects measurement data and sends it to the measurement pipe, which operates as a first-in-first-out buffer. The amount of data in this buffer is stored in the pipe status address. For each new measurement, the onboard computer must first request the pipe status, read the proper amount of bytes from the measurement pipe, and finally unpack the raw XBus message into gyroscope and accelerometer readings. 
+
+To aid users, the manufacturer Movella provides an XBus library which has numerous functions to aid in this process. Because the library is written in C/C++, a MATLAB System Object is developed which bridges the gap between the XBus library and the standard MATLAB/Simulink environment. The primary data flows within the software are shown in \Cref{fig:software_flowchart}. Once the System Object outputs the raw gyroscope and accelerometer into the model, the majority of the remaining computation occurs in the MATLAB/Simulink environment. The high amount of matrix and vector manipulation within the EKF and control laws makes this environment preferred to C/C++. 
 
 \begin{figure}[h]
     \centering
@@ -613,10 +615,6 @@ The goal of the software design is to utilize Simulink Coder with the STM32 to m
     \caption{Functional software architecture during balancing}
     \label{fig:software_flowchart}
 \end{figure}
-
-The most challenging interface is the MTi-03 IMU, which communicates using the XBus communication protocol. The MTi-03 has various data pipes depending on which address is read over I2C. In nominal operations, the IMU collects measurement data and sends it to the measurement pipe, which operates as a first-in-first-out buffer. The amount of data in this buffer is stored in the pipe status address. For each new measurement, the onboard computer must first request the pipe status, read the proper amount of bytes from the measurement pipe, and finally unpack the raw XBus message into gyroscope and accelerometer readings. 
-
-To aid users, the manufacturer Movella provides an XBus library which has numerous functions to aid in this process. Because the library is written in C/C++, a MATLAB System Object is developed which bridges the gap between the XBus library and the standard MATLAB/Simulink environment. The primary data flows within the software are shown in \Cref{fig:software_flowchart}. Once the System Object outputs the raw gyroscope and accelerometer into the model, the majority of the remaining computation occurs in the MATLAB/Simulink environment. The high amount of matrix and vector manipulation within the EKF and control laws makes this environment preferred to C/C++. 
 
 In addition to the Embedded Simulink model, a separate configuration program was written in C. In this program the operator communicates with the STM32 on a host PC in a terminal-like environment over UART. The program allows various system parameters to be configured like the MTi-03 sample rate and sliding mass homing positions. Debugging system issues here is also far more convenient than the Simulink model since the STM32 can print out debug telemetry in the terminal.
 
@@ -709,15 +707,15 @@ The filter as described here still has room for improvement. Including an estima
     \centering
     \input{figures/passive_flowchart.tikz}
     \caption{Balancing procedures for the experimental test setup}
-    \label{fig:passive_flowchart}
+    \label{fig:operator_flowchart}
 \end{figure}
 
 
-\Cref{fig:passive_flowchart} shows the various balancing procedures applied on the experimental test setup in this work. The passive balancing operation consists of the iterative loops in both branches. With the EKF implemented, passive balancing becomes relatively simple. The operator manually sets the initial attitude of the simulator and begins recording telemetry. The simulator tumbles either freely or under the influence of the open loop reaction wheel commands depending on the balancing method being used. The reaction wheel interface is additionally able to feed back the applied torque, which is logged with the telemetry. Only one reaction wheel is completed and integrated on the SADS, which has implications on the balancing performance as will be discussed in \Cref{chap:results}. The data flows in the system during passive balancing can be seen in \Cref{fig:sys_arch_passive}.
+\Cref{fig:operator_flowchart} shows the various balancing procedures applied on the experimental test setup in this work. The passive balancing operation consists of the iterative loops in both branches. With the EKF implemented, passive balancing becomes relatively simple. The operator manually sets the initial attitude of the simulator and begins recording telemetry. The simulator tumbles either freely or under the influence of the open loop reaction wheel commands depending on the balancing method being used. The reaction wheel interface is additionally able to feed back the applied torque, which is logged with the telemetry. Only one reaction wheel is completed and integrated on the SADS, which has implications on the balancing performance as will be discussed in \Cref{chap:results}. The data flows in the system during passive balancing can be seen in \Cref{fig:sys_arch_passive}.
 
 The attitude, body rates, and reaction wheel torques are then loaded onto the host PC. The data is post processed and input into either the UKF or the least-squares estimator depending on the algorithm. Both the UKF and least-squares estimator are implemented in MATLAB directly mirroring the equations as laid out in \Cref{sec:LSR} and \Cref{sec:UKF}. The resulting estimate for $\bm{r}$ is converted into a set of new mass positions $\Delta\bm{r}$, which are finally applied through the stepper motors. This process is repeated until the estimates converge, with the exact conditions for convergence being discussed further in \Cref{chap:results}. 
 
-\begin{figure}
+\begin{figure}[h]
     \centering
     \input{figures/sys_arch_passive.tikz}
     \caption{Primary data flows and components during passive balancing}
@@ -726,18 +724,16 @@ The attitude, body rates, and reaction wheel torques are then loaded onto the ho
 
 \subsubsection{Active Balancing Operation}
 
-Active balancing consists of the first step in the Two-Step Hybrid Method branch on \Cref{fig:passive_flowchart}. For active balancing, the values computed by the EKF are used as input into the various control laws described \Cref{sec:active_methods}. The control laws output a desired torque, which is converted into a desired change in center of mass according to \Cref{equation:torque_to_del_r}, and then further converted into a change of sliding mass positions according to \Cref{equation:delta_d_sol}. The benefits of offloading step generation to the Teensy are again seen here, as the controller ends each timestep by simply performing a short I2C write with the desired positions of each motor. The task of implementing step generation in the Simulink model is entirely avoided. 
+Active balancing consists of the first step in the Two-Step Hybrid Method branch on \Cref{fig:passive_flowchart}. For active balancing, the values computed by the EKF are used as input into the various control laws described \Cref{sec:active_methods}. The control laws output a desired torque, which is converted into a desired change in center of mass according to \Cref{equation:torque_to_del_r}, and then further converted into a change of sliding mass positions according to \Cref{equation:delta_d_sol}. The benefits of offloading step generation to the Teensy are again seen here, as the controller ends each timestep by simply performing a short I2C write with the desired positions of each motor. The task of implementing step generation in the Simulink model is entirely avoided. The data flows in the system during active balancing can be seen in \Cref{fig:sys_arch_active}.
 
 To run an active balancing operation, the proper Simulink model is compiled on the host PC and flashed onto the STM32 over USB. The USB is disconnected and the feedback control is activated via button press. The simulator automatically balances, and the operator ends the test when the sliding mass positions converge. The conditions for sliding mass convergence during active balancing are also discussed in \Cref{chap:results}. Telemetry may still be sent over the APC220 to help with plotting results and debugging issues, but is not strictly necessary for the procedure. 
 
-
-\begin{figure}
+\begin{figure}[h]
     \centering
     \input{figures/sys_arch_active.tikz}
     \caption{Primary data flows and components during active balancing}
     \label{fig:sys_arch_active}
 \end{figure}
-
 
 \section{Simulation Development}\label{sec:sim_setup}
 

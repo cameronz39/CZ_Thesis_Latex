@@ -6,12 +6,14 @@ Even with rapid reduction in costs due to the commercialization of spacecraft co
 
 The attitude determination and control system (ADCS) of a spacecraft is a key subsystem that undergoes such a series of tests. A typical series is shown in \Cref{fig:ADCS_tests}. Spacecraft dynamics simulators represent any test apparatus that recreates the attiude dynamics seen on-orbit.  The two primary goals of these simulators are to provide frictionless torque-free rotations. As seen in \Cref{fig:cross_section}, the most common method to simulate on-orbit attitude dynamics is to mount the test hardware to a spherical air-bearing, allowing the platform to freely rotate about its yaw axis and within some limited range about its pitch and roll axes \cite{huang_characterizing_2022}. From here the full suite of ADCS hardware may be integrated onto the platform, including sensors, a flight computer, and actuators. 
 
-\begin{figure}[b]
+\begin{figure}[h]
     \centering
     \input{figures/ADCS_tests.tikz}
     \caption{An example spacecraft ADCS testing campaign}
     \label{fig:ADCS_tests}
 \end{figure}
+
+The thin layer of compressed air between the spherical mount and platform ensures rotation with near-zero friction. However, while an air-bearing helps guarantee frictionless rotation, any distance between the platform's center of mass and its center of rotation will introduce a torque due to gravity. If this torque is large enough, even basic tasks like repointing may not be performed on the simulator before saturating the actuators. 
 
 \begin{figure}[h]
     \centering
@@ -20,17 +22,18 @@ The attitude determination and control system (ADCS) of a spacecraft is a key su
     \label{fig:cross_section}
 \end{figure}
 
-The thin layer of compressed air between the spherical mount and platform ensures rotation with near-zero friction. However, while an air-bearing helps guarantee frictionless rotation, any distance between the platform's center of mass and its center of rotation will introduce a torque due to gravity. If this torque is large enough, even basic tasks like repointing may not be performed on the simulator before saturating the actuators. To compensate for this, simulator's shift their center of mass by changing the position of sliding mass blocks onboard~\cite{da_silva_review_2021}. The end goal is to adjust the mass blocks' positions such that the mass distribution of the platform changes, and the distance between the platform's center of mass and center of rotation is minimized. These masses may be adjusted by hand with visual inspection (referred to as manual mass balancing), or they may be precisely controlled using a preset balancing algorithm and linear actuators (referred to as automatic mass balancing). The requirements of the balancing system is largely determined by the length of tests that are desired. Smaller torques due to gravity will allow the actuators to exchange more momentum with the platform before saturating. 
+To compensate for this, simulator's shift their center of mass by changing the position of sliding mass blocks onboard~\cite{da_silva_review_2021}. The end goal is to adjust the mass blocks' positions such that the mass distribution of the platform changes, and the distance between the platform's center of mass and center of rotation is minimized. These masses may be adjusted by hand with visual inspection (referred to as manual mass balancing), or they may be precisely controlled using a preset balancing algorithm and linear actuators (referred to as automatic mass balancing). The requirements of the balancing system is largely determined by the length of tests that are desired. Smaller torques due to gravity will allow the actuators to exchange more momentum with the platform before saturating. 
 
 
 \section{Thesis Overview}\label{sec:previous_work}
 
-Research laboratories and universities take part in building their own dynamics simulators for educational purposes and as a way to test novel control algorithms and hardware. The Cal Poly Spacecraft Attitude Dynamics Simulator (SADS) is part of this category and has been developed by students and faculty since its first introduction in 2007~\cite{mittelsteadt_cal_2007}. 
+Research laboratories and universities take part in building their own dynamics simulators for educational purposes and as a way to test novel control algorithms and hardware. The Cal Poly Spacecraft Attitude Dynamics Simulator (SADS) is part of this category and has been developed by students and faculty since its first introduction in 2007, seen in \Cref{fig:V1}~\cite{mittelsteadt_cal_2007}. 
 
-\begin{figure}[h]\label{fig:V1}
+\begin{figure}[h]
     \centering
     \includegraphics[width=0.80\linewidth]{figures/SADS_V1.PNG}
-    \caption{The first iteration of the Cal Poly SADS~\cite{mittelsteadt_cal_2007}}
+    \caption{The first iteration of the Cal Poly SADS in 2007~\cite{mittelsteadt_cal_2007}}
+    \label{fig:V1}
 \end{figure}
 
 Beginning in 2023 an effort began to modernize the hardware on the SADS, which included the mass balancing system. This thesis contributes to that effort by advancing the overall design of the new SADS iteration and performing experimental tests on the newly designed and integrated mass balancing system. Specifically, this work develops a new sliding mass actuator assembly, an onboard computer for attitude determination and control, and a software pipeline that enables both the simulation and hardware implementation of various balancing algorithms. These algorithms are then tested in simulation and with the live air-bearing, establishing a benchmark for comparison with other universities and future iterations of the SADS.
