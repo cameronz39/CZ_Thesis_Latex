@@ -13,7 +13,7 @@ This section introduces the mathematical formulation of key balancing methods fo
     \label{fig:mbs_problem}
 \end{figure}
 
-The problem definition here is based on work by Kim and Argawal~\cite{kim_automatic_2009}. \Cref{fig:mbs_problem} defines the geometry of the problem in a general case. $O$ represents the common origin of the inertial frame $\mathcal{N}$ and the body-fixed principle frame of the simulator $\mathcal{B}$. $O$ is chosen to be the center of rotation. If frictionless rotation is assumed, then the simulator follows Euler's rotational equations of motion with gravity acting as a torque~\cite{healy_mass_2006}. The governing equation is 
+The problem definition here is based on work by Kim and Argawal~\cite{kim_automatic_2009}. \Cref{fig:mbs_problem} defines the geometry of the problem in a general case. $O$ represents the common origin of the inertial frame $\mathcal{N}$ and the body-fixed principal frame of the simulator $\mathcal{B}$. $O$ is chosen to be the center of rotation. If frictionless rotation is assumed, then the simulator follows Euler's rotational equations of motion with gravity acting as a torque~\cite{healy_mass_2006}. The governing equation is 
 \begin{equation}
     \bm{J}\,\dot{\bm{\omega}} + \bm{\omega}^{\times}\,\bm{J}\bm{\omega} = \bm{T}_g
 \end{equation}
@@ -23,7 +23,7 @@ where $\bm{J}$ is the inertia of the simulator about $O$, $\bm{\omega}$ is the a
 \end{equation}
 where $m_s$ is the total mass of the simulator, $\bm{r}$ is the center of mass relative to $O$, and the $\bm{g}$ is the acceleration due to gravity.
 
-\Cref{fig:mbs_problem} also shows the introduces the three sliding masses used to balance the platform. Although in general there may be as many as $n$ sliding masses. Each mass $m_i$ has one translational degree of freedom along $\bm{u}_i$, and $\bm{\rho}_i$ represents the position of the $i$-th mass in its homed position. Since in practice each mass can only travel some limited distance along $\bm{u}_i$, the homed position of a mass is typically chosen as the center of this range of positions. The position relative to $O$ of any mass $\bm{R}_i$ can be obtained with 
+\Cref{fig:mbs_problem} also introduces the three sliding masses used to balance the platform. Although in general there may be as many as $n$ sliding masses. Each mass $m_i$ has one translational degree of freedom along $\bm{u}_i$, and $\bm{\rho}_i$ represents the position of the $i$-th mass in its homed position. Since in practice each mass can only travel some limited distance along $\bm{u}_i$, the homed position of a mass is typically chosen as the center of this range of positions. The position relative to $O$ of any mass $\bm{R}_i$ can be obtained with 
 \begin{equation}\label{equation:sliding masses}
     \bm{R}_i = \bm{\rho}_i + d_i\bm{u_i}
 \end{equation}
@@ -44,7 +44,7 @@ In practical mass balancing applications however, the mass of each block is very
 \begin{equation}\label{equation:h_m_eq_0}
 \dot{\bm{R}}_i \approx \bm{0} \Longrightarrow \bm{h}_m=\bm{0}
 \end{equation}
-The goal of these definitions is to obtain the dynamics equations relating how changing the positions of each mass effects the center of mass of the total system. These parameters are first assembled into matrices as follows
+The goal of these definitions is to obtain the dynamics equations relating how changing the positions of each mass affects the center of mass of the total system. These parameters are first assembled into matrices as follows
 \begin{equation}
     \bm{M}=\mathrm{diag}(\frac{m_1}{m_s}, \cdots  ,\frac{m_n}{m_s}) \in \mathbb{R}^{n \times n}
 \end{equation}
@@ -76,7 +76,7 @@ If $n>3$, a solution that minimizes the mass moved can be found using a pseudoin
 \end{equation}
 where $(\bm{U}\bm{M})^{\dagger}$ represents the Moore-Penrose pseudoinverse of $\bm{UM}$.
 
-There are two main approaches to solving the mass balancing problem. The first is to hold the mass positions constant and obtain an estimate of the value of $\bm{r}$, denoted as $\hat{\bm{r}}$. The required change in positions of the sliding masses are then applied all at once. The exact values are calculated from \Cref{equation:delta_d_sol} or \Cref{equation:delta_d_pseudo_sol}, substituting $-\hat{\bm{r}}$ for $\Delta\bm{r}$. This class of approaches is referred to passive balancing~\cite{da_silva_review_2021}.
+There are two main approaches to solving the mass balancing problem. The first is to hold the mass positions constant and obtain an estimate of the value of $\bm{r}$, denoted as $\hat{\bm{r}}$. The required change in positions of the sliding masses are then applied all at once. The exact values are calculated from \Cref{equation:delta_d_sol} or \Cref{equation:delta_d_pseudo_sol}, substituting $-\hat{\bm{r}}$ for $\Delta\bm{r}$. This class of approaches is referred to as passive balancing~\cite{da_silva_review_2021}.
 
 The second main approach is to find a feedback control law that drives the effect of the $m_s\bm{r}^{\times}\bm{g}$ term in \Cref{equation:starting_eom} to zero. In traditional spacecraft ADCS, the torques required for a feedback controller are generated using momentum exchange devices, but here, there is the additional option to use $\Delta\bm{d}$ as a control input. Referring to \Cref{equation:starting_eom}, the dynamics of the system are influenced by the value of $\bm{r}^{\times}$, whose value can be controlled by $\Delta\bm{d}$ using \Cref{equation:delta_d_sol} or \Cref{equation:delta_d_pseudo_sol}. This class of approaches is referred to as active balancing~\cite{da_silva_review_2021}.
 
@@ -136,7 +136,7 @@ The quaternion propagates forward through time as a function of the simulator's 
 \end{bmatrix}
 \bm{q}
 \end{equation}
-This relationship forms the base of the propagatation step in the Kalman filter implemented later. 
+This relationship forms the base of the propagation step in the Kalman filter implemented later. 
 
 When plotting and interpreting results, the quaternion representation is often converted to Euler angles $(\phi,\theta,\psi)$, or roll, pitch, yaw respectively. This conversion is performed using
 \begin{equation}
@@ -164,7 +164,7 @@ Batch estimation algorithms are a subset of passive balancing methods that use m
         J_{xx} & J_{yy} & J_{zz} & J_{xy} & J_{xz} & J_{yz} & m_s\,r_x & m_s\,r_y & m_s\,r_z
     \end{bmatrix}^T
 \end{equation}
-Here, $\bm{\Omega}$ is formulated to simplfy the resulting algebra, while $\bm{x}$ is formulated to fully encode all of the simulator's mass properties.
+Here, $\bm{\Omega}$ is formulated to simplify the resulting algebra, while $\bm{x}$ is formulated to fully encode all of the simulator's mass properties.
 
 Using these values, the original equations of motion in \Cref{equation:starting_eom} can be exactly rewritten as 
 \begin{equation}\label{equation:no_MEDs}
@@ -238,7 +238,7 @@ which rearranges $\bm{A}_k$ and $\bm{T}_k$ into
     \biggl)
     \hat{\bm{J}}
 \end{equation}
-where $\hat{\bm{J}}= [\hat{J}_{xx}\ \hat{J}_{yy}\ \hat{J}_{zz}\ \hat{J}_{xy}\ \hat{J}_{xz}\ \hat{J}_{yz}]^T$ is the already known estimate of the simulator's inertia. The steps to solve for $\bm{x}$ then proceed identically starting from \Cref{equation:A_bar}
+where $\hat{\bm{J}}= [\hat{J}_{xx}\ \hat{J}_{yy}\ \hat{J}_{zz}\ \hat{J}_{xy}\ \hat{J}_{xz}\ \hat{J}_{yz}]^T$ is the already known estimate of the simulator's inertia. The steps to solve for $\bm{x}$ then proceed identically starting from \Cref{equation:A_bar}.
 
 The offline batch estimation method requires that multiple tests are run, adjusting the sliding masses after each run using \Cref{equation:delta_d_sol} or \Cref{equation:delta_d_pseudo_sol}. Assuming actuators like reaction wheels are available, this method's main advantage is its ease of implementation. By completing all the estimation and data processing offline, no custom software needs to be written for the simulator's onboard computer. In fact, exciting the system using this method does not require the simulator to have a working feedback controller, allowing this method to be adopted early in the design of a simulator. Researchers have demonstrated success using simple open loop control to ensure that the body rates of the simulator follow a sinusoidal pattern \cite{kim_automatic_2009} \cite{dam_applied_2014} \cite{noauthor_designing_2003}.
 
@@ -274,7 +274,7 @@ where $T$ is the discrete sample period, $k$ is the iteration number, and $\bm{u
 \end{equation}
 where $\bm{\omega}_{k-1}$, $\bm{\epsilon}_{k-1}$, and $\eta_{k-1}$ are all taken directly from $\bm{x}_{k-1}$ according to \Cref{equation:EKF_state_vec}. Next, the propagated state is corrected using a set of measurements $\bm{y}$. These traditionally come from a variety of sensors, namely star trackers, magnetometers, and sun sensors. All of these work as valid measurements provided there is some function that can transform the system state into a measurement using $\bm{y} = \bm{h}(\bm{x})$. The process function and measurement function $\bm{f}$ and $\bm{h}$ may then be used to implement a variety of variations of the Kalman filter to obtain estimates of the state in the presence of process noise and measurement noise.
 
-The Kalman Filter has also been applied to estimate the imbalance vector of spacecraft simulators. Silva provides a survey of a these filtering approaches and their performance \cite{silva_filtering_2018}. In practice, filters struggle to converge on values for $r_x$, $r_y$, and $r_z$ simultaneously. However, reliable convergence can be achieved for $r_z$ when $||r_x||\ll\,||r_z||$ and $||r_y||\ll\,||r_z||$. In other words, filtering can be applied to estimate the vertical balance after the horizontal balance has already been componensated.
+The Kalman Filter has also been applied to estimate the imbalance vector of spacecraft simulators. Silva provides a survey of these filtering approaches and their performance \cite{silva_filtering_2018}. In practice, filters struggle to converge on values for $r_x$, $r_y$, and $r_z$ simultaneously. However, reliable convergence can be achieved for $r_z$ when $||r_x||\ll\,||r_z||$ and $||r_y||\ll\,||r_z||$. In other words, filtering can be applied to estimate the vertical balance after the horizontal balance has already been compensated.
 
 To estimate the vertical imbalance $r_z$, the state vector of the dynamic system is written as 
 \begin{equation}
@@ -302,7 +302,7 @@ and the associated process model $\bm{f}(\bm{x}_{k-1})$ is
     \end{bmatrix}\bm{x}
 \end{equation}
 
-This process and measurement model serve again as a baseline to implement a filtering method. Here, an Unscented Kalman Filter (UKF) is used due to its improved handling of nonlinearites when compared to the EKF. The torque due to gravity introduces a high amount of nonlinearity to the system, which is challenging for the EKF where the process model is linearized. As demonstrated in the following section, this improved performance comes at the expense of a higher computational cost. However, because measurement data is collected during tumbling and then fed into the filter offline, no constraint is placed on computation time, making the UKF a practical and robust option.
+This process and measurement model serve again as a baseline to implement a filtering method. Here, an Unscented Kalman Filter (UKF) is used due to its improved handling of nonlinearities when compared to the EKF. The torque due to gravity introduces a high amount of nonlinearity to the system, which is challenging for the EKF where the process model is linearized. As demonstrated in the following section, this improved performance comes at the expense of a higher computational cost. However, because measurement data is collected during tumbling and then fed into the filter offline, no constraint is placed on computation time, making the UKF a practical and robust option.
 
 \subsubsection{The Unscented Kalman Filter}
 
@@ -365,7 +365,7 @@ The filter outputs the estimate for $r_z$ directly from $\bm{x}_k$, and proceeds
 \subsection{Active Control for Balancing}\label{sec:active_methods}
 
 In active balancing methods, the positions of each mass are controlled in real time by linear actuators. The control law is designed to reduce the effect of the $m_s\bm{r}^{\times}\bm{g}$ in the original equations of motion to zero. The torques commanded may be generated with momentum exchange devices or by actuating the masses. If the latter is chosen, the original equations of motion are formulated as
-\begin{equation} \label{equation:EomWithTau}
+\begin{equation}\label{equation:EomWithTau}
     \bm{J}\dot{\bm{\omega}} + \bm{\omega}^\times \bm{J\omega} 
     = m_s(\bm{r}_0+\Delta\bm{r})^{\times}\bm{g}
 \end{equation}
@@ -465,13 +465,13 @@ By substituting \Cref{equation:r_relations}, \Cref{equation:proposed_adaptive}, 
 Since $\dot{V}$ is negative semidefinite, the closed-loop system is Lyapunov stable. Additionally, under LaSalle's Invariance Principle, the system's state will converge to the largest invariant set in $\{\bm{x}:\dot V(\bm{x})=0 \}$, or $\{\bm{\omega}_p=\bm{0}\}$. Referring again to \Cref{fig:mbs_null_sol}, this corresponds to a state where the simulator is upright ($\hat{\bm{z}}_b$ points opposite of $\bm{g}$) and has no angular velocity about its horizontal axes ($\omega_x=\omega_y=0$). 
 
 \subsubsection{3-Axis Adaptive Control}\label{sec:3_axis_adaptive}
-Kim and Argawal developed a 3-axis adaptive control law that uses MEDs as a method to externally excite the platform \cite{kim_automatic_2009}. The excitation is chosen such that the simulator is never able to settle in the state shown in \Cref{fig:mbs_null_sol}. By ensuring that $\bm{r}$ is never parallel to $\bm{g}$, the only way to reduce the contribution of the term $m_s\bm{r}^{\times}\bm{g}$ in \Cref{equation:EomWithTau} to zero is to force the norm of $\bm{r}$ to be zero, thus simultaneously balancing $r_x$, $r_y$, and $r_z$. 
+Kim and Argawal developed a 3-axis adaptive control law that uses MEDs as a method to externally excite the platform \cite{kim_automatic_2009}. The excitation is chosen such that the simulator is never able to settle in the state shown in \Cref{fig:mbs_null_sol}. By ensuring that $\bm{r}$ is never parallel to $\bm{g}$, the only way to reduce the contribution of the term $m_s\bm{r}^{\times}\bm{g}$ to zero is to force the norm of $\bm{r}$ to be zero, thus simultaneously balancing $r_x$, $r_y$, and $r_z$. 
 
 Let $\bm{h}_s$ denote the total angular momentum of the simulator excluding MEDs, which under the assumption from \Cref{equation:h_m_eq_0} is simply computed by $\bm{h}_s=\bm{J\omega}$. Next, let $\bm{h}_d$ be a predetermined desired momentum of the simulator. The proposed 3-axis control law is
 \begin{equation}
     \bm{\tau}=\bm{K}(\bm{h}_s-\bm{h}_d)+\bm{\omega}^{\times}\bm{h}_s+\dot{\bm{h}}_d
 \end{equation}
-where $\bm{K}$ is a tunable gain matrix that must be symmetric positive-definite (SPD). It is important to make the distinction here that $\bm{\tau}$ is purely generated by external MEDs and not the sliding masses. The sliding masses positions' are rather governed by a new adaptive law
+where $\bm{K}$ is a tunable gain matrix that must be symmetric positive-definite (SPD). It is important to make the distinction here that $\bm{\tau}$ is purely generated by external MEDs and not the sliding masses. The sliding mass positions are rather governed by a new adaptive law
 \begin{equation}\label{equation:3_axis_adaptive_law}
     \Delta\dot{\bm{r}}=m_s\bm{\Gamma}(\bm{g}^{\times})^T(\bm{h}_s-\bm{h_d})
 \end{equation}
@@ -528,7 +528,7 @@ While the exact final design and mass properties of the SADS is unknown, it is s
 
 To approximate a worst case horizontal imbalance, the heaviest of these smaller components---the main 24V battery---was placed in CAD in multiple unfavorable positions with the resulting imbalance vector in the CAD software recorded. The black prism in \Cref{fig:final_CAD} represent this battery, and its position is placed at various edges along the top deck of the simulator. The resulting horizontal center of mass bounds predicted by CAD are $||r_x|| < \SI{0.0078}{\meter}$ and $||r_y|| < \SI{0.0078}{\meter}$. After adding margin to the design, the final horizontal center of mass envelope is designed to be $\text{max}||\Delta\,r_x||=\text{max}||\Delta\,r_y||\approx\SI{0.01}{\meter}$. With a travel distance of $\pm\SI{110}{\mm}$ per rail, the total mass for each horizontal axis is designed as $m_i = \SI{1.4}{\kg}$.
 
-With the horizontal mass sizing complete, the vertical mass sizing takes a slightly different approach. Because the reaction wheels and horizontal sliding masses are positioned slightly below the center of rotation of the platform, the center of mass of the platform with no vertical masses is biased towards $-\hat{\bm{z}}_b$. The vertical masses are sized such that when they are both in their centered positions, the vertical imbalance predicited by CAD is zero. For the vertical sliders, the designed value is $m_i = \SI{0.65}{\kg}$. 
+With the horizontal mass sizing complete, the vertical mass sizing takes a slightly different approach. Because the reaction wheels and horizontal sliding masses are positioned slightly below the center of rotation of the platform, the center of mass of the platform with no vertical masses is biased towards $-\hat{\bm{z}}_b$. The vertical masses are sized such that when they are both in their centered positions, the vertical imbalance predicted by CAD is zero. For the vertical sliders, the designed value is $m_i = \SI{0.65}{\kg}$. 
 
 \subsubsection{Linear Actuator Design}
 
@@ -544,7 +544,7 @@ Another issue that was quickly identified with the previous design is that to re
     \label{fig:plate_comparison}
 \end{figure}
 
-The final assembly is shown in \Cref{fig:completed_block}, which is completed by adding one plate with a smaller cutout slot to each end. The slot is small enough to prevent the inserted linear rail from sliding out, but still large enough to fit over the ballscrew shaft. The new assembly was verified early in the design stage via open-loop stepper motor position updates, with the exact motor control scheme discussed in the next section. The steps taken to minimize friction within the system proved to have a high impact. In fact, the ballscrews shafts are now adjustable by hand, even when fully loaded and integrated onto the simulator. The ability to quickly add and remove mass plates makes handling the simulator far more convenient as well. Finally, the center of mass envelope using this new system is customizable. The envelope may be expanded by simply integrating more mass plates onto the stack, and it may be reduced by swapping out steel mass plates for 3D-printed equivalents.
+The final assembly is shown in \Cref{fig:completed_block}, which is completed by adding one plate with a smaller cutout slot to each end. The slot is small enough to prevent the inserted linear rail from sliding out, but still large enough to fit over the ballscrew shaft. The new assembly was verified early in the design stage via open-loop stepper motor position updates, with the exact motor control scheme discussed in the next section. The steps taken to minimize friction within the system proved to have a high impact. In fact, the ballscrew shafts are now adjustable by hand, even when fully loaded and integrated onto the simulator. The ability to quickly add and remove mass plates makes handling the simulator far more convenient as well. Finally, the center of mass envelope using this new system is customizable. The envelope may be expanded by simply integrating more mass plates onto the stack, and it may be reduced by swapping out steel mass plates for 3D-printed equivalents.
 
 \begin{figure}[p]
   \centering
@@ -578,7 +578,7 @@ Continuing the goals of~\cite{gilman_automatic_2024}, the final design still has
 \fi
 \subsection{Electrical}\label{sec:electrical}
 
-The primary goal of the electrical design is to interface the newly developed linear actuators and an IMU to the onboard computer. All key eletrical connections are documented in \Cref{fig:wiring}. An STM32F446RE was chosen as the primary onboard computer. This board has a high number of GPIO pins, a maximum clock speed of 180 MHz, is low cost, and has proven compatibility with Simulink for code generation. It additionally has a floating point unit that operates on 32-bit floats, which is crucial for the rapid matrix multiplication needed to propagate a Kalman filter in real-time. Despite these benefits, using a microcontroller still has numerous drawbacks, the main one being the need to reflash the board to switch between programs. Future work for the onboard computer is discussed further in \Cref{chap:conclusion}.
+The primary goal of the electrical design is to interface the newly developed linear actuators and an IMU to the onboard computer. All key electrical connections are documented in \Cref{fig:wiring}. An STM32F446RE was chosen as the primary onboard computer. This board has a high number of GPIO pins, a maximum clock speed of 180 MHz, is low cost, and has proven compatibility with Simulink for code generation. It additionally has a floating point unit that operates on 32-bit floats, which is crucial for the rapid matrix multiplication needed to propagate a Kalman filter in real-time. Despite these benefits, using a microcontroller still has numerous drawbacks, the main one being the need to reflash the board to switch between programs. Future work for the onboard computer is discussed further in \Cref{chap:conclusion}.
 
 \begin{figure}[p]
     \centering
@@ -724,7 +724,7 @@ The attitude, body rates, and reaction wheel torques are then loaded onto the ho
 
 \subsubsection{Active Balancing Operation}
 
-Active balancing consists of the first step in the Two-Step Hybrid Method branch on \Cref{fig:passive_flowchart}. For active balancing, the values computed by the EKF are used as input into the various control laws described \Cref{sec:active_methods}. The control laws output a desired torque, which is converted into a desired change in center of mass according to \Cref{equation:torque_to_del_r}, and then further converted into a change of sliding mass positions according to \Cref{equation:delta_d_sol}. The benefits of offloading step generation to the Teensy are again seen here, as the controller ends each timestep by simply performing a short I2C write with the desired positions of each motor. The task of implementing step generation in the Simulink model is entirely avoided. The data flows in the system during active balancing can be seen in \Cref{fig:sys_arch_active}.
+Active balancing consists of the first step in the Two-Step Hybrid Method branch on \Cref{fig:operator_flowchart}. For active balancing, the values computed by the EKF are used as input into the various control laws described in \Cref{sec:active_methods}. The control laws output a desired torque, which is converted into a desired change in center of mass according to \Cref{equation:torque_to_del_r}, and then further converted into a change of sliding mass positions according to \Cref{equation:delta_d_sol}. The benefits of offloading step generation to the Teensy are again seen here, as the controller ends each timestep by simply performing a short I2C write with the desired positions of each motor. The task of implementing step generation in the Simulink model is entirely avoided. The data flows in the system during active balancing can be seen in \Cref{fig:sys_arch_active}.
 
 To run an active balancing operation, the proper Simulink model is compiled on the host PC and flashed onto the STM32 over USB. The USB is disconnected and the feedback control is activated via button press. The simulator automatically balances, and the operator ends the test when the sliding mass positions converge. The conditions for sliding mass convergence during active balancing are also discussed in \Cref{chap:results}. Telemetry may still be sent over the APC220 to help with plotting results and debugging issues, but is not strictly necessary for the procedure. 
 
@@ -743,7 +743,7 @@ The simulation models the same physical components present in the hardware such 
 
 \subsection{Truth vs. Measured Quantities}
 
-An important distinction in this simulation framework is between truth values and measured or estimated values available to the onboard computer. The truth model represents the actual physical dynamics of the simulator, while the onboard algorithms use only noisy and discretized sensor data. By explicitly modeling both sides, the simulation provides a way to quantify how sensor limitations and real-world imperfactions degrade balancing performance.
+An important distinction in this simulation framework is between truth values and measured or estimated values available to the onboard computer. The truth model represents the actual physical dynamics of the simulator, while the onboard algorithms use only noisy and discretized sensor data. By explicitly modeling both sides, the simulation provides a way to quantify how sensor limitations and real-world imperfections degrade balancing performance.
 
 \subsection{Plant Model}
 The plant represents the truth dynamics of the simulator and forms the reference against which onboard estimates are compared. The plant model solves the following differential equation
@@ -752,7 +752,7 @@ The plant represents the truth dynamics of the simulator and forms the reference
     - \bm{\omega}_\text{tr}^\times\bm{h}_{c,\text{tr}} + m_s\bm{r}_0^{\times}\bm{g}_\text{tr} + m_s\Delta\bm{r}_\text{tr}^{\times}\bm{g}_\text{tr}
     - \dot{\bm{h}}_{c,\text{tr}})
 \end{equation}
-which when solved yields $\bm{\omega}_\text{tr}$. Values subscripted with $\text{tr}$ denote true physical values that the onboard computer and balancing algorithm do not have access to. To start, $\bm{J}_\text{tr}$ is used to account for errors in the estimation of $\bm{J}$. Many balancing methods require knowledge of the simulator's moment of inertia $\bm{J}$, and the estimate for this value in this work is taken from CAD. Given the geometry of the SADS is well known and the mass of each compenent is carefully measured, this estimate is assumed to be fairly accurate. Still, to account for errors in the CAD model, the value of inertia used in the truth model $\bm{J}_\text{tr}$ is perturbed from the CAD estimate. This perturbation is performed using
+which when solved yields $\bm{\omega}_\text{tr}$. Values subscripted with $\text{tr}$ denote true physical values that the onboard computer and balancing algorithm do not have access to. To start, $\bm{J}_\text{tr}$ is used to account for errors in the estimation of $\bm{J}$. Many balancing methods require knowledge of the simulator's moment of inertia $\bm{J}$, and the estimate for this value in this work is taken from CAD. Given the geometry of the SADS is well known and the mass of each component is carefully measured, this estimate is assumed to be fairly accurate. Still, to account for errors in the CAD model, the value of inertia used in the truth model $\bm{J}_\text{tr}$ is perturbed from the CAD estimate. This perturbation is performed using
 \begin{equation}
     \bm{J}_\text{tr} = \begin{bmatrix}
         a_1\hat{J}_{xx} & a_4\hat{J}_{xy} & a_5\hat{J}_{xz} \\
@@ -776,7 +776,7 @@ Once the solver obtains $\bm{\omega}_\text{tr}$, the quaternion is obtained usin
 
 \subsection{Sensors}
 
-The sensor model converts $\bm{\omega}_\text{tr}$ and $\bm{g}_{\text{tr}}$ into gyroscope and accelerometer measurements used by the onboard computer. As mentioned earlier, the accelerometer does not directly measure the gravity vector in the body frame, but rather the specific force acting on the sensor which includes the effects of centripetal acceleration. The value $\bm{g}_{b,\text{tr}}$ is discretized according to the 20 Hz sample rate of the filter and control system, indexed by $k$. Finally, the discreted value is corrupted by measurement noise and bias. The complete model for the accelerometer output is
+The sensor model converts $\bm{\omega}_\text{tr}$ and $\bm{g}_{\text{tr}}$ into gyroscope and accelerometer measurements used by the onboard computer. As mentioned earlier, the accelerometer does not directly measure the gravity vector in the body frame, but rather the specific force acting on the sensor which includes the effects of centripetal acceleration. The value $\bm{g}_{b,\text{tr}}$ is discretized according to the 20 Hz sample rate of the filter and control system, indexed by $k$. Finally, the discretized value is corrupted by measurement noise and bias. The complete model for the accelerometer output is
 \begin{equation}
     \bm{y}_{\text{accel},k}= (\bm{\omega}_{\text{tr}}^{\times}\bm{r}_\text{IMU})^{\times}\bm{\omega}_{\text{tr}}-\bm{g}_{\text{tr}} + \bm{n}_{\text{accel},k} + \bm{b}_{\text{accel},k}
 \end{equation}
@@ -797,7 +797,7 @@ The measurement bias is implemented using a first-order Gauss-Markov Model \cite
 \end{equation}
 where $T_c$ is the correlation time constant, $\sigma_x$ is the stationary standard deviation of the bias, and $T_s$ is the sample period. For slow varying bias, $T_c$ is chosen to be large $(\sim2000\text{s})$, and $\sigma_x$ is taken from the sensor specifications of the MTi-03 IMU. 
 
-The final measurements $\bm{y}_{\text{accel},k}$ and $\bm{y}_{\text{gyro},k}$ are passed onto the onboard computer to be used as inputs in the EKF. Referring to \Cref{sec:EKF}, within the EKF these values corresponed to $\bm{y}_{\text{gyro},k}\rightarrow\bm{\omega}_k$ and $\bm{y}_{\text{accel},k}\rightarrow\bm{y}_{\text{meas},k}$.
+The final measurements $\bm{y}_{\text{accel},k}$ and $\bm{y}_{\text{gyro},k}$ are passed onto the onboard computer to be used as inputs in the EKF. Referring to \Cref{sec:EKF}, within the EKF these values correspond to $\bm{y}_{\text{gyro},k}\rightarrow\bm{\omega}_k$ and $\bm{y}_{\text{accel},k}\rightarrow\bm{y}_{\text{meas},k}$.
 
 \subsection{Actuators}
 
